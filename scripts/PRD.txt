@@ -1,0 +1,130 @@
+<context>
+# Overview  
+This product is an Integrated Differentiable Trajectory Optimization & Economic Analysis Platform focused on the LEO–Moon stage. It solves the problem of designing and evaluating orbital trajectories that are optimized not only for physical feasibility (using high-fidelity n-body dynamics) but also for economic performance (maximizing ROI, NPV, IRR). It is designed for aerospace engineers, mission planners, financial analysts, and AI/optimization researchers who require an end‐to‐end system for planning lunar missions, with the flexibility to extend the model to include additional flight stages.
+
+# Core Features  
+- **Trajectory Simulation and Global Optimization**  
+  - *What it does:* Generates initial LEO–Moon trajectories using established orbital mechanics and global search algorithms.  
+  - *Why it's important:* Provides realistic candidate trajectories that serve as a baseline, balancing physical constraints (Δv, time-of-flight) with early economic estimates.  
+  - *How it works:* Utilizes PyKEP for orbital mechanics and PyGMO (NSGA-II) for multi-objective optimization, offering a Pareto front of trade-offs.
+
+- **Local Differentiable Optimization**  
+  - *What it does:* Refines candidate trajectories using differentiable simulation to fine-tune parameters for maximum economic benefit.  
+  - *Why it's important:* Ensures that the chosen trajectory achieves optimal performance with respect to both physics and ROI metrics.  
+  - *How it works:* Implements gradient-based optimization with JAX and Diffrax to adjust burn timings, Δv levels, and other variables via an end-to-end differentiable model.
+
+- **Economic Modeling Module**  
+  - *What it does:* Evaluates each trajectory by calculating financial metrics such as ROI, NPV, IRR, and payback period.  
+  - *Why it's important:* Integrates financial analysis directly into the optimization process to focus on cost savings and long-term mission viability.  
+  - *How it works:* Uses QuantLib or custom NumPy/Pandas models to simulate cash flows, cost per kg delivered, and the benefits of ISRU production.
+
+- **Visualization and Reporting**  
+  - *What it does:* Provides interactive 3D visualizations and dashboards to display trajectories and economic outcomes.  
+  - *Why it's important:* Enables stakeholders to explore and understand the trade-offs and detailed characteristics of each optimized solution.  
+  - *How it works:* Leverages Plotly and Poliastro for interactive visualizations, with optional integration of Basilisk Vizard for high-fidelity real-time displays.
+
+# User Experience  
+- **User Personas:**  
+  - Aerospace Engineers: Focus on physical trajectory feasibility and dynamic simulation.  
+  - Mission Planners: Require an overview of the optimized mission plan with trade-offs between cost and performance.  
+  - Financial Analysts: Need detailed economic models and ROI projections to justify investments.  
+  - AI/Optimization Researchers: Interested in the integration of cutting-edge optimization methodologies and differentiable simulation.
+  
+- **Key User Flows:**  
+  1. User logs into the system and loads a mission configuration (payload, budget assumptions, etc.).  
+  2. The system generates a set of candidate trajectories using global optimization (displaying the Pareto front).  
+  3. Users select a candidate and trigger local optimization refinement for improved performance.  
+  4. The refined trajectory is evaluated through an integrated economic model, producing ROI, NPV, and IRR outputs.  
+  5. Interactive 3D visualizations and dashboards allow users to analyze and compare mission profiles.
+  
+- **UI/UX Considerations:**  
+  - A clean dashboard interface with widgets for parameter adjustments.  
+  - Interactive graphs and 3D visualizers for orbit and economic metric exploration.  
+  - Clear presentation of trade-offs and detailed numerical analysis, accessible to both technical and non-technical users.
+</context>
+<PRD>
+# Technical Architecture  
+- **System Components:**  
+  - *Mission Configuration Module:* Stores input parameters (payload mass, cost factors, ISRU targets).  
+  - *Trajectory Generation Module:* Uses PyKEP for basic orbital calculations and generates initial trajectories.  
+  - *Global Optimization Module:* Employs PyGMO (e.g., NSGA-II) for multi-objective search across variables (Δv, time, cost).  
+  - *Local Optimization Module:* Implements differentiable simulation with JAX and Diffrax for fine-tuning candidate trajectories.  
+  - *Economic Analysis Module:* Integrates QuantLib and custom financial models to compute ROI, NPV, and IRR.  
+  - *Visualization Module:* Utilizes Plotly and Poliastro for interactive 3D trajectory plots and dashboards; optional integration with Basilisk Vizard for real-time visual simulations.  
+  - *Extensibility Interface:* Standardized API/data format to add new flight stages (e.g., Earth launch, lunar descent) in the future.
+  
+- **Data Models:**  
+  - Trajectory parameters (time-of-flight, burn magnitudes, orbital elements)  
+  - Economic cost models (cash flow models, discount factors)  
+  - Optimization objectives and constraints (Δv thresholds, budget limits)
+  
+- **APIs and Integrations:**  
+  - Integration between PyKEP, PyGMO, and JAX/Diffrax via Python modules and standardized data exchange formats (e.g., JSON, Pandas DataFrames).  
+  - REST or gRPC endpoints for external visualization dashboards if needed.
+  
+- **Infrastructure Requirements:**  
+  - Python 3.8+ environment with JIT-capable hardware (GPU/TPU for JAX)  
+  - Dockerized or virtualized development environment for reproducibility  
+  - Optionally, cloud resources for large-scale simulation and optimization tasks.
+  
+# Development Roadmap  
+- **MVP Requirements:**  
+  - Develop and integrate the Mission Configuration, Trajectory Generation (PyKEP), and Global Optimization (PyGMO) modules to generate a Pareto front for LEO–Moon trajectories.  
+  - Implement a simple Economic Analysis Module with basic ROI and NPV calculations.  
+  - Create interactive 3D visualization using Plotly to display candidate trajectories and associated economic metrics.
+  
+- **Future Enhancements:**  
+  - Integrate local, differentiable optimization using JAX and Diffrax for refining trajectories.  
+  - Extend the Economic Analysis Module to include advanced financial modeling with QuantLib.  
+  - Incorporate an optional high-fidelity simulation module with Basilisk for validation.  
+  - Expand system interfaces to support additional flight stages (Earth launch, lunar descent) and advanced symbolic constraint integration (using NeuroMANCER or cvxpylayers).  
+  - Develop a comprehensive dashboard (using Dash or similar frameworks) that combines trajectory visualizations with economic models and simulation reports.
+  
+- **Scope Details:**  
+  - Define data schemas and API interfaces for module interactions.  
+  - Build a modular codebase where each stage is atomic yet extensible.  
+  - Ensure all modules are testable in isolation (unit tests) and integrated end-to-end (integration tests).
+
+# Logical Dependency Chain  
+- **Foundation:**  
+  - Establish the Mission Configuration Module and define all required input variables.  
+  - Build the Trajectory Generation module using PyKEP and ensure it outputs basic orbital solutions.
+  
+- **Early Usable Product:**  
+  - Implement the Global Optimization Module (PyGMO) to generate the initial Pareto front; ensure basic visualizations of these trajectories are available via Plotly.  
+  - Develop a minimal Economic Analysis Module to calculate preliminary ROI metrics.
+  
+- **Next Steps:**  
+  - Integrate the Local Differentiable Optimization Module (JAX + Diffrax) to refine trajectory parameters.  
+  - Merge the refined trajectories back into the economic model for updated ROI calculations.  
+  - Gradually add high-fidelity simulation (Basilisk) for validation and enhanced visualization.
+  
+- **Modularity and Extensibility:**  
+  - Every module should follow the standardized data exchange format so that new flight stages or symbolic constraints can be added with minimal rework.
+  
+# Risks and Mitigations  
+- **Technical Challenges:**  
+  - *Risk:* Integrating diverse frameworks can lead to interoperability issues.  
+    *Mitigation:* Define clear APIs and standardized data schemas between modules.
+  - *Risk:* High computational demands for differentiable simulation might affect performance.  
+    *Mitigation:* Use GPU acceleration and efficient JIT compilers (via JAX) to optimize performance.
+    
+- **MVP Definition:**  
+  - *Risk:* Balancing physical simulation accuracy with economic modeling complexity.  
+    *Mitigation:* Start with simplified models and progressively incorporate higher-fidelity calculations.
+    
+- **Resource Constraints:**  
+  - *Risk:* High initial development complexity may lead to integration delays.  
+    *Mitigation:* Develop modules in isolation with thorough unit/integration testing; use open-source libraries with active communities to reduce development overhead.
+    
+# Appendix  
+- **Research Findings:**  
+  - Latest advancements in differentiable simulation (Diffrax, JAX) and global multi-objective optimization (PyGMO) as reported in recent aerospace conferences and research papers.
+- **Technical Specifications:**  
+  - Detailed mathematical models for n-body orbital dynamics and cash flow forecasting models.  
+  - Documentation of standard interfaces for trajectory and financial data exchange between modules.
+- **Additional References:**  
+  - PyKEP and PyGMO documentation from ESA.  
+  - JAX and Diffrax repositories for differentiable physics implementations.  
+  - QuantLib and Poliastro for financial modeling and orbital visualization, respectively.
+</PRD>
