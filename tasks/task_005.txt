@@ -1,0 +1,17 @@
+# Task ID: 5
+# Title: Create Basic Economic Analysis Module
+# Status: pending
+# Dependencies: 2
+# Priority: medium
+# Description: Implement simple ROI and NPV calculations for trajectory evaluation to enable economic comparison of different mission profiles.
+# Details:
+1. Define economic data models for cash flows and financial metrics
+2. Implement basic ROI calculation based on mission cost and returns
+3. Develop NPV calculation with configurable discount rates
+4. Create cost models for launch, operations, and payload delivery
+5. Add simple ISRU benefit calculations
+6. Implement sensitivity analysis for key economic parameters
+7. Create reporting functions for economic metrics
+
+# Test Strategy:
+Validate calculations against known financial examples. Test with extreme values and edge cases. Verify sensitivity analysis correctly identifies critical parameters.

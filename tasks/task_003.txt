@@ -1,0 +1,76 @@
+# Task ID: 3
+# Title: Develop Trajectory Generation Module
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Build the module using PyKEP to calculate basic orbital mechanics and generate initial LEO-Moon trajectories.
+# Details:
+1. Use PyKEP for orbital calculations (already installed)
+2. Create trajectory data model with orbital elements and maneuvers
+3. Develop functions to generate initial trajectories from Earth LEO to lunar orbit
+4. Implement n-body dynamics simulation for trajectory propagation
+5. Add trajectory validation to ensure physical feasibility
+6. Create utility functions for Δv calculations and time-of-flight estimation
+7. Implement trajectory serialization/deserialization to standard format
+
+# Test Strategy:
+Compare generated trajectories against known reference trajectories. Verify conservation of energy and angular momentum in propagation. Test edge cases like minimum Δv and minimum time-of-flight trajectories.
+
+# Subtasks:
+## 1. Implement PyKEP Integration and Trajectory Data Model [done]
+### Dependencies: None
+### Description: Set up PyKEP integration for orbital calculations and create the core data structures for representing trajectories between Earth and Moon.
+### Details:
+Implementation steps:
+1. Use the pre-installed PyKEP library (refer to documentation as needed)
+2. Create a trajectory data class that includes orbital elements (semi-major axis, eccentricity, inclination, etc.)
+3. Implement methods to represent orbital maneuvers (impulse burns, their magnitude, direction, and timing)
+4. Create utility functions for basic orbital calculations (orbital period, velocity at points in orbit)
+5. Implement coordinate transformations between reference frames
+6. Add validation methods to ensure trajectory data is physically valid
+7. Write unit tests for the data model and basic calculations
+
+Testing approach:
+- Test orbital element calculations against known reference values
+- Verify coordinate transformations with test cases
+- Ensure data validation correctly identifies invalid parameters
+
+## 2. Develop Earth-Moon Trajectory Generation Functions [pending]
+### Dependencies: 3.1
+### Description: Create functions that generate initial trajectories from Earth LEO to lunar orbit using PyKEP's solvers.
+### Details:
+Implementation steps:
+1. Implement functions to set up Earth and Moon as celestial bodies with correct parameters
+2. Create methods to define initial LEO parameters and target lunar orbit specifications
+3. Develop trajectory design functions using PyKEP's Lambert problem solvers
+4. Implement patched conics approximation for initial trajectory design
+5. Add functions to calculate optimal departure and arrival times
+6. Create methods to compute Δv requirements for trajectory execution
+7. Implement time-of-flight estimation algorithms
+8. Add helper functions to visualize generated trajectories
+
+Testing approach:
+- Compare generated trajectories against known mission profiles
+- Verify Δv calculations match expected values for standard transfer orbits
+- Test boundary conditions (different orbital altitudes, inclinations)
+
+## 3. Implement N-body Dynamics and Trajectory I/O [pending]
+### Dependencies: 3.1, 3.2
+### Description: Develop n-body propagation for trajectory refinement and implement serialization/deserialization functionality.
+### Details:
+Implementation steps:
+1. Implement numerical integrators for n-body dynamics (e.g., Runge-Kutta methods)
+2. Create functions to propagate trajectories considering Earth, Moon, and Sun gravity
+3. Develop methods to refine initial trajectories using the n-body model
+4. Implement trajectory validation against physical constraints
+5. Create functions to serialize trajectories to standard formats (JSON, CSV)
+6. Implement deserialization from these formats back to trajectory objects
+7. Add utility functions to compare trajectories (e.g., Δv efficiency, time efficiency)
+8. Create examples demonstrating end-to-end trajectory generation and analysis
+
+Testing approach:
+- Verify trajectory propagation against reference implementations
+- Test conservation of energy and angular momentum in n-body simulations
+- Ensure serialization/deserialization preserves all trajectory information
+- Benchmark performance of numerical propagation
+

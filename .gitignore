@@ -79,6 +79,17 @@ node_modules/
 # OS specific
 .DS_Store
 
-# Task files
+# Task files - but keep task management directory
 tasks.json
-tasks/ 
+
+# Project specific
+data/spice/*.bsp
+*.bak
+*.tmp
+
+# Claude Code cache
+.claude/
+
+# Environment files
+.env
+.env.local 
