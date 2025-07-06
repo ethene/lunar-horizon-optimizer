@@ -7,6 +7,6 @@ moved to dedicated modules. New code should import directly from the specific mo
 from .orbit_state import OrbitState
 from .maneuver import Maneuver
 from .trajectory_base import Trajectory
-from .lunar_transfer import LunarTrajectory
+from .lunar_transfer import LunarTransfer as LunarTrajectory
 
 __all__ = ['OrbitState', 'Maneuver', 'Trajectory', 'LunarTrajectory'] 

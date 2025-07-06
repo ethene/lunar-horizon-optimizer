@@ -27,6 +27,18 @@ scripts/             # Utility scripts and PRD
 - **SciPy 1.13.1** - Scientific computing foundation
 - **Plotly 5.24.1** - Interactive visualization
 - **Pydantic** - Configuration validation
+- **SpiceyPy** - NASA SPICE toolkit for ephemeris calculations
+
+### Development Environment Requirements
+- **Python Environment**: conda py312 environment (required)
+- **PyKEP Installation**: Must use conda-forge channel for PyKEP 2.6
+- **Environment Setup**: 
+  ```bash
+  conda create -n py312 python=3.12 -y
+  conda activate py312
+  conda install -c conda-forge pykep pygmo astropy spiceypy -y
+  pip install -r requirements.txt
+  ```
 
 ## Development Standards
 

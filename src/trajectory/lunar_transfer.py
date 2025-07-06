@@ -40,7 +40,7 @@ from .celestial_bodies import CelestialBody
 from .models import Trajectory, Maneuver, OrbitState
 from .target_state import calculate_target_state
 from .phase_optimization import find_optimal_phase
-from .validation import TrajectoryValidator
+from .trajectory_validator import TrajectoryValidator  # Import from renamed module
 from .propagator import TrajectoryPropagator
 
 class LunarTransfer:
