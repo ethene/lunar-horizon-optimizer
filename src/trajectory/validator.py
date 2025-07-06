@@ -16,6 +16,6 @@ warnings.warn(
 )
 
 # Re-export from the new validation module
-from .validation import TrajectoryValidator
+from .trajectory_validator import TrajectoryValidator
 
 __all__ = ['TrajectoryValidator']

@@ -15,8 +15,8 @@ warnings.warn(
     stacklevel=2
 )
 
-# Re-export from the new validation module
-from .validation import (
+# Re-export from the trajectory_validator module
+from .trajectory_validator import (
     validate_epoch,
     validate_orbit_altitude, 
     validate_transfer_parameters,
@@ -24,10 +24,14 @@ from .validation import (
     validate_final_orbit
 )
 
+# Alias for backward compatibility
+validate_inputs = validate_transfer_parameters
+
 __all__ = [
     'validate_epoch',
     'validate_orbit_altitude', 
     'validate_transfer_parameters',
     'validate_initial_orbit',
-    'validate_final_orbit'
+    'validate_final_orbit',
+    'validate_inputs'  # Backward compatibility alias
 ]
