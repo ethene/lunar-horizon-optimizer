@@ -11,7 +11,7 @@ validation of trajectory parameters and constraints. Tests cover:
 import pytest
 import numpy as np
 from datetime import datetime, timezone
-from src.trajectory.validator import TrajectoryValidator
+from src.trajectory.validation import TrajectoryValidator
 from src.utils.unit_conversions import km_to_m, m_to_km
 import logging
 
