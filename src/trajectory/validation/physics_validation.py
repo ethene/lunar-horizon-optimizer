@@ -8,7 +8,7 @@ import numpy as np
 from typing import Tuple
 import logging
 
-from ..constants import PhysicalConstants
+from trajectory.constants import PhysicalConstants
 
 # Configure logging
 logger = logging.getLogger(__name__)

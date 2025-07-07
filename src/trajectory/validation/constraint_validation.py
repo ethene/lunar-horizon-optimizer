@@ -8,7 +8,7 @@ import numpy as np
 import logging
 import pykep as pk
 
-from ..constants import PhysicalConstants
+from trajectory.constants import PhysicalConstants
 
 # Configure logging
 logger = logging.getLogger(__name__)

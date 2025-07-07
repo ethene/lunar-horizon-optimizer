@@ -13,7 +13,7 @@ from .trajectory_physics import validate_solution_physics
 from .constants import PhysicalConstants as PC
 from .target_state import calculate_target_state
 from .lambert_solver import solve_lambert
-from ..utils.unit_conversions import m_to_km, km_to_m, m3s2_to_km3s2, km3s2_to_m3s2
+from utils.unit_conversions import m_to_km, km_to_m, m3s2_to_km3s2, km3s2_to_m3s2
 
 # Configure logging
 logger = logging.getLogger(__name__)

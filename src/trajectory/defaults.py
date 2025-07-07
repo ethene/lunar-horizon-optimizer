@@ -5,7 +5,7 @@ and optimization. All values are in SI units (meters, m/s) unless otherwise note
 """
 
 from .constants import PhysicalConstants as PC
-from ..utils.unit_conversions import km_to_m, m_to_km
+from utils.unit_conversions import km_to_m, m_to_km
 
 class TransferDefaults:
     """Default values and limits for transfer trajectory generation.

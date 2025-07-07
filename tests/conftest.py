@@ -1,5 +1,8 @@
 import pytest
-from src.config.manager import ConfigManager
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from config.management.config_manager import ConfigManager
 
 @pytest.fixture
 def config_manager():

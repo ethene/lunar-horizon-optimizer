@@ -7,8 +7,8 @@ with custom overrides.
 
 from typing import Dict, Any, Optional
 
-from ..models import MissionConfig
-from ..registry import ConfigRegistry
+from config.models import MissionConfig
+from config.registry import ConfigRegistry
 from pydantic import ValidationError
 
 

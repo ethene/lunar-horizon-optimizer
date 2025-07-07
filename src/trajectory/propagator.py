@@ -27,7 +27,7 @@ import pykep as pk
 import logging
 from .constants import PhysicalConstants as PC
 from .celestial_bodies import CelestialBody
-from ..utils.unit_conversions import seconds_to_days
+from utils.unit_conversions import seconds_to_days
 
 class TrajectoryPropagator:
     """Handles trajectory propagation with gravity effects.

@@ -7,8 +7,8 @@ supporting both JSON and YAML formats with proper error handling.
 from pathlib import Path
 from typing import Any, Dict
 
-from ..models import MissionConfig
-from ..loader import ConfigLoader, ConfigurationError
+from config.models import MissionConfig
+from config.loader import ConfigLoader, ConfigurationError
 
 
 class FileOperations:

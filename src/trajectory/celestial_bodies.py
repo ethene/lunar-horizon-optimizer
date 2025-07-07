@@ -18,8 +18,8 @@ import logging
 import os
 import spiceypy as spice
 import pykep as pk
-from .constants import PhysicalConstants as PC
-from ..utils.unit_conversions import datetime_to_j2000
+from trajectory.constants import PhysicalConstants as PC
+from utils.unit_conversions import datetime_to_j2000
 
 # Configure logging
 logger = logging.getLogger(__name__)
