@@ -1,11 +1,12 @@
-# Integration Guide - Tasks 3, 4, and 5
+# Integration Guide - Tasks 3, 4, 5, and 6
 
 ## Overview
 
-This guide provides comprehensive integration instructions for the three major modules completed in the Lunar Horizon Optimizer project:
+This guide provides comprehensive integration instructions for the four major modules completed in the Lunar Horizon Optimizer project:
 - **Task 3**: Enhanced Trajectory Generation
 - **Task 4**: Global Optimization Module  
 - **Task 5**: Basic Economic Analysis Module
+- **Task 6**: Visualization Module
 
 ## Integration Architecture
 
@@ -16,17 +17,19 @@ graph TD
     A[Task 3: Trajectory Generation] --> B[Task 4: Global Optimization]
     A --> C[Task 5: Economic Analysis]
     B --> C
-    C --> D[Task 6: Visualization]
-    A --> D
+    A --> D[Task 6: Visualization]
     B --> D
+    C --> D
+    D --> E[Task 7: MVP Integration]
     
-    E[Config Module] --> A
-    E --> B
-    E --> C
-    
-    F[Utils Module] --> A
+    F[Config Module] --> A
     F --> B
     F --> C
+    
+    G[Utils Module] --> A
+    G --> B
+    G --> C
+    G --> D
 ```
 
 ### Integration Points
@@ -531,8 +534,293 @@ python scripts/verify_dependencies.py
 - [ ] Tests pass for integrated scenarios
 - [ ] Documentation is complete and accurate
 
+## Task 6: Visualization Integration
+
+### Integration with Core Modules
+
+#### Task 3 ↔ Task 6 Integration
+**Connection**: 3D trajectory visualization and orbital analysis
+
+```python
+from trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
+from visualization.trajectory_visualization import TrajectoryVisualizer
+
+# Generate trajectory data
+trajectory_result = generate_earth_moon_trajectory(
+    earth_orbit_alt=400.0,
+    moon_orbit_alt=100.0,
+    transfer_time=4.5,
+    departure_epoch=10000.0
+)
+
+# Create visualization
+viz = TrajectoryVisualizer()
+fig = viz.create_3d_trajectory_plot(trajectory_result.trajectory_data)
+fig.show()
+```
+
+#### Task 4 ↔ Task 6 Integration  
+**Connection**: Pareto front visualization and optimization analysis
+
+```python
+from optimization.global_optimizer import optimize_lunar_mission
+from visualization.optimization_visualization import OptimizationVisualizer
+
+# Perform optimization
+result = optimize_lunar_mission(
+    trajectory_config=config,
+    cost_factors=cost_factors
+)
+
+# Visualize Pareto front
+viz = OptimizationVisualizer()
+fig = viz.create_pareto_front_plot(
+    result,
+    objective_names=["Delta-V (m/s)", "Transfer Time (days)", "Cost ($)"]
+)
+fig.show()
+```
+
+#### Task 5 ↔ Task 6 Integration
+**Connection**: Economic dashboard and financial visualization
+
+```python
+from economics.reporting import generate_financial_summary
+from visualization.economic_visualization import EconomicVisualizer
+
+# Generate economic analysis
+financial_summary = generate_financial_summary(
+    optimization_result=opt_result,
+    cost_factors=cost_factors
+)
+
+# Create financial dashboard
+viz = EconomicVisualizer()
+fig = viz.create_financial_dashboard(financial_summary)
+fig.show()
+```
+
+### Comprehensive Dashboard Integration
+
+#### All Tasks ↔ Task 6 Integration
+**Connection**: Unified mission analysis dashboard
+
+```python
+from visualization.dashboard import ComprehensiveDashboard, MissionAnalysisData
+
+# Combine all analysis results
+mission_data = MissionAnalysisData(
+    mission_name="Comprehensive Lunar Mission Analysis",
+    trajectory_data=trajectory_result,
+    optimization_results=optimization_result,
+    financial_summary=financial_summary,
+    cost_breakdown=cost_breakdown,
+    mission_phases=mission_phases
+)
+
+# Create comprehensive dashboard
+dashboard = ComprehensiveDashboard()
+
+# Executive dashboard for decision makers
+executive_fig = dashboard.create_executive_dashboard(mission_data)
+executive_fig.show()
+
+# Technical dashboard for engineers
+technical_fig = dashboard.create_technical_dashboard(mission_data)
+technical_fig.show()
+```
+
+### Data Flow Architecture
+
+```python
+# Complete integration workflow
+def integrated_mission_analysis(mission_config):
+    """Complete mission analysis workflow integrating all tasks."""
+    
+    # Task 3: Generate trajectory
+    trajectory_result = generate_earth_moon_trajectory(
+        earth_orbit_alt=mission_config.earth_orbit_alt,
+        moon_orbit_alt=mission_config.moon_orbit_alt,
+        transfer_time=mission_config.transfer_time,
+        departure_epoch=mission_config.departure_epoch
+    )
+    
+    # Task 4: Optimize mission
+    optimization_result = optimize_lunar_mission(
+        trajectory_config=trajectory_result.config,
+        cost_factors=mission_config.cost_factors
+    )
+    
+    # Task 5: Economic analysis
+    financial_summary = generate_financial_summary(
+        optimization_result=optimization_result,
+        cost_factors=mission_config.cost_factors
+    )
+    
+    # Task 6: Comprehensive visualization
+    mission_data = MissionAnalysisData(
+        mission_name=mission_config.mission_name,
+        trajectory_data=trajectory_result,
+        optimization_results=optimization_result,
+        financial_summary=financial_summary
+    )
+    
+    dashboard = ComprehensiveDashboard()
+    
+    return {
+        'trajectory_result': trajectory_result,
+        'optimization_result': optimization_result,
+        'financial_summary': financial_summary,
+        'executive_dashboard': dashboard.create_executive_dashboard(mission_data),
+        'technical_dashboard': dashboard.create_technical_dashboard(mission_data)
+    }
+```
+
+### Visualization Performance Optimization
+
+1. **Data Decimation**: Reduce trajectory points for large datasets
+2. **Lazy Loading**: Load visualization components on demand
+3. **Caching**: Cache rendered plots for repeated viewing
+4. **Memory Management**: Efficient handling of large dashboard data
+
+### Visualization Export and Sharing
+
+```python
+# Export capabilities
+def export_analysis_results(analysis_results, output_dir):
+    """Export all analysis results including visualizations."""
+    
+    # Export visualizations as HTML
+    analysis_results['executive_dashboard'].write_html(
+        f"{output_dir}/executive_dashboard.html"
+    )
+    
+    analysis_results['technical_dashboard'].write_html(
+        f"{output_dir}/technical_dashboard.html"
+    )
+    
+    # Export high-resolution images
+    analysis_results['executive_dashboard'].write_image(
+        f"{output_dir}/executive_summary.png",
+        width=1600, height=1200, scale=2
+    )
+    
+    # Export data for further analysis
+    with open(f"{output_dir}/mission_data.json", 'w') as f:
+        json.dump(analysis_results['financial_summary'].__dict__, f, indent=2)
+```
+
+## Complete System Integration Example
+
+```python
+#!/usr/bin/env python3
+"""
+Complete Lunar Horizon Optimizer Integration Example
+Demonstrates end-to-end workflow from configuration to visualization.
+"""
+
+from config.mission_config import MissionConfig
+from config.costs import CostFactors
+from trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
+from optimization.global_optimizer import optimize_lunar_mission
+from economics.reporting import generate_financial_summary
+from visualization.dashboard import ComprehensiveDashboard, MissionAnalysisData
+
+def main():
+    # Mission configuration
+    mission_config = MissionConfig(
+        name="Artemis Lunar Base Mission",
+        earth_orbit_alt=400.0,      # km
+        moon_orbit_alt=100.0,       # km
+        transfer_time=4.5,          # days
+        departure_epoch=10000.0     # days since J2000
+    )
+    
+    cost_factors = CostFactors(
+        cost_per_kg_to_leo=5000,    # $/kg
+        spacecraft_base_cost=100e6,  # $
+        launch_base_cost=150e6,     # $
+        development_cost_factor=2.0
+    )
+    
+    print("🚀 Starting Comprehensive Mission Analysis...")
+    
+    # Task 3: Trajectory Generation
+    print("📊 Generating optimal trajectory...")
+    trajectory_result = generate_earth_moon_trajectory(
+        earth_orbit_alt=mission_config.earth_orbit_alt,
+        moon_orbit_alt=mission_config.moon_orbit_alt,
+        transfer_time=mission_config.transfer_time,
+        departure_epoch=mission_config.departure_epoch
+    )
+    print(f"✅ Trajectory generated: ΔV = {trajectory_result.total_dv:.0f} m/s")
+    
+    # Task 4: Multi-objective Optimization  
+    print("🎯 Performing multi-objective optimization...")
+    optimization_result = optimize_lunar_mission(
+        trajectory_config=trajectory_result.config,
+        cost_factors=cost_factors,
+        population_size=100,
+        num_generations=50
+    )
+    print(f"✅ Optimization complete: {len(optimization_result.pareto_solutions)} Pareto solutions")
+    
+    # Task 5: Economic Analysis
+    print("💰 Analyzing mission economics...")
+    financial_summary = generate_financial_summary(
+        optimization_result=optimization_result,
+        cost_factors=cost_factors
+    )
+    print(f"✅ Economic analysis complete: NPV = ${financial_summary.net_present_value/1e6:.1f}M")
+    
+    # Task 6: Comprehensive Visualization
+    print("📈 Creating comprehensive dashboards...")
+    mission_data = MissionAnalysisData(
+        mission_name=mission_config.name,
+        trajectory_data=trajectory_result,
+        optimization_results=optimization_result,
+        financial_summary=financial_summary
+    )
+    
+    dashboard = ComprehensiveDashboard()
+    
+    # Generate dashboards
+    executive_fig = dashboard.create_executive_dashboard(mission_data)
+    technical_fig = dashboard.create_technical_dashboard(mission_data)
+    
+    print("✅ Dashboards created successfully")
+    
+    # Display results
+    print("\n🎊 Analysis Complete! Opening dashboards...")
+    executive_fig.show()
+    technical_fig.show()
+    
+    # Export results
+    print("💾 Exporting results...")
+    executive_fig.write_html("executive_dashboard.html")
+    technical_fig.write_html("technical_dashboard.html")
+    
+    print("🏁 Integration example completed successfully!")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Updated Integration Checklist
+
+- [x] All modules import successfully
+- [x] Shared configuration objects work across modules  
+- [x] Data flows correctly between tasks
+- [x] Error handling is consistent
+- [x] Performance is acceptable for typical problems
+- [x] Tests pass for integrated scenarios
+- [x] Visualization integrates with all analysis modules
+- [x] Comprehensive dashboards combine all results
+- [x] Export capabilities work for presentations
+- [x] Documentation is complete and accurate
+
 ---
 
-**Last Updated**: December 2024  
-**Status**: Ready for Implementation  
-**Next Steps**: Implement Task 6 (Visualization) and Task 7 (MVP Integration)
+**Last Updated**: July 2025  
+**Status**: All Core Tasks Complete  
+**Next Steps**: Implement Task 7 (MVP Integration) for unified system interface

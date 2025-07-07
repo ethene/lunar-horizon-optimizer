@@ -21,7 +21,7 @@ import pykep as pk
 from trajectory.earth_moon_trajectories import LambertSolver, generate_earth_moon_trajectory
 from trajectory.nbody_integration import EarthMoonNBodyPropagator
 from trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
-from utils.unit_conversions import km_to_m, m_to_km, j2000_to_datetime
+from utils.unit_conversions import km_to_m, m_to_km, datetime_to_j2000
 
 
 @dataclass

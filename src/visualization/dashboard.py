@@ -23,8 +23,9 @@ from .economic_visualization import EconomicVisualizer, DashboardConfig
 from .mission_visualization import MissionVisualizer, TimelineConfig, MissionPhase, MissionMilestone
 
 from trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
-from optimization.global_optimizer import optimize_lunar_mission, OptimizationResult
-from economics.financial_models import FinancialSummary
+from optimization.global_optimizer import optimize_lunar_mission
+from optimization.pareto_analysis import OptimizationResult
+from economics.reporting import FinancialSummary
 from economics.cost_models import CostBreakdown
 
 

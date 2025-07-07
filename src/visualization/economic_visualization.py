@@ -18,11 +18,11 @@ from dataclasses import dataclass
 import pandas as pd
 from datetime import datetime, timedelta
 
-from economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters, FinancialSummary
+from economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
 from economics.cost_models import MissionCostModel, CostBreakdown
 from economics.isru_benefits import ISRUBenefitAnalyzer
 from economics.sensitivity_analysis import EconomicSensitivityAnalyzer
-from economics.reporting import EconomicReporter
+from economics.reporting import EconomicReporter, FinancialSummary
 
 
 @dataclass
