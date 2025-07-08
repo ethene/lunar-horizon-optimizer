@@ -40,9 +40,22 @@ ENV/
 
 # Testing
 .coverage
+.coverage.*
 htmlcov/
 .pytest_cache/
 .tox/
+coverage.xml
+coverage.json
+.coverage_report/
+cov_html/
+
+# Development pipeline cache directories
+.mypy_cache/
+.ruff_cache/
+.sourcery_cache/
+.bandit_cache/
+.radon_cache/
+.xenon_cache/
 
 # Distribution
 .Python
