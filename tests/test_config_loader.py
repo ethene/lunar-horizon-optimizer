@@ -4,8 +4,8 @@ import json
 import yaml
 import pytest
 from pathlib import Path
-from src.config.loader import ConfigLoader, ConfigurationError
-from src.config.mission_config import MissionConfig
+from config.loader import ConfigLoader, ConfigurationError
+from config.models import MissionConfig
 
 @pytest.fixture
 def valid_config_dict():

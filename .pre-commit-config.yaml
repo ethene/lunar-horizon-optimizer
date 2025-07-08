@@ -1,0 +1,65 @@
+# Lunar Horizon Optimizer - Pre-commit Configuration
+# Automatically run code quality checks on git commit
+
+repos:
+  # Black - Code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        args: [--line-length=88, --target-version=py312]
+        files: ^(src/|tests/)
+
+  # Ruff - Fast Python linter (replaces flake8, pylint, etc.)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.8
+    hooks:
+      - id: ruff
+        args: [--select=E,W,F,B,C,N,D,UP,YTT,ANN,S,BLE,FBT,A,COM,C4,DTZ,T10,EM,EXE,ISC,ICN,G,INP,PIE,T20,PT,Q,RSE,RET,SLF,SIM,TID,TCH,ARG,PTH,ERA,PD,PGH,PL,TRY,NPY,RUF]
+        files: ^(src/|tests/)
+
+  # MyPy - Static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        args: [--strict, --show-error-codes]
+        files: ^src/
+        additional_dependencies: [types-all]
+
+  # Bandit - Security linting
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-r, src/, --skip, B101,B601]
+        files: ^src/
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^(src/|tests/).*\.py$
+      - id: end-of-file-fixer
+        files: ^(src/|tests/).*\.py$
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+
+# Configuration
+default_language_version:
+  python: python3.12
+
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

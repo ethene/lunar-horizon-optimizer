@@ -6,9 +6,10 @@ import json
 import yaml
 from pydantic import ValidationError
 
-from src.config.mission_config import MissionConfig
-from src.config.manager import ConfigManager, ConfigurationError
-from src.config.registry import ConfigRegistry
+from config.models import MissionConfig
+from config.management.config_manager import ConfigManager
+from config.loader import ConfigurationError
+from config.registry import ConfigRegistry
 
 @pytest.fixture
 def sample_config():
