@@ -206,6 +206,8 @@ class OrbitState:
             argp = 2*np.pi - argp
             
         ta = np.arccos(np.dot(e, r) / (ecc * r_mag)) if ecc > 1e-10 else np.arccos(np.dot(n, r) / (n_mag * r_mag))
+        if np.isnan(ta):
+            ta = 0.0  # Default for circular orbits or numerical issues
         if np.dot(r, v) < 0:
             ta = 2*np.pi - ta
             

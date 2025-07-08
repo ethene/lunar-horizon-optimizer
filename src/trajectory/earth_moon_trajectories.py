@@ -210,7 +210,7 @@ class PatchedConicsApproximation:
             Earth escape trajectory data
         """
         # Calculate escape velocity from parking orbit
-        r_park = departure_state.position_magnitude
+        r_park = np.linalg.norm(departure_state.position) * 1000  # Convert km to m
         v_park = np.sqrt(PC.EARTH_MU / r_park)  # Circular velocity
         v_escape = np.sqrt(2 * PC.EARTH_MU / r_park)  # Escape velocity
         
@@ -276,7 +276,7 @@ class PatchedConicsApproximation:
             Moon capture trajectory data
         """
         # Calculate capture requirements
-        r_moon = arrival_state.position_magnitude
+        r_moon = np.linalg.norm(arrival_state.position) * 1000  # Convert km to m
         v_moon_orbit = np.sqrt(PC.MOON_MU / r_moon)  # Circular velocity around Moon
         
         # Incoming velocity (simplified)
@@ -507,17 +507,24 @@ def generate_earth_moon_trajectory(departure_epoch: float,
             max_revolutions=0
         )
     elif method == 'patched_conics':
-        # Create orbit states
-        earth_state = OrbitState(
-            position=(PC.EARTH_RADIUS + earth_orbit_alt * 1000, 0, 0),
-            velocity=(0, np.sqrt(PC.EARTH_MU / (PC.EARTH_RADIUS + earth_orbit_alt * 1000)), 0),
-            epoch=departure_epoch
+        # Create orbit states from position and velocity vectors
+        from datetime import datetime, timezone, timedelta
+        j2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        departure_time = j2000 + timedelta(days=departure_epoch)
+        arrival_time = j2000 + timedelta(days=departure_epoch + transfer_time)
+        
+        earth_state = OrbitState.from_state_vectors(
+            position=((PC.EARTH_RADIUS + earth_orbit_alt * 1000) / 1000, 0, 0),  # Convert to km
+            velocity=(0, np.sqrt(PC.EARTH_MU / (PC.EARTH_RADIUS + earth_orbit_alt * 1000)) / 1000, 0),  # Convert to km/s
+            epoch=departure_time,
+            mu=PC.EARTH_MU
         )
         
-        moon_state = OrbitState(
-            position=(PC.MOON_RADIUS + moon_orbit_alt * 1000, 0, 0),
-            velocity=(0, np.sqrt(PC.MOON_MU / (PC.MOON_RADIUS + moon_orbit_alt * 1000)), 0),
-            epoch=departure_epoch + transfer_time
+        moon_state = OrbitState.from_state_vectors(
+            position=((PC.MOON_RADIUS + moon_orbit_alt * 1000) / 1000, 0, 0),  # Convert to km
+            velocity=(0, np.sqrt(PC.MOON_MU / (PC.MOON_RADIUS + moon_orbit_alt * 1000)) / 1000, 0),  # Convert to km/s
+            epoch=arrival_time,
+            mu=PC.MOON_MU
         )
         
         # Use patched conics
@@ -527,13 +534,14 @@ def generate_earth_moon_trajectory(departure_epoch: float,
         )
         
         # Create trajectory object (simplified)
-        trajectory = Trajectory(
+        from .lunar_transfer import LunarTrajectory
+        trajectory = LunarTrajectory(
             departure_epoch=departure_epoch,
             arrival_epoch=departure_epoch + transfer_time,
             departure_pos=earth_state.position,
-            departure_vel=earth_state.velocity,
+            departure_vel=earth_state.velocity(mu=PC.EARTH_MU),
             arrival_pos=moon_state.position,
-            arrival_vel=moon_state.velocity
+            arrival_vel=moon_state.velocity(mu=PC.MOON_MU)
         )
         
         return trajectory, trajectory_data['total_deltav']

@@ -268,13 +268,20 @@ class GlobalOptimizer:
             
             # Store history
             pareto_front = self._extract_pareto_front(self.population)
-            self.optimization_history.append({
+            history_entry = {
                 'generation': generation + 1,
                 'pareto_size': len(pareto_front),
-                'best_delta_v': min(f[0] for f in pareto_front) if pareto_front else float('inf'),
-                'best_time': min(f[1] for f in pareto_front) if pareto_front else float('inf'),
-                'best_cost': min(f[2] for f in pareto_front) if pareto_front else float('inf')
-            })
+            }
+            
+            if pareto_front:
+                if len(pareto_front[0]) >= 1:
+                    history_entry['best_objective_1'] = min(f[0] for f in pareto_front)
+                if len(pareto_front[0]) >= 2:
+                    history_entry['best_objective_2'] = min(f[1] for f in pareto_front)
+                if len(pareto_front[0]) >= 3:
+                    history_entry['best_objective_3'] = min(f[2] for f in pareto_front)
+            
+            self.optimization_history.append(history_entry)
         
         # Extract final results
         final_pareto = self._extract_pareto_front(self.population)
@@ -285,7 +292,6 @@ class GlobalOptimizer:
             'pareto_solutions': self._extract_pareto_solutions(self.population),
             'population_size': len(self.population),
             'generations': self.num_generations,
-            'cache_stats': self.problem.get_cache_stats(),
             'optimization_history': self.optimization_history,
             'algorithm_info': {
                 'name': 'NSGA-II',
@@ -295,11 +301,18 @@ class GlobalOptimizer:
             }
         }
         
+        # Add cache stats if available
+        if hasattr(self.problem, 'get_cache_stats'):
+            results['cache_stats'] = self.problem.get_cache_stats()
+        else:
+            results['cache_stats'] = {}
+        
         if verbose:
             logger.info(f"Optimization completed: {len(final_pareto)} Pareto solutions found")
-            cache_stats = self.problem.get_cache_stats()
-            logger.info(f"Cache efficiency: {cache_stats['hit_rate']:.1%} "
-                       f"({cache_stats['cache_hits']}/{cache_stats['total_evaluations']} hits)")
+            if hasattr(self.problem, 'get_cache_stats'):
+                cache_stats = self.problem.get_cache_stats()
+                logger.info(f"Cache efficiency: {cache_stats.get('hit_rate', 0):.1%} "
+                           f"({cache_stats.get('cache_hits', 0)}/{cache_stats.get('total_evaluations', 0)} hits)")
         
         return results
     
@@ -330,11 +343,22 @@ class GlobalOptimizer:
         weighted_solutions = []
         for sol in pareto_solutions:
             objectives = sol['objectives']
+            
+            # Convert objectives to list if it's a dictionary
+            if isinstance(objectives, dict):
+                obj_list = [objectives['delta_v'], objectives['time'], objectives['cost']]
+            else:
+                obj_list = objectives
+            
             # Normalize objectives (lower is better for all)
-            norm_objectives = self._normalize_objectives([objectives], pareto_solutions)[0]
+            norm_objectives = self._normalize_objectives([obj_list], pareto_solutions)[0]
             # Calculate weighted score
             weighted_score = sum(w * obj for w, obj in zip(preference_weights, norm_objectives))
-            weighted_solutions.append((weighted_score, sol))
+            
+            # Add weighted score to solution for testing
+            sol_with_score = sol.copy()
+            sol_with_score['weighted_score'] = weighted_score
+            weighted_solutions.append((weighted_score, sol_with_score))
         
         # Sort by weighted score and return top solutions
         weighted_solutions.sort(key=lambda x: x[0])
@@ -349,8 +373,20 @@ class GlobalOptimizer:
         Returns:
             List of Pareto-optimal objective vectors
         """
-        pareto_indices = pg.non_dominated_front_2d(population.get_f())
-        return [population.get_f()[i] for i in pareto_indices]
+        # Use general fast non-dominated sort instead of 2D-specific function
+        fitness_values = population.get_f()
+        if len(fitness_values) == 0:
+            return []
+        
+        # Use fast non-dominated sort which works for any number of objectives
+        ndf, _, _, _ = pg.fast_non_dominated_sorting(fitness_values)
+        
+        # Return the first (best) front
+        if len(ndf) > 0:
+            pareto_indices = ndf[0]
+            return [population.get_f()[i].tolist() for i in pareto_indices]
+        else:
+            return []
     
     def _extract_pareto_solutions(self, population: pg.population) -> List[Dict[str, Any]]:
         """Extract complete Pareto solutions with parameters and objectives.
@@ -361,27 +397,44 @@ class GlobalOptimizer:
         Returns:
             List of Pareto solutions with parameters and objectives
         """
-        pareto_indices = pg.non_dominated_front_2d(population.get_f())
+        # Use general fast non-dominated sort
+        fitness_values = population.get_f()
+        if len(fitness_values) == 0:
+            return []
+        
+        ndf, _, _, _ = pg.fast_non_dominated_sorting(fitness_values)
+        
+        if len(ndf) == 0:
+            return []
+        
+        pareto_indices = ndf[0]  # First (best) front
         solutions = []
         
         for i in pareto_indices:
             params = population.get_x()[i]
             objectives = population.get_f()[i]
             
+            # Handle different problem structures flexibly
             solution = {
-                'parameters': {
-                    'earth_orbit_alt': params[0],
-                    'moon_orbit_alt': params[1], 
-                    'transfer_time': params[2]
-                },
-                'objectives': {
-                    'delta_v': objectives[0],      # m/s
-                    'time': objectives[1],         # seconds
-                    'cost': objectives[2]          # cost units
-                },
+                'parameters': params,
+                'objectives': objectives,
                 'objective_vector': objectives,
                 'parameter_vector': params
             }
+            
+            # If this is a lunar mission problem (3 parameters, 3 objectives), add named structure
+            if len(params) >= 3 and len(objectives) >= 3:
+                solution['parameters'] = {
+                    'earth_orbit_alt': params[0],
+                    'moon_orbit_alt': params[1], 
+                    'transfer_time': params[2]
+                }
+                solution['objectives'] = {
+                    'delta_v': objectives[0],      # m/s
+                    'time': objectives[1],         # seconds
+                    'cost': objectives[2]          # cost units
+                }
+            
             solutions.append(solution)
         
         return solutions
@@ -400,9 +453,17 @@ class GlobalOptimizer:
         """
         # Find min/max for each objective
         all_objectives = [sol['objectives'] for sol in all_solutions]
-        delta_v_values = [obj['delta_v'] for obj in all_objectives]
-        time_values = [obj['time'] for obj in all_objectives]
-        cost_values = [obj['cost'] for obj in all_objectives]
+        
+        # Handle both dictionary and list formats
+        if all_objectives and isinstance(all_objectives[0], dict):
+            delta_v_values = [obj['delta_v'] for obj in all_objectives]
+            time_values = [obj['time'] for obj in all_objectives]
+            cost_values = [obj['cost'] for obj in all_objectives]
+        else:
+            # Assume list format [delta_v, time, cost]
+            delta_v_values = [obj[0] for obj in all_objectives]
+            time_values = [obj[1] for obj in all_objectives]
+            cost_values = [obj[2] for obj in all_objectives]
         
         min_vals = [min(delta_v_values), min(time_values), min(cost_values)]
         max_vals = [max(delta_v_values), max(time_values), max(cost_values)]

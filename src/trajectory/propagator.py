@@ -58,7 +58,7 @@ class TrajectoryPropagator:
         """
         self.celestial = celestial
         
-    def propagate_to_target(self, initial_position: np.ndarray, initial_velocity: np.ndarray, time_of_flight: float) -> Tuple[np.ndarray, np.ndarray]:
+    def propagate_to_target(self, initial_position: np.ndarray, initial_velocity: np.ndarray, time_of_flight: float, departure_epoch: float = 0.0) -> Tuple[np.ndarray, np.ndarray]:
         """
         Propagate spacecraft trajectory to target using high-precision integration.
         
@@ -66,6 +66,7 @@ class TrajectoryPropagator:
             initial_position (np.ndarray): Initial position vector [x, y, z] in meters
             initial_velocity (np.ndarray): Initial velocity vector [vx, vy, vz] in m/s
             time_of_flight (float): Time of flight in seconds
+            departure_epoch (float): Departure epoch in days since J2000 (default 0.0)
             
         Returns:
             Tuple[np.ndarray, np.ndarray]: Final position and velocity vectors
@@ -94,8 +95,8 @@ class TrajectoryPropagator:
         logging.info(f"Initial velocity: {v0} m/s")
         logging.info(f"Time of flight: {time_of_flight} s")
         
-        # Get moon state at start
-        moon_pos_start = self.celestial.get_moon_state_earth_centered(0)[0]
+        # Get moon state at departure epoch
+        moon_pos_start = self.celestial.get_moon_state_earth_centered(departure_epoch)[0]
         logging.info(f"Moon position at start: {moon_pos_start} m")
         
         # Calculate initial distance to moon
@@ -104,17 +105,20 @@ class TrajectoryPropagator:
         
         try:
             # Propagate using PyKEP's Taylor integrator
+            # Use Earth's gravitational parameter for Earth-centered propagation
+            # Last two parameters are log10 of tolerances, so -10 means 1e-10
             final_pos, final_vel, final_mass = pk.propagate_taylor(
                 r0, v0, m0, thrust, time_of_flight, 
-                self.celestial.mu, veff, 1e-10, 1e-10
+                PC.MU_EARTH, veff, -10, -10
             )
             
             # Convert back to numpy arrays
             final_pos = np.array(final_pos)
             final_vel = np.array(final_vel)
             
-            # Get moon state at end
-            moon_pos_end = self.celestial.get_moon_state_earth_centered(time_of_flight)[0]
+            # Get moon state at arrival epoch (departure + time of flight in days)
+            arrival_epoch = departure_epoch + (time_of_flight / 86400.0)  # Convert seconds to days
+            moon_pos_end = self.celestial.get_moon_state_earth_centered(arrival_epoch)[0]
             logging.info(f"Moon position at end: {moon_pos_end} m")
             
             # Calculate final distance to moon
@@ -146,6 +150,6 @@ class TrajectoryPropagator:
         Returns:
             float: Specific energy in m²/s²
         """
-        return np.linalg.norm(velocity)**2/2 - self.celestial.mu/np.linalg.norm(position)
+        return np.linalg.norm(velocity)**2/2 - PC.MU_EARTH/np.linalg.norm(position)
 
  

@@ -32,15 +32,17 @@ scripts/             # Utility scripts and PRD
 - **SpiceyPy** - NASA SPICE toolkit for ephemeris calculations
 
 ### Development Environment Requirements
-- **Python Environment**: conda py312 environment (required)
-- **PyKEP Installation**: Must use conda-forge channel for PyKEP 2.6
-- **Environment Setup**: 
+- **Python Environment**: conda py312 environment (required - ALREADY CONFIGURED)
+- **Local Environment**: The py312 environment is pre-configured with PyKEP, PyGMO, and all dependencies
+- **Testing Environment**: ALWAYS use `conda activate py312` for all testing operations
+- **Environment Setup** (if needed on new systems): 
   ```bash
   conda create -n py312 python=3.12 -y
   conda activate py312
   conda install -c conda-forge pykep pygmo astropy spiceypy -y
   pip install -r requirements.txt
   ```
+- **CRITICAL**: All testing must be done in the py312 environment to ensure PyKEP/PyGMO compatibility
 
 ## Development Standards
 
@@ -50,7 +52,9 @@ scripts/             # Utility scripts and PRD
 - **Coverage**: Maintain >90% test coverage for all new code
 - **Test Types**: Unit tests, integration tests, and validation tests
 - **Test Location**: All tests in `tests/` directory with clear naming
-- **Before Committing**: Always run `pytest tests/` and ensure all tests pass
+- **Before Committing**: Always run `pytest tests/` in conda py312 environment and ensure all tests pass
+- **NO MOCKING RULE**: NEVER use mocks when real functionality exists - always examine existing code first
+- **Real Implementation First**: Use actual classes and functions instead of mocks for all testing
 
 #### 2. **Code Style & Formatting** 
 - **Linting**: Run `flake8` for code quality checks
@@ -83,12 +87,19 @@ scripts/             # Utility scripts and PRD
 - **Naming Convention**: `test_<module_name>.py`
 - **Test Categories**: Organize by importance (Critical, High, Medium)
 - **Data**: Use realistic test data and edge cases
+- **NO MOCKING POLICY**: 
+  - NEVER use mocks when real functionality exists
+  - Always examine existing codebase before testing
+  - Use real classes: `LunarTransfer`, `SimpleOptimizationProblem`, `OrbitState`, etc.
+  - Only mock external I/O, APIs, or unavailable resources
+  - Prefer integration tests over unit tests with mocks
 
 ### Development Workflow
 
 #### 1. **Before Starting Work**
 ```bash
-# Always verify current state
+# Always verify current state in conda py312 environment
+conda activate py312             # REQUIRED: Use pre-configured environment
 pytest tests/                    # Ensure tests pass
 python scripts/verify_dependencies.py  # Check dependencies
 git status                      # Check repository state
@@ -102,11 +113,12 @@ git status                      # Check repository state
 
 #### 3. **Before Committing**
 ```bash
-# Required checks
+# Required checks in conda py312 environment
+conda activate py312            # REQUIRED: Use pre-configured environment
 flake8 src/ tests/              # Linting
 mypy src/                       # Type checking  
 black src/ tests/               # Code formatting
-pytest tests/ -v                # Full test suite
+pytest tests/ -v                # Full test suite with PyKEP/PyGMO
 ```
 
 ## Current Development Status (July 2025)
@@ -134,8 +146,9 @@ pytest tests/ -v                # Full test suite
 
 ### 📊 PROJECT STATUS
 - **Version**: 0.9.0 (Near-MVP)
-- **Test Success Rate**: 83% (44/53 tests passing)
-- **Code Quality**: All import issues resolved, absolute imports implemented
+- **Test Success Rate**: 83% (44/53 tests passing, 0 failures)
+- **Environment**: conda py312 with PyKEP 2.6 + PyGMO 2.19.6 (fully operational)
+- **Code Quality**: All import issues resolved, absolute imports implemented, no mocking used
 - **Documentation**: Comprehensive and current
 
 ## Code Patterns & Best Practices
@@ -183,20 +196,28 @@ def calculate_trajectory(params):
 
 ### Testing Patterns
 ```python
-# CORRECT: Comprehensive test structure
+# CORRECT: Use real implementations, NOT mocks
 class TestTrajectoryCalculation:
     def test_valid_inputs(self):
-        """Test with valid inputs."""
-        pass
+        """Test with valid inputs using real classes."""
+        # Use actual LunarTransfer, SimpleOptimizationProblem, etc.
+        lunar_transfer = LunarTransfer()
+        result = lunar_transfer.generate_transfer(...)
+        assert result is not None
         
     def test_edge_cases(self):
-        """Test boundary conditions.""" 
+        """Test boundary conditions with real data.""" 
+        # Test with realistic orbital parameters
         pass
         
     def test_invalid_inputs(self):
-        """Test error handling."""
+        """Test error handling with actual validation."""
         with pytest.raises(ValueError):
             invalid_calculation()
+
+# WRONG: Don't use mocks when real functionality exists
+# from unittest.mock import Mock  # Avoid when possible
+# mock_object = Mock()  # Only use for I/O, external APIs, etc.
 ```
 
 ## Refactoring Guidelines
@@ -403,6 +424,9 @@ docs: update trajectory module documentation
 
 #### **Status Verification**
 ```bash
+# ALWAYS activate conda py312 environment first
+conda activate py312
+
 # Check current test status
 python tests/run_working_tests.py
 
@@ -434,10 +458,11 @@ vim tests/TEST_STATUS_UPDATE.md         # Document testing achievements
 - **Integration**: Consult `docs/integration_guide.md` for module connections
 
 ### Code Issues
-- **Testing**: `python tests/run_working_tests.py` (recommended test runner)
-- **Environment**: `python scripts/verify_dependencies.py`
-- **Linting**: `flake8 src/ tests/`
+- **Testing**: `conda activate py312 && python tests/run_working_tests.py` (recommended test runner)
+- **Environment**: `conda activate py312 && python scripts/verify_dependencies.py`
+- **Linting**: `conda activate py312 && flake8 src/ tests/`
 - **Status Check**: Review latest documentation in `docs/` directory
+- **CRITICAL**: All commands must be run in conda py312 environment for PyKEP/PyGMO compatibility
 
 ---
 

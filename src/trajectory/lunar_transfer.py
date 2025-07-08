@@ -37,11 +37,53 @@ import logging
 
 from .constants import PhysicalConstants as PC
 from .celestial_bodies import CelestialBody
-from .models import Trajectory, Maneuver, OrbitState
+from .models import Maneuver, OrbitState
+from .trajectory_base import Trajectory
 from .target_state import calculate_target_state
 from .phase_optimization import find_optimal_phase
 from .trajectory_validator import TrajectoryValidator  # Import from renamed module
 from .propagator import TrajectoryPropagator
+
+
+class LunarTrajectory:
+    """Simple concrete implementation for lunar transfers."""
+    
+    def __init__(self, departure_epoch, arrival_epoch, departure_pos, departure_vel, arrival_pos, arrival_vel):
+        """Initialize lunar trajectory with departure and arrival states."""
+        self.departure_epoch = departure_epoch
+        self.arrival_epoch = arrival_epoch
+        self.departure_pos = np.array(departure_pos)
+        self.departure_vel = np.array(departure_vel)
+        self.arrival_pos = np.array(arrival_pos)
+        self.arrival_vel = np.array(arrival_vel)
+        self.maneuvers = []  # Will be populated by _add_maneuvers_to_trajectory
+        
+    def validate_trajectory(self) -> bool:
+        """Validate the lunar trajectory."""
+        try:
+            # Check that states are valid
+            if not np.isfinite(self.departure_pos).all() or not np.isfinite(self.departure_vel).all():
+                return False
+            if not np.isfinite(self.arrival_pos).all() or not np.isfinite(self.arrival_vel).all():
+                return False
+                
+            # Check that trajectory duration is reasonable (between 1 and 30 days)
+            duration = self.arrival_epoch - self.departure_epoch
+            if not (1.0 <= duration <= 30.0):
+                return False
+                
+            return True
+        except Exception:
+            return False
+    
+    def add_maneuver(self, maneuver):
+        """Add a maneuver to the trajectory."""
+        self.maneuvers.append(maneuver)
+    
+    def get_total_delta_v(self) -> float:
+        """Calculate total delta-v cost of all maneuvers."""
+        return sum(getattr(maneuver, 'magnitude', 0.0) for maneuver in self.maneuvers)
+
 
 class LunarTransfer:
     """Generates lunar transfer trajectories using PyKEP.
@@ -125,6 +167,9 @@ class LunarTransfer:
         Raises:
             ValueError: If input parameters are invalid or no trajectory is found
         """
+        # Store departure epoch for use by propagator
+        self.departure_epoch = epoch
+        
         # Step 1: Validate and prepare inputs
         transfer_params = self._validate_and_prepare_inputs(
             epoch, earth_orbit_alt, moon_orbit_alt, transfer_time
@@ -277,7 +322,7 @@ class LunarTransfer:
         )
         
         # Create trajectory object
-        trajectory = Trajectory(
+        trajectory = LunarTrajectory(
             departure_epoch=epoch,
             arrival_epoch=epoch + transfer_time,
             departure_pos=tuple(r1 / 1000.0),  # Convert to km
@@ -311,7 +356,7 @@ class LunarTransfer:
         
         # Propagate trajectory to calculate arrival state
         arrival_pos, arrival_vel = self.propagator.propagate_to_target(
-            r1, init_vel + tli_dv, tof
+            r1, init_vel + tli_dv, tof, self.departure_epoch
         )
         
         # Calculate LOI delta-v
@@ -336,17 +381,18 @@ class LunarTransfer:
             tli_dv: Trans-Lunar Injection delta-v [m/s]
             loi_dv: Lunar Orbit Insertion delta-v [m/s]
         """
-        # Create maneuver objects (convert delta-v from m/s to km/s)
+        # Create maneuver objects (convert delta-v from m/s to km/s and epoch to datetime)
+        from datetime import datetime, timedelta, timezone
+        j2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        
         tli = Maneuver(
-            epoch=epoch,
             delta_v=tuple(tli_dv / 1000.0),  # Convert to km/s
-            name="Trans-Lunar Injection"
+            epoch=j2000 + timedelta(days=epoch)
         )
         
         loi = Maneuver(
-            epoch=epoch + transfer_time,
             delta_v=tuple(loi_dv / 1000.0),  # Convert to km/s
-            name="Lunar Orbit Insertion"
+            epoch=j2000 + timedelta(days=epoch + transfer_time)
         )
         
         # Add maneuvers to trajectory

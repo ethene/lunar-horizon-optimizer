@@ -16,7 +16,7 @@ import os
 import tempfile
 import json
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+# Note: No mocking used - all tests use real implementations
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))

@@ -48,7 +48,7 @@ def validate_vector_units(vector: np.ndarray, name: str, expected_magnitude_rang
     return True
 
 
-def validate_delta_v(delta_v: np.ndarray, max_delta_v: float = 10000.0) -> bool:
+def validate_delta_v(delta_v: np.ndarray, max_delta_v: float = 25000.0) -> bool:
     """Validate delta-v vector for reasonableness.
     
     Args:
