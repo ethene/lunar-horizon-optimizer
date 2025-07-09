@@ -198,7 +198,12 @@ class TestGlobalOptimizer:
                 from config.costs import CostFactors
 
                 # Create test problem
-                cost_factors = CostFactors()
+                cost_factors = CostFactors(
+                    launch_cost_per_kg=10000.0,
+                    operations_cost_per_day=100000.0,
+                    development_cost=1e9,
+                    contingency_percentage=20.0
+                )
                 self.problem = LunarMissionProblem(
                     cost_factors=cost_factors,
                     min_earth_alt=200,
@@ -474,14 +479,14 @@ class TestParetoAnalyzer:
 
             # Solution1 should dominate solution2
             dominated = self.analyzer.is_pareto_dominated(solution2, solution1)
-            assert dominated == True
+            assert dominated
 
             # Test non-dominance
             solution3 = [3100, 5.0*86400, 140e6]  # Better in some, worse in others
             solution4 = [3200, 4.5*86400, 150e6]
 
             dominated = self.analyzer.is_pareto_dominated(solution3, solution4)
-            assert dominated == False
+            assert not dominated
 
 
 class TestCostIntegration:
@@ -530,7 +535,10 @@ class TestCostIntegration:
 
         try:
             total_cost = self.cost_calculator.calculate_mission_cost(
-                trajectory_params, mission_params
+                total_dv=trajectory_params["total_dv"],
+                transfer_time=trajectory_params["transfer_time"],
+                earth_orbit_alt=trajectory_params["earth_orbit_alt"],
+                moon_orbit_alt=trajectory_params["moon_orbit_alt"]
             )
 
             # Sanity checks
@@ -551,8 +559,11 @@ class TestCostIntegration:
         }
 
         try:
-            trajectory_cost = self.cost_calculator.calculate_trajectory_cost(
-                trajectory_params
+            trajectory_cost = self.cost_calculator.calculate_mission_cost(
+                total_dv=trajectory_params["total_dv"],
+                transfer_time=trajectory_params["transfer_time"],
+                earth_orbit_alt=trajectory_params["earth_orbit_alt"],
+                moon_orbit_alt=trajectory_params["moon_orbit_alt"]
             )
 
             # Sanity checks
@@ -577,8 +588,18 @@ class TestCostIntegration:
         high_dv_params["total_dv"] = 4500
 
         try:
-            base_cost = self.cost_calculator.calculate_trajectory_cost(base_params)
-            high_dv_cost = self.cost_calculator.calculate_trajectory_cost(high_dv_params)
+            base_cost = self.cost_calculator.calculate_mission_cost(
+                total_dv=base_params["total_dv"],
+                transfer_time=base_params["transfer_time"],
+                earth_orbit_alt=base_params["earth_orbit_alt"],
+                moon_orbit_alt=base_params["moon_orbit_alt"]
+            )
+            high_dv_cost = self.cost_calculator.calculate_mission_cost(
+                total_dv=high_dv_params["total_dv"],
+                transfer_time=high_dv_params["transfer_time"],
+                earth_orbit_alt=high_dv_params["earth_orbit_alt"],
+                moon_orbit_alt=high_dv_params["moon_orbit_alt"]
+            )
 
             # Higher delta-v should cost more
             assert high_dv_cost > base_cost
@@ -588,31 +609,38 @@ class TestCostIntegration:
 
     def test_cost_breakdown_details(self):
         """Test detailed cost breakdown."""
-        if hasattr(self.cost_calculator, "calculate_detailed_cost_breakdown"):
-            params = {
-                "total_dv": 3200,
-                "transfer_time": 4.5,
-                "spacecraft_mass": 5000,
-                "mission_duration": 5
-            }
-
+        if hasattr(self.cost_calculator, "calculate_cost_breakdown"):
             try:
-                breakdown = self.cost_calculator.calculate_detailed_cost_breakdown(params)
+                breakdown = self.cost_calculator.calculate_cost_breakdown(
+                    total_dv=3200,
+                    transfer_time=4.5,
+                    earth_orbit_alt=400,
+                    moon_orbit_alt=100
+                )
 
                 # Check breakdown structure
                 assert isinstance(breakdown, dict)
-                assert "development" in breakdown
-                assert "launch" in breakdown
-                assert "operations" in breakdown
-                assert "total" in breakdown
+                assert "propellant_cost" in breakdown
+                assert "launch_cost" in breakdown
+                assert "operations_cost" in breakdown
+                assert "development_cost" in breakdown
+                assert "altitude_cost" in breakdown
+                assert "contingency_cost" in breakdown
+                assert "total_cost" in breakdown
 
                 # Check breakdown values
-                assert all(isinstance(cost, float) for cost in breakdown.values())
-                assert all(cost >= 0 for cost in breakdown.values())
+                cost_components = ["propellant_cost", "launch_cost", "operations_cost", 
+                                 "development_cost", "altitude_cost", "contingency_cost", "total_cost"]
+                for key in cost_components:
+                    assert isinstance(breakdown[key], (int, float)), f"{key} should be numeric"
+                    assert breakdown[key] >= 0, f"{key} should be non-negative"
 
-                # Total should equal sum of components
-                component_sum = sum(breakdown[key] for key in breakdown if key != "total")
-                assert abs(breakdown["total"] - component_sum) < 1e6  # Allow small numerical errors
+                # Total should equal sum of components plus contingency
+                component_sum = (breakdown["propellant_cost"] + breakdown["launch_cost"] + 
+                               breakdown["operations_cost"] + breakdown["development_cost"] + 
+                               breakdown["altitude_cost"])
+                expected_total = component_sum + breakdown["contingency_cost"]
+                assert abs(breakdown["total_cost"] - expected_total) < 1e6  # Allow small numerical errors
 
             except Exception as e:
                 pytest.skip(f"Cost breakdown test failed: {e}")
@@ -633,7 +661,12 @@ class TestTask4Integration:
             from config.costs import CostFactors
 
             # Create integrated pipeline
-            cost_factors = CostFactors()
+            cost_factors = CostFactors(
+                launch_cost_per_kg=10000.0,
+                operations_cost_per_day=100000.0,
+                development_cost=1e9,
+                contingency_percentage=20.0
+            )
             problem = LunarMissionProblem(cost_factors=cost_factors)
             optimizer = GlobalOptimizer(problem, population_size=20, num_generations=5)
             analyzer = ParetoAnalyzer()
@@ -685,7 +718,12 @@ class TestTask4Integration:
             from config.costs import CostFactors
 
             # Test configuration
-            cost_factors = CostFactors()
+            cost_factors = CostFactors(
+                launch_cost_per_kg=10000.0,
+                operations_cost_per_day=100000.0,
+                development_cost=1e9,
+                contingency_percentage=20.0
+            )
             config = {
                 "problem_params": {
                     "min_earth_alt": 200,
@@ -728,7 +766,12 @@ class TestTask4Performance:
             import time
 
             # Create problem
-            cost_factors = CostFactors()
+            cost_factors = CostFactors(
+                launch_cost_per_kg=10000.0,
+                operations_cost_per_day=100000.0,
+                development_cost=1e9,
+                contingency_percentage=20.0
+            )
             problem = LunarMissionProblem(cost_factors=cost_factors)
 
             # Mock trajectory generation for performance test
@@ -740,8 +783,8 @@ class TestTask4Performance:
 
                     # Time multiple fitness evaluations
                     start_time = time.time()
-                    for i in range(100):
-                        fitness = problem.fitness([400, 100, 4.5])
+                    for _i in range(100):
+                        problem.fitness([400, 100, 4.5])
                     end_time = time.time()
 
                     # Performance check
@@ -767,7 +810,12 @@ class TestTask4Performance:
             initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
             # Create and run optimization
-            cost_factors = CostFactors()
+            cost_factors = CostFactors(
+                launch_cost_per_kg=10000.0,
+                operations_cost_per_day=100000.0,
+                development_cost=1e9,
+                contingency_percentage=20.0
+            )
             problem = LunarMissionProblem(cost_factors=cost_factors)
             optimizer = GlobalOptimizer(problem, population_size=50, num_generations=10)
 
@@ -775,7 +823,7 @@ class TestTask4Performance:
             with patch.object(problem, "fitness") as mock_fitness:
                 mock_fitness.return_value = [3200, 4.5*86400, 150e6]
 
-                results = optimizer.optimize(verbose=False)
+                optimizer.optimize(verbose=False)
 
                 # Measure final memory
                 final_memory = process.memory_info().rss / 1024 / 1024  # MB

@@ -26,7 +26,8 @@ class CashFlow:
     def __post_init__(self):
         """Validate cash flow data."""
         if not isinstance(self.date, datetime):
-            raise ValueError("Cash flow date must be a datetime object")
+            msg = "Cash flow date must be a datetime object"
+            raise ValueError(msg)
 
 
 @dataclass
@@ -42,21 +43,23 @@ class FinancialParameters:
     def __post_init__(self):
         """Validate financial parameters."""
         if not 0 <= self.discount_rate <= 1:
-            raise ValueError("Discount rate must be between 0 and 1")
+            msg = "Discount rate must be between 0 and 1"
+            raise ValueError(msg)
         if not 0 <= self.tax_rate <= 1:
-            raise ValueError("Tax rate must be between 0 and 1")
+            msg = "Tax rate must be between 0 and 1"
+            raise ValueError(msg)
 
 
 class CashFlowModel:
     """Cash flow modeling for lunar mission economics.
-    
+
     This class manages the complete cash flow profile of a lunar mission,
     including development costs, launch costs, operational expenses, and revenues.
     """
 
-    def __init__(self, financial_params: FinancialParameters = None):
+    def __init__(self, financial_params: FinancialParameters = None) -> None:
         """Initialize cash flow model.
-        
+
         Args:
             financial_params: Financial parameters for analysis
         """
@@ -67,7 +70,7 @@ class CashFlowModel:
 
     def add_cash_flow(self, amount: float, date: datetime, category: str, description: str = "") -> None:
         """Add a cash flow event.
-        
+
         Args:
             amount: Cash flow amount (positive = income, negative = cost)
             date: Date of cash flow
@@ -80,7 +83,7 @@ class CashFlowModel:
 
     def add_development_costs(self, total_cost: float, start_date: datetime, duration_months: int) -> None:
         """Add development costs spread over development period.
-        
+
         Args:
             total_cost: Total development cost
             start_date: Development start date
@@ -97,7 +100,7 @@ class CashFlowModel:
 
     def add_launch_costs(self, cost_per_launch: float, launch_dates: list[datetime]) -> None:
         """Add launch costs for multiple launches.
-        
+
         Args:
             cost_per_launch: Cost per launch
             launch_dates: List of launch dates
@@ -110,7 +113,7 @@ class CashFlowModel:
 
     def add_operational_costs(self, monthly_cost: float, start_date: datetime, duration_months: int) -> None:
         """Add operational costs over mission duration.
-        
+
         Args:
             monthly_cost: Monthly operational cost
             start_date: Operations start date
@@ -129,7 +132,7 @@ class CashFlowModel:
 
     def add_revenue_stream(self, monthly_revenue: float, start_date: datetime, duration_months: int) -> None:
         """Add revenue stream over mission duration.
-        
+
         Args:
             monthly_revenue: Monthly revenue
             start_date: Revenue start date
@@ -148,10 +151,10 @@ class CashFlowModel:
 
     def get_cash_flows_by_category(self, category: str) -> list[CashFlow]:
         """Get cash flows by category.
-        
+
         Args:
             category: Category to filter by
-            
+
         Returns
         -------
             List of cash flows in the specified category
@@ -160,7 +163,7 @@ class CashFlowModel:
 
     def get_total_by_category(self) -> dict[str, float]:
         """Get total cash flows by category.
-        
+
         Returns
         -------
             Dictionary with total cash flows by category
@@ -175,7 +178,7 @@ class CashFlowModel:
 
     def get_annual_cash_flows(self) -> dict[int, float]:
         """Get annual cash flow totals.
-        
+
         Returns
         -------
             Dictionary with annual cash flow totals by year
@@ -192,14 +195,14 @@ class CashFlowModel:
 
 class NPVAnalyzer:
     """Net Present Value (NPV) analysis for lunar missions.
-    
+
     This class provides comprehensive NPV analysis including sensitivity
     analysis and scenario modeling for economic evaluation.
     """
 
-    def __init__(self, financial_params: FinancialParameters = None):
+    def __init__(self, financial_params: FinancialParameters = None) -> None:
         """Initialize NPV analyzer.
-        
+
         Args:
             financial_params: Financial parameters for analysis
         """
@@ -207,13 +210,13 @@ class NPVAnalyzer:
 
         logger.info(f"Initialized NPVAnalyzer with {self.financial_params.discount_rate:.1%} discount rate")
 
-    def calculate_npv(self, cash_flow_model: CashFlowModel, reference_date: datetime = None) -> float:
+    def calculate_npv(self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None) -> float:
         """Calculate Net Present Value of cash flows.
-        
+
         Args:
             cash_flow_model: Cash flow model containing all cash flows
             reference_date: Reference date for NPV calculation (default: earliest cash flow date)
-            
+
         Returns
         -------
             Net Present Value
@@ -238,13 +241,13 @@ class NPVAnalyzer:
         logger.info(f"Calculated NPV: ${npv:,.0f}")
         return npv
 
-    def calculate_irr(self, cash_flow_model: CashFlowModel, reference_date: datetime = None) -> float:
+    def calculate_irr(self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None) -> float:
         """Calculate Internal Rate of Return (IRR).
-        
+
         Args:
             cash_flow_model: Cash flow model
             reference_date: Reference date for IRR calculation
-            
+
         Returns
         -------
             Internal Rate of Return (as decimal)
@@ -300,13 +303,13 @@ class NPVAnalyzer:
         # If no convergence, return best estimate
         return rate
 
-    def calculate_payback_period(self, cash_flow_model: CashFlowModel, reference_date: datetime = None) -> float:
+    def calculate_payback_period(self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None) -> float:
         """Calculate payback period in years.
-        
+
         Args:
             cash_flow_model: Cash flow model
             reference_date: Reference date for calculation
-            
+
         Returns
         -------
             Payback period in years (returns inf if never breaks even)
@@ -335,11 +338,11 @@ class NPVAnalyzer:
     def sensitivity_analysis(self, cash_flow_model: CashFlowModel,
                            variable_ranges: dict[str, tuple[float, float]]) -> dict[str, list[float]]:
         """Perform sensitivity analysis on NPV.
-        
+
         Args:
             cash_flow_model: Base cash flow model
             variable_ranges: Dictionary of variable names and their (min, max) ranges
-            
+
         Returns
         -------
             Dictionary with sensitivity results
@@ -394,22 +397,22 @@ class NPVAnalyzer:
 
 class ROICalculator:
     """Return on Investment (ROI) calculator for lunar missions.
-    
+
     This class provides various ROI calculations and comparative analysis
     for lunar mission investment evaluation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize ROI calculator."""
         logger.info("Initialized ROICalculator")
 
     def calculate_simple_roi(self, total_investment: float, total_return: float) -> float:
         """Calculate simple ROI.
-        
+
         Args:
             total_investment: Total investment amount
             total_return: Total return amount
-            
+
         Returns
         -------
             ROI as decimal (e.g., 0.15 = 15%)
@@ -423,12 +426,12 @@ class ROICalculator:
 
     def calculate_annualized_roi(self, initial_investment: float, final_value: float, years: float) -> float:
         """Calculate annualized ROI.
-        
+
         Args:
             initial_investment: Initial investment
             final_value: Final value
             years: Investment period in years
-            
+
         Returns
         -------
             Annualized ROI as decimal
@@ -442,12 +445,12 @@ class ROICalculator:
 
     def calculate_risk_adjusted_roi(self, roi: float, risk_free_rate: float, beta: float) -> float:
         """Calculate risk-adjusted ROI using CAPM.
-        
+
         Args:
             roi: Raw ROI
             risk_free_rate: Risk-free rate
             beta: Beta coefficient for risk adjustment
-            
+
         Returns
         -------
             Risk-adjusted ROI
@@ -461,10 +464,10 @@ class ROICalculator:
 
     def compare_investments(self, investments: dict[str, dict[str, float]]) -> dict[str, Any]:
         """Compare multiple investment options.
-        
+
         Args:
             investments: Dictionary of investment options with their metrics
-            
+
         Returns
         -------
             Comparison analysis
@@ -498,10 +501,10 @@ class ROICalculator:
 
 def create_mission_cash_flow_model(mission_config: dict[str, Any]) -> CashFlowModel:
     """Create a complete cash flow model for a lunar mission.
-    
+
     Args:
         mission_config: Mission configuration with cost and revenue parameters
-        
+
     Returns
     -------
         Configured cash flow model

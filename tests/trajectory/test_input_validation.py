@@ -35,7 +35,7 @@ class TestLunarTransferValidation:
 
     def test_orbit_altitude_validation(self):
         """Test validation of initial orbit altitude constraints.
-        
+
         Verifies:
         - Rejection of negative altitudes
         - Rejection of altitudes below minimum (200 km)
@@ -59,7 +59,7 @@ class TestLunarTransferValidation:
 
     def test_time_of_flight_validation(self):
         """Test validation of time of flight constraints.
-        
+
         Verifies:
         - Rejection of negative TOF values
         - Rejection of zero TOF
@@ -83,7 +83,7 @@ class TestLunarTransferValidation:
 
     def test_delta_v_constraints(self):
         """Test validation of delta-v constraints.
-        
+
         Verifies:
         - Rejection of negative delta-v values
         - Minimum must be less than maximum
@@ -108,7 +108,7 @@ class TestLunarTransferValidation:
 
     def test_max_revolutions_validation(self):
         """Test validation of maximum revolutions parameter.
-        
+
         Verifies:
         - Rejection of negative revolutions
         - Rejection of values above maximum (1)

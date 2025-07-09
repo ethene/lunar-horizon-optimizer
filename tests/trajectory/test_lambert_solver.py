@@ -54,13 +54,13 @@ class TestLambertSolver:
 
     def verify_solution(self, r1, v1, r2, v2, tof, mu):
         """Verify Lambert solution physics and units.
-        
+
         Args:
             r1, v1: Initial position and velocity vectors [m, m/s]
             r2, v2: Final position and velocity vectors [m, m/s]
             tof: Time of flight [s]
             mu: Gravitational parameter [m³/s²]
-            
+
         Verifies:
         - Angular momentum conservation
         - Energy conservation
@@ -107,7 +107,7 @@ class TestLambertSolver:
             assert vel_error < self.tolerance, f"Final velocity mismatch, relative error: {vel_error:.3e}"
 
         except Exception as e:
-            logger.error(f"Propagation failed: {e!s}")
+            logger.exception(f"Propagation failed: {e!s}")
             raise
 
     def test_quarter_orbit_transfer(self):
@@ -161,7 +161,7 @@ class TestLambertSolver:
 
     def test_hohmann_transfer(self):
         """Test near-Hohmann transfer from LEO to GEO.
-        
+
         Note: This test uses a transfer that is close to, but not exactly,
         a Hohmann transfer. The final position is offset by 0.1 radians
         from the antipodal point to avoid numerical issues with the
@@ -271,7 +271,7 @@ class TestLambertSolver:
 
     def test_circular_orbit_validation(self):
         """Test Lambert solver for circular orbit velocity validation.
-        
+
         This test verifies that the solver produces correct velocities
         for a quarter-orbit transfer in a circular orbit, with detailed
         logging of intermediate values and unit conversions.
@@ -315,7 +315,7 @@ class TestLambertSolver:
 
     def test_coplanar_transfer_validation(self):
         """Test Lambert solver for coplanar transfer validation.
-        
+
         Verifies correct handling of transfers between different altitudes
         in the same plane, with detailed unit validation.
         """
@@ -371,7 +371,7 @@ class TestLambertSolver:
 
     def test_hohmann_velocity_checks(self):
         """Test velocity calculations specific to Hohmann-like transfers.
-        
+
         Validates the velocity changes at both ends of a near-Hohmann
         transfer, with detailed logging of delta-v components.
         """
@@ -440,7 +440,7 @@ class TestLambertSolver:
 
     def test_lunar_transfer(self):
         """Test Lambert solver for Earth-Moon transfer trajectory.
-        
+
         This test verifies the solver's handling of larger orbital transfers,
         specifically for lunar transfer trajectories. It includes detailed
         unit conversion validation and checks for reasonable velocity ranges

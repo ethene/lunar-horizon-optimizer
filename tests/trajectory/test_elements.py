@@ -29,13 +29,13 @@ class TestOrbitalPeriod:
 
     def test_leo_period(self):
         """Test orbital period calculation for Low Earth Orbit.
-        
+
         Verifies that the orbital period calculation matches the known period
         of the International Space Station (ISS):
         - Altitude: ~400 km
         - Orbital radius: 6778 km (Earth radius + altitude)
         - Known period: ~92.68 minutes
-        
+
         Uses Earth's gravitational parameter from PyKEP.
         """
         # ISS-like orbit at ~400km altitude
@@ -49,12 +49,12 @@ class TestOrbitalPeriod:
 
     def test_lunar_period(self):
         """Test orbital period calculation for lunar orbit.
-        
+
         Verifies that the orbital period calculation matches the Moon's
         sidereal period:
         - Semi-major axis: 384,400 km
         - Known period: 27.32 days
-        
+
         Uses Earth's gravitational parameter from PyKEP.
         """
         # Approximate lunar orbit
@@ -71,7 +71,7 @@ class TestOrbitalVelocity:
 
     def test_circular_orbit_velocity(self):
         """Test velocity components in a circular orbit.
-        
+
         Verifies that in a circular Low Earth Orbit:
         - Radial velocity is zero (no change in radius)
         - Tangential velocity matches expected LEO velocity (~7.67 km/s)
@@ -94,12 +94,12 @@ class TestOrbitalVelocity:
 
     def test_elliptical_orbit_velocity(self):
         """Test velocity components in an elliptical orbit.
-        
+
         Verifies velocity components at perigee of a GTO-like orbit:
         - Semi-major axis: 24,396 km ((LEO + GEO)/2)
         - Eccentricity: 0.7306 (typical GTO)
         - True anomaly: 0° (at perigee)
-        
+
         Checks:
         - Radial velocity is zero at perigee
         - Tangential velocity exceeds circular LEO velocity
@@ -121,7 +121,7 @@ class TestOrbitalVelocity:
 
     def test_velocity_components_perpendicular(self):
         """Test velocity components at key orbital points.
-        
+
         Verifies velocity components in an elliptical orbit (e=0.1)
         at four key points:
         - 0° (periapsis): v_r = 0, v_t = max
@@ -152,11 +152,11 @@ class TestAnomalyConversion:
 
     def test_circular_mean_to_true(self):
         """Test mean to true anomaly conversion in circular orbit.
-        
+
         Verifies that in a circular orbit (e=0):
         - Mean anomaly equals true anomaly
         - Test performed at 45° (arbitrary angle)
-        
+
         This is a key property of circular orbits where the angular
         rate is constant.
         """
@@ -171,11 +171,11 @@ class TestAnomalyConversion:
 
     def test_elliptical_mean_to_true(self):
         """Test mean to true anomaly conversion in elliptical orbit.
-        
+
         Verifies that in an elliptical orbit (e=0.1):
         - True anomaly is always greater than mean anomaly
         - Test performed at 45° mean anomaly
-        
+
         This reflects the fact that objects move faster at periapsis
         than at apoapsis in elliptical orbits.
         """
@@ -191,11 +191,11 @@ class TestAnomalyConversion:
 
     def test_circular_true_to_mean(self):
         """Test true to mean anomaly conversion in circular orbit.
-        
+
         Verifies that in a circular orbit (e=0):
         - True anomaly equals mean anomaly
         - Test performed at 90° (arbitrary angle)
-        
+
         This is the inverse of the mean_to_true_anomaly test for
         circular orbits.
         """
@@ -210,11 +210,11 @@ class TestAnomalyConversion:
 
     def test_elliptical_true_to_mean(self):
         """Test true to mean anomaly conversion in elliptical orbit.
-        
+
         Verifies that in an elliptical orbit (e=0.1):
         - Mean anomaly is always less than true anomaly
         - Test performed at 90° true anomaly
-        
+
         This is the inverse relationship of mean_to_true_anomaly for
         elliptical orbits.
         """
@@ -230,11 +230,11 @@ class TestAnomalyConversion:
 
     def test_anomaly_conversion_roundtrip(self):
         """Test consistency of anomaly conversions.
-        
+
         Verifies that converting from:
         mean -> true -> mean
         preserves the original value within numerical precision.
-        
+
         Test performed with:
         - Mean anomaly: 120°
         - Eccentricity: 0.3 (significant ellipticity)

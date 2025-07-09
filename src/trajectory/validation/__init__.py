@@ -4,7 +4,7 @@ This package provides comprehensive validation functionality for trajectory calc
 split into focused modules for maintainability:
 
 - physics_validation: Basic orbital mechanics validation
-- constraint_validation: Trajectory constraint validation  
+- constraint_validation: Trajectory constraint validation
 - vector_validation: Vector unit and magnitude validation
 
 For backward compatibility, the TrajectoryValidator class is re-exported from the original validation.py module.
@@ -27,16 +27,16 @@ from .vector_validation import (
 )
 
 __all__ = [
+    "calculate_circular_velocity",
+    "propagate_orbit",
     # Physics validation
     "validate_basic_orbital_mechanics",
-    "validate_transfer_time",
+    "validate_delta_v",
     "validate_solution_physics",
-    "calculate_circular_velocity",
+    "validate_state_vector",
     # Constraint validation
     "validate_trajectory_constraints",
+    "validate_transfer_time",
     # Vector validation
-    "validate_vector_units",
-    "validate_delta_v",
-    "validate_state_vector",
-    "propagate_orbit"
+    "validate_vector_units"
 ]

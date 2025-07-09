@@ -20,11 +20,11 @@ class NBodyPropagator:
     """N-body gravitational dynamics propagator for accurate trajectory calculation."""
 
     def __init__(self,
-                 bodies: list[str] = None,
+                 bodies: list[str] | None = None,
                  include_sun: bool = True,
-                 include_moon: bool = True):
+                 include_moon: bool = True) -> None:
         """Initialize the N-body propagator.
-        
+
         Args:
             bodies: List of celestial bodies to include ['earth', 'moon', 'sun']
             include_sun: Include solar gravitational effects
@@ -55,17 +55,17 @@ class NBodyPropagator:
                            num_points: int = 1000,
                            method: str = "DOP853") -> tuple[np.ndarray, np.ndarray]:
         """Propagate trajectory using n-body dynamics.
-        
+
         Args:
             initial_state: Initial state vector [x, y, z, vx, vy, vz] [m, m/s]
             time_span: (t_start, t_end) in seconds
             num_points: Number of output points
             method: Integration method ('RK45', 'DOP853', 'Radau')
-            
+
         Returns
         -------
             Tuple of (time_array, state_history) where state_history is [6, n] array
-            
+
         Raises
         ------
             ValueError: If propagation fails
@@ -89,22 +89,24 @@ class NBodyPropagator:
             )
 
             if not solution.success:
-                raise ValueError(f"Integration failed: {solution.message}")
+                msg = f"Integration failed: {solution.message}"
+                raise ValueError(msg)
 
             logger.debug(f"N-body propagation completed successfully with {len(solution.t)} points")
             return solution.t, solution.y
 
         except Exception as e:
-            raise ValueError(f"N-body propagation failed: {e!s}")
+            msg = f"N-body propagation failed: {e!s}"
+            raise ValueError(msg)
 
     def _nbody_dynamics(self, t: float, state: np.ndarray, epoch: float) -> np.ndarray:
         """Compute derivatives for n-body gravitational dynamics.
-        
+
         Args:
             t: Current time [s]
             state: Current state vector [x, y, z, vx, vy, vz]
             epoch: Reference epoch for celestial body positions
-            
+
         Returns
         -------
             State derivatives [vx, vy, vz, ax, ay, az]
@@ -169,11 +171,11 @@ class NBodyPropagator:
                                     nbody_trajectory: np.ndarray,
                                     twobody_trajectory: np.ndarray) -> dict[str, float]:
         """Calculate accuracy improvement of n-body vs two-body propagation.
-        
+
         Args:
             nbody_trajectory: N-body propagated trajectory [6, n]
             twobody_trajectory: Two-body propagated trajectory [6, n]
-            
+
         Returns
         -------
             Dictionary with accuracy metrics
@@ -186,7 +188,7 @@ class NBodyPropagator:
         vel_diff = nbody_trajectory[3:, :] - twobody_trajectory[3:, :]
         vel_error = np.linalg.norm(vel_diff, axis=0)
 
-        metrics = {
+        return {
             "max_position_error_m": np.max(pos_error),
             "final_position_error_m": pos_error[-1],
             "rms_position_error_m": np.sqrt(np.mean(pos_error**2)),
@@ -195,7 +197,6 @@ class NBodyPropagator:
             "rms_velocity_error_ms": np.sqrt(np.mean(vel_error**2))
         }
 
-        return metrics
 
 
 class HighFidelityPropagator:
@@ -203,9 +204,9 @@ class HighFidelityPropagator:
 
     def __init__(self,
                  use_nbody: bool = True,
-                 nbody_threshold: float = 1e8):  # 100,000 km
+                 nbody_threshold: float = 1e8) -> None:  # 100,000 km
         """Initialize high-fidelity propagator.
-        
+
         Args:
             use_nbody: Use n-body dynamics when appropriate
             nbody_threshold: Distance threshold for switching to n-body [m]
@@ -222,12 +223,12 @@ class HighFidelityPropagator:
                           initial_velocity: np.ndarray,
                           time_of_flight: float) -> tuple[np.ndarray, np.ndarray]:
         """Adaptive propagation switching between two-body and n-body.
-        
+
         Args:
             initial_position: Initial position [m]
             initial_velocity: Initial velocity [m/s]
             time_of_flight: Time of flight [s]
-            
+
         Returns
         -------
             Tuple of (final_position, final_velocity) [m, m/s]
@@ -262,12 +263,12 @@ class HighFidelityPropagator:
                                   initial_velocity: np.ndarray,
                                   time_of_flight: float) -> dict[str, any]:
         """Compare different propagation methods.
-        
+
         Args:
             initial_position: Initial position [m]
-            initial_velocity: Initial velocity [m/s] 
+            initial_velocity: Initial velocity [m/s]
             time_of_flight: Time of flight [s]
-            
+
         Returns
         -------
             Dictionary with comparison results
@@ -320,13 +321,13 @@ def enhanced_trajectory_propagation(initial_position: np.ndarray,
                                   time_of_flight: float,
                                   high_fidelity: bool = True) -> tuple[np.ndarray, np.ndarray]:
     """Enhanced trajectory propagation for Task 3 completion.
-    
+
     Args:
         initial_position: Initial position vector [m]
         initial_velocity: Initial velocity vector [m/s]
         time_of_flight: Time of flight [s]
         high_fidelity: Use high-fidelity n-body propagation
-        
+
     Returns
     -------
         Tuple of (final_position, final_velocity)

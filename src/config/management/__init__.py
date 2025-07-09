@@ -4,7 +4,7 @@ This package provides specialized configuration management functionality,
 split into focused modules for maintainability:
 
 - config_manager: Core ConfigManager class for orchestration
-- template_manager: Template-related functionality  
+- template_manager: Template-related functionality
 - file_operations: Load/save operations and file handling
 """
 

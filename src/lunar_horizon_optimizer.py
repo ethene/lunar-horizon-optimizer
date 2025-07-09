@@ -19,31 +19,31 @@ from dataclasses import dataclass
 import json
 
 # Task 3: Trajectory Generation
-from trajectory.lunar_transfer import LunarTransfer
-from trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
-from trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
+from src.trajectory.lunar_transfer import LunarTransfer
+from src.trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
+from src.trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
 
 # Task 4: Global Optimization
-from optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
-from optimization.pareto_analysis import ParetoAnalyzer
+from src.optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
+from src.optimization.pareto_analysis import ParetoAnalyzer
 
 # Task 5: Economic Analysis
-from economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
-from economics.cost_models import MissionCostModel
-from economics.isru_benefits import ISRUBenefitAnalyzer
-from economics.sensitivity_analysis import EconomicSensitivityAnalyzer
-from economics.reporting import EconomicReporter, FinancialSummary
+from src.economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
+from src.economics.cost_models import MissionCostModel
+from src.economics.isru_benefits import ISRUBenefitAnalyzer
+from src.economics.sensitivity_analysis import EconomicSensitivityAnalyzer
+from src.economics.reporting import EconomicReporter, FinancialSummary
 
 # Task 6: Visualization
-from visualization.dashboard import ComprehensiveDashboard, MissionAnalysisData
-from visualization.trajectory_visualization import TrajectoryVisualizer
-from visualization.optimization_visualization import OptimizationVisualizer
-from visualization.economic_visualization import EconomicVisualizer
+from src.visualization.dashboard import ComprehensiveDashboard, MissionAnalysisData
+from src.visualization.trajectory_visualization import TrajectoryVisualizer
+from src.visualization.optimization_visualization import OptimizationVisualizer
+from src.visualization.economic_visualization import EconomicVisualizer
 
 # Configuration
-from config.mission_config import MissionConfig
-from config.costs import CostFactors
-from config.spacecraft import SpacecraftConfig
+from src.config.mission_config import MissionConfig
+from src.config.costs import CostFactors
+from src.config.spacecraft import SpacecraftConfig
 
 # Utilities
 

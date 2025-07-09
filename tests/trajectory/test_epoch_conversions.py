@@ -50,14 +50,14 @@ def test_pykep_epoch_roundtrip():
 
 class TestPhysicalConstants:
     """Test suite for physical constants validation.
-    
+
     Ensures that our use of PyKEP physical constants matches expected values
     and that unit conversions are handled correctly.
     """
 
     def test_earth_gravitational_parameter(self):
         """Verify Earth's gravitational parameter (mu) conversion.
-        
+
         Verifies:
             - PyKEP's Earth mu converts correctly from m³/s² to km³/s²
             - Converted value matches expected value within 0.1 km³/s² tolerance
@@ -69,7 +69,7 @@ class TestPhysicalConstants:
 
     def test_earth_radius(self):
         """Verify Earth radius conversion from PyKEP.
-        
+
         Verifies:
             - PyKEP's Earth radius converts correctly from meters to kilometers
             - Converted value falls within expected range (6378.1 km to 6378.2 km)

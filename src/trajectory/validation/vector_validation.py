@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 def validate_vector_units(vector: np.ndarray, name: str, expected_magnitude_range: tuple[float, float], unit: str) -> bool:
     """
     Validate that a vector's magnitude falls within expected range and has correct units.
-    
+
     Args:
         vector: Vector to validate
         name: Name of the vector for logging
         expected_magnitude_range: (min, max) expected magnitude
         unit: Unit of measurement for logging
-        
+
     Returns
     -------
         bool: True if vector is valid
@@ -50,79 +50,86 @@ def validate_vector_units(vector: np.ndarray, name: str, expected_magnitude_rang
 
 def validate_delta_v(delta_v: np.ndarray, max_delta_v: float = 25000.0) -> bool:
     """Validate delta-v vector for reasonableness.
-    
+
     Args:
         delta_v: Delta-v vector [m/s]
         max_delta_v: Maximum allowed delta-v magnitude [m/s]
-        
+
     Returns
     -------
         True if delta-v is valid
-        
+
     Raises
     ------
         ValueError: If delta-v is invalid
     """
     if not isinstance(delta_v, np.ndarray):
-        raise ValueError("Delta-v must be a numpy array")
+        msg = "Delta-v must be a numpy array"
+        raise ValueError(msg)
 
     if delta_v.shape != (3,):
-        raise ValueError("Delta-v must be a 3D vector")
+        msg = "Delta-v must be a 3D vector"
+        raise ValueError(msg)
 
     magnitude = np.linalg.norm(delta_v)
     if magnitude > max_delta_v:
-        raise ValueError(f"Delta-v magnitude {magnitude:.1f} m/s exceeds maximum {max_delta_v:.1f} m/s")
+        msg = f"Delta-v magnitude {magnitude:.1f} m/s exceeds maximum {max_delta_v:.1f} m/s"
+        raise ValueError(msg)
 
     if not np.isfinite(delta_v).all():
-        raise ValueError("Delta-v contains non-finite values")
+        msg = "Delta-v contains non-finite values"
+        raise ValueError(msg)
 
     return True
 
 
 def validate_state_vector(position: np.ndarray, velocity: np.ndarray) -> bool:
     """Validate state vector components.
-    
+
     Args:
         position: Position vector [m]
         velocity: Velocity vector [m/s]
-        
+
     Returns
     -------
         True if state vector is valid
-        
+
     Raises
     ------
         ValueError: If state vector is invalid
     """
     if not isinstance(position, np.ndarray) or not isinstance(velocity, np.ndarray):
-        raise ValueError("Position and velocity must be numpy arrays")
+        msg = "Position and velocity must be numpy arrays"
+        raise ValueError(msg)
 
     if position.shape != (3,) or velocity.shape != (3,):
-        raise ValueError("Position and velocity must be 3D vectors")
+        msg = "Position and velocity must be 3D vectors"
+        raise ValueError(msg)
 
     if not np.isfinite(position).all() or not np.isfinite(velocity).all():
-        raise ValueError("State vector contains non-finite values")
+        msg = "State vector contains non-finite values"
+        raise ValueError(msg)
 
     return True
 
 
 def propagate_orbit(position: np.ndarray, velocity: np.ndarray, dt: float) -> tuple[np.ndarray, np.ndarray]:
     """Simple two-body orbit propagation.
-    
+
     Args:
         position: Initial position vector [m]
         velocity: Initial velocity vector [m/s]
         dt: Time step [s]
-        
+
     Returns
     -------
         Tuple of final (position, velocity) vectors
-        
+
     Note:
         This is a simplified implementation for basic functionality.
         For high-fidelity propagation, use PyKEP's propagate_taylor.
     """
-    from ..constants import PhysicalConstants as PC
+    from src.trajectory.constants import PhysicalConstants as PC
 
     # Simple Keplerian propagation using universal variable method
     # This is a basic implementation - real applications should use PyKEP

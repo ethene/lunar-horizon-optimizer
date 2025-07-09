@@ -313,10 +313,10 @@ ALTERNATIVE OVERVIEW
                             writer.writerows(flattened_data)
                     else:
                         # Simple dictionary
-                        writer = csv.writer(csvfile)
-                        writer.writerow(["Key", "Value"])
+                        csv_writer = csv.writer(csvfile)
+                        csv_writer.writerow(["Key", "Value"])
                         for key, value in data.items():
-                            writer.writerow([key, value])
+                            csv_writer.writerow([key, value])
 
             elif isinstance(data, list):
                 # Export list of dictionaries
@@ -374,7 +374,7 @@ ALTERNATIVE OVERVIEW
         """
         logger.info("Generating dashboard data")
 
-        dashboard_data = {
+        dashboard_data: dict[str, Any] = {
             "summary_metrics": {
                 "npv": financial_summary.net_present_value,
                 "irr": financial_summary.internal_rate_of_return,
@@ -421,7 +421,7 @@ ALTERNATIVE OVERVIEW
 
         return dashboard_data
 
-    def _assess_project_viability(self, summary: FinancialSummary) -> dict[str, str]:
+    def _assess_project_viability(self, summary: FinancialSummary) -> dict[str, str | float]:
         """Assess overall project viability."""
         # Scoring based on financial metrics
         npv_score = 1 if summary.net_present_value > 0 else 0
@@ -476,10 +476,11 @@ ALTERNATIVE OVERVIEW
 
         # Cost insights
         total_cost = summary.development_cost + summary.launch_cost + summary.operational_cost
-        if summary.development_cost / total_cost > 0.6:
-            insights.append("• Development costs dominate - focus on controlling R&D expenses")
-        if summary.launch_cost / total_cost > 0.4:
-            insights.append("• Launch costs are significant - consider cost reduction strategies")
+        if total_cost > 0:  # Avoid division by zero
+            if summary.development_cost / total_cost > 0.6:
+                insights.append("• Development costs dominate - focus on controlling R&D expenses")
+            if summary.launch_cost / total_cost > 0.4:
+                insights.append("• Launch costs are significant - consider cost reduction strategies")
 
         return "\n".join(insights)
 

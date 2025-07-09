@@ -26,7 +26,7 @@ class TransferWindow:
                  arrival_date: datetime,
                  total_dv: float,
                  c3_energy: float,
-                 trajectory: Trajectory):
+                 trajectory: Trajectory) -> None:
         self.departure_date = departure_date
         self.arrival_date = arrival_date
         self.total_dv = total_dv  # m/s
@@ -34,7 +34,7 @@ class TransferWindow:
         self.trajectory = trajectory
         self.transfer_time = (arrival_date - departure_date).total_seconds() / 86400  # days
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f"TransferWindow(departure={self.departure_date.strftime('%Y-%m-%d')}, "
                 f"transfer_time={self.transfer_time:.1f}d, dv={self.total_dv:.0f}m/s)")
 
@@ -46,12 +46,12 @@ class TrajectoryWindowAnalyzer:
                  min_earth_alt: float = 200,  # km
                  max_earth_alt: float = 1000,  # km
                  min_moon_alt: float = 50,    # km
-                 max_moon_alt: float = 500):  # km
+                 max_moon_alt: float = 500) -> None:  # km
         """Initialize the trajectory window analyzer.
-        
+
         Args:
             min_earth_alt: Minimum Earth parking orbit altitude [km]
-            max_earth_alt: Maximum Earth parking orbit altitude [km] 
+            max_earth_alt: Maximum Earth parking orbit altitude [km]
             min_moon_alt: Minimum lunar orbit altitude [km]
             max_moon_alt: Maximum lunar orbit altitude [km]
         """
@@ -78,16 +78,16 @@ class TrajectoryWindowAnalyzer:
                             max_transfer_time: float = 7.0,  # days
                             time_step: float = 1.0) -> list[TransferWindow]:
         """Find optimal transfer windows in a given time period.
-        
+
         Args:
             start_date: Start of analysis period
-            end_date: End of analysis period  
+            end_date: End of analysis period
             earth_orbit_alt: Earth parking orbit altitude [km]
             moon_orbit_alt: Target lunar orbit altitude [km]
             min_transfer_time: Minimum transfer time [days]
             max_transfer_time: Maximum transfer time [days]
             time_step: Time step for analysis [days]
-            
+
         Returns
         -------
             List of viable transfer windows sorted by total delta-v
@@ -148,17 +148,17 @@ class TrajectoryWindowAnalyzer:
                               earth_orbit_alt: float = 300.0,
                               moon_orbit_alt: float = 100.0) -> TransferWindow:
         """Optimize launch window around a target date.
-        
+
         Args:
             target_date: Preferred launch date
             window_days: Days before/after target to analyze
             earth_orbit_alt: Earth parking orbit altitude [km]
             moon_orbit_alt: Target lunar orbit altitude [km]
-            
+
         Returns
         -------
             Best transfer window within the specified period
-            
+
         Raises
         ------
             ValueError: If no viable windows found
@@ -175,7 +175,8 @@ class TrajectoryWindowAnalyzer:
         )
 
         if not windows:
-            raise ValueError(f"No viable transfer windows found around {target_date}")
+            msg = f"No viable transfer windows found around {target_date}"
+            raise ValueError(msg)
 
         best_window = windows[0]  # Already sorted by delta-v
         logger.info(f"Optimized launch window: {best_window}")
@@ -184,15 +185,15 @@ class TrajectoryWindowAnalyzer:
 
     def analyze_trajectory_sensitivity(self,
                                      window: TransferWindow,
-                                     altitude_variations: list[float] = None,
-                                     time_variations: list[float] = None) -> dict[str, list[float]]:
+                                     altitude_variations: list[float] | None = None,
+                                     time_variations: list[float] | None = None) -> dict[str, list[float]]:
         """Analyze trajectory sensitivity to parameter variations.
-        
+
         Args:
             window: Reference transfer window
             altitude_variations: Earth orbit altitude variations [km]
             time_variations: Transfer time variations [days]
-            
+
         Returns
         -------
             Dictionary with sensitivity analysis results
@@ -250,17 +251,17 @@ class TrajectoryWindowAnalyzer:
 
     def _calculate_c3_energy(self, earth_orbit_alt: float, total_dv: float) -> float:
         """Calculate characteristic energy (C3) for the transfer.
-        
+
         Args:
             earth_orbit_alt: Earth parking orbit altitude [km]
             total_dv: Total delta-v for transfer [m/s]
-            
+
         Returns
         -------
             C3 characteristic energy [m²/s²]
         """
         r_park = (PC.EARTH_RADIUS + earth_orbit_alt * 1000)  # [m]
-        v_park = np.sqrt(PC.EARTH_MU / r_park)  # Circular velocity [m/s]
+        np.sqrt(PC.EARTH_MU / r_park)  # Circular velocity [m/s]
         v_infinity = total_dv  # Approximation for C3 calculation
 
         # C3 = v_infinity^2
@@ -271,12 +272,12 @@ def generate_multiple_transfer_options(start_date: datetime,
                                      end_date: datetime,
                                      max_options: int = 10) -> list[TransferWindow]:
     """Generate multiple transfer options for Task 3 completion.
-    
+
     Args:
         start_date: Start of analysis period
         end_date: End of analysis period
         max_options: Maximum number of options to return
-        
+
     Returns
     -------
         List of best transfer options
@@ -295,10 +296,10 @@ def generate_multiple_transfer_options(start_date: datetime,
 
 def analyze_launch_opportunities(target_year: int = 2025) -> dict[str, list[TransferWindow]]:
     """Analyze launch opportunities for a given year.
-    
+
     Args:
         target_year: Year to analyze
-        
+
     Returns
     -------
         Dictionary with monthly launch opportunities

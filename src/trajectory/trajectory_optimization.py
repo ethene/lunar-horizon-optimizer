@@ -23,12 +23,12 @@ class TrajectoryOptimizer:
                  min_earth_alt: float = 200,
                  max_earth_alt: float = 1000,
                  min_moon_alt: float = 50,
-                 max_moon_alt: float = 500):
+                 max_moon_alt: float = 500) -> None:
         """Initialize trajectory optimizer.
-        
+
         Args:
             min_earth_alt: Minimum Earth orbit altitude [km]
-            max_earth_alt: Maximum Earth orbit altitude [km] 
+            max_earth_alt: Maximum Earth orbit altitude [km]
             min_moon_alt: Minimum Moon orbit altitude [km]
             max_moon_alt: Maximum Moon orbit altitude [km]
         """
@@ -46,16 +46,16 @@ class TrajectoryOptimizer:
     def optimize_single_objective(self,
                                  epoch: float,
                                  objective: str = "delta_v",
-                                 bounds: dict[str, tuple[float, float]] = None,
+                                 bounds: dict[str, tuple[float, float]] | None = None,
                                  method: str = "differential_evolution") -> dict[str, any]:
         """Optimize trajectory for a single objective.
-        
+
         Args:
             epoch: Launch epoch [days since J2000]
             objective: Optimization objective ('delta_v', 'time', 'c3_energy')
             bounds: Parameter bounds {'earth_alt': (min, max), 'moon_alt': (min, max), 'time': (min, max)}
             method: Optimization method ('differential_evolution', 'minimize')
-            
+
         Returns
         -------
             Dictionary with optimization results
@@ -89,7 +89,7 @@ class TrajectoryOptimizer:
                 if objective == "c3_energy":
                     # Approximate C3 calculation
                     r_park = PC.EARTH_RADIUS + earth_alt * 1000
-                    v_park = np.sqrt(PC.EARTH_MU / r_park)
+                    np.sqrt(PC.EARTH_MU / r_park)
                     return (total_dv / 1000)**2  # Simplified C3
                 return total_dv  # Default to delta-v
 
@@ -157,15 +157,15 @@ class TrajectoryOptimizer:
 
     def pareto_front_analysis(self,
                             epoch: float,
-                            objectives: list[str] = None,
+                            objectives: list[str] | None = None,
                             num_solutions: int = 50) -> list[dict[str, any]]:
         """Generate Pareto front for multi-objective optimization.
-        
+
         Args:
             epoch: Launch epoch [days since J2000]
             objectives: List of objectives ['delta_v', 'time', 'c3_energy']
             num_solutions: Number of Pareto solutions to generate
-            
+
         Returns
         -------
             List of Pareto-optimal solutions
@@ -229,15 +229,15 @@ class TrajectoryOptimizer:
 
     def optimize_with_constraints(self,
                                 epoch: float,
-                                constraints: dict[str, float] = None,
+                                constraints: dict[str, float] | None = None,
                                 objective: str = "delta_v") -> dict[str, any]:
         """Optimize trajectory with constraints.
-        
+
         Args:
             epoch: Launch epoch [days since J2000]
             constraints: Constraint dictionary {'max_delta_v': 5000, 'max_time': 5.0, 'min_c3': None}
             objective: Primary objective to minimize
-            
+
         Returns
         -------
             Constrained optimization result
@@ -375,12 +375,12 @@ def optimize_trajectory_parameters(epoch: float,
                                  optimization_type: str = "single_objective",
                                  **kwargs) -> dict[str, any]:
     """Convenience function for trajectory optimization.
-    
+
     Args:
         epoch: Launch epoch [days since J2000]
         optimization_type: 'single_objective', 'pareto_front', or 'constrained'
         **kwargs: Additional parameters for specific optimization type
-        
+
     Returns
     -------
         Optimization results
@@ -393,19 +393,20 @@ def optimize_trajectory_parameters(epoch: float,
         return optimizer.pareto_front_analysis(epoch, **kwargs)
     if optimization_type == "constrained":
         return optimizer.optimize_with_constraints(epoch, **kwargs)
-    raise ValueError(f"Unknown optimization type: {optimization_type}")
+    msg = f"Unknown optimization type: {optimization_type}"
+    raise ValueError(msg)
 
 
 def batch_trajectory_optimization(epochs: list[float],
                                 objective: str = "delta_v",
                                 max_workers: int = 4) -> list[dict[str, any]]:
     """Perform batch optimization for multiple epochs.
-    
+
     Args:
         epochs: List of launch epochs [days since J2000]
         objective: Optimization objective
         max_workers: Maximum number of parallel workers
-        
+
     Returns
     -------
         List of optimization results for each epoch
@@ -421,7 +422,7 @@ def batch_trajectory_optimization(epochs: list[float],
             result["epoch"] = epoch
             results.append(result)
         except Exception as e:
-            logger.error(f"Optimization failed for epoch {epoch}: {e}")
+            logger.exception(f"Optimization failed for epoch {epoch}: {e}")
             results.append({"epoch": epoch, "success": False, "error": str(e)})
 
     return results

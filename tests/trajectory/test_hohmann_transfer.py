@@ -37,7 +37,7 @@ class TestHohmannTransfer:
 
     def test_transfer_components(self):
         """Test individual components of Hohmann transfer calculation.
-        
+
         Verifies:
         - Transfer orbit semi-major axis calculation
         - Initial and final circular orbit velocities
@@ -75,7 +75,7 @@ class TestHohmannTransfer:
 
     def test_transfer_estimation(self):
         """Test complete Hohmann transfer calculations.
-        
+
         Verifies:
         - First burn delta-v matches expected value (~2.43 km/s)
         - Second burn delta-v matches expected value (~1.47 km/s)
@@ -96,7 +96,7 @@ class TestHohmannTransfer:
 
     def test_invalid_radii(self):
         """Test Hohmann transfer validation with invalid radii.
-        
+
         Verifies:
         - Negative initial radius raises ValueError
         - Negative final radius raises ValueError
@@ -117,7 +117,7 @@ class TestHohmannTransfer:
 
     def test_transfer_vectors(self):
         """Test Hohmann transfer position and velocity vectors.
-        
+
         Verifies:
         - Position vectors have correct magnitude and direction
         - Velocity vectors are perpendicular to position vectors
@@ -154,7 +154,7 @@ class TestHohmannTransfer:
 
     def test_circular_velocities(self):
         """Test circular orbit velocities for Hohmann transfer.
-        
+
         Verifies:
         - Initial circular orbit velocity matches expected value
         - Final circular orbit velocity matches expected value

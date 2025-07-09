@@ -519,7 +519,7 @@ class TestIntegrationRealFunctionality:
         # NPV calculation
         discount_rate = 0.08
         cash_flows = [-total_mission_cost]
-        for year in range(1, mission_params["mission_duration"] + 1):
+        for _year in range(1, mission_params["mission_duration"] + 1):
             cash_flows.append(annual_revenue - ops_cost/mission_params["mission_duration"])
 
         npv = sum(cf / (1 + discount_rate) ** i for i, cf in enumerate(cash_flows))
@@ -558,7 +558,7 @@ def test_environment_setup():
 
     # Check that optimization works
     prob = pg.problem(pg.rosenbrock(2))
-    algo = pg.algorithm(pg.de(gen=10))
+    pg.algorithm(pg.de(gen=10))
     pop = pg.population(prob, 20)
     assert len(pop) == 20
 

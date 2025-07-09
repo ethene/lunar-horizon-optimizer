@@ -16,7 +16,7 @@ from plotly.subplots import make_subplots
 from typing import Any
 from dataclasses import dataclass
 
-from optimization.pareto_analysis import ParetoAnalyzer, OptimizationResult
+from src.optimization.pareto_analysis import ParetoAnalyzer, OptimizationResult
 
 
 @dataclass

@@ -5,11 +5,11 @@ missions, including ROI calculations, NPV analysis, cost modeling, and
 ISRU benefit analysis.
 """
 
-from economics.financial_models import ROICalculator, NPVAnalyzer, CashFlowModel
-from economics.cost_models import MissionCostModel, LaunchCostModel, OperationalCostModel
-from economics.isru_benefits import ISRUBenefitAnalyzer, ResourceValueModel
-from economics.sensitivity_analysis import EconomicSensitivityAnalyzer
-from economics.reporting import EconomicReporter, FinancialSummary
+from src.economics.financial_models import ROICalculator, NPVAnalyzer, CashFlowModel
+from src.economics.cost_models import MissionCostModel, LaunchCostModel, OperationalCostModel
+from src.economics.isru_benefits import ISRUBenefitAnalyzer, ResourceValueModel
+from src.economics.sensitivity_analysis import EconomicSensitivityAnalyzer
+from src.economics.reporting import EconomicReporter, FinancialSummary
 
 __all__ = [
     "CashFlowModel",

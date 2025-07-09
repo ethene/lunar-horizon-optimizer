@@ -58,18 +58,21 @@ class OrbitParameters(BaseModel):
     def validate_orbit(self) -> "OrbitParameters":
         """Validate orbit parameters."""
         if self.semi_major_axis < 6378.0:  # Earth radius
-            raise ValueError(
+            msg = (
                 f"Semi-major axis ({self.semi_major_axis} km) must be greater "
                 "than Earth's radius (6378 km)"
+            )
+            raise ValueError(
+                msg
             )
         return self
 
     def calculate_period(self, mu: float = 398600.4418) -> float:
         """Calculate orbital period using Kepler's Third Law.
-        
+
         Args:
             mu: Gravitational parameter (km³/s²), defaults to Earth's value
-            
+
         Returns
         -------
             Orbital period in seconds
@@ -78,10 +81,10 @@ class OrbitParameters(BaseModel):
 
     def calculate_velocities(self, mu: float = 398600.4418) -> tuple[float, float]:
         """Calculate periapsis and apoapsis velocities.
-        
+
         Args:
             mu: Gravitational parameter (km³/s²), defaults to Earth's value
-            
+
         Returns
         -------
             Tuple of (periapsis velocity, apoapsis velocity) in km/s

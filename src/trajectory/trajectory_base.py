@@ -21,7 +21,7 @@ logger.setLevel(logging.DEBUG)
 @dataclass
 class Trajectory(ABC):
     """Base class for orbital trajectories.
-    
+
     Attributes
     ----------
         initial_state: Initial orbital state
@@ -44,9 +44,11 @@ class Trajectory(ABC):
         # Validate maneuver epochs
         for maneuver in self.maneuvers:
             if maneuver.epoch < self.start_epoch:
-                raise ValueError("Maneuver epoch cannot be before trajectory start")
+                msg = "Maneuver epoch cannot be before trajectory start"
+                raise ValueError(msg)
             if self.end_epoch and maneuver.epoch > self.end_epoch:
-                raise ValueError("Maneuver epoch cannot be after trajectory end")
+                msg = "Maneuver epoch cannot be after trajectory end"
+                raise ValueError(msg)
 
         # Initialize propagated states with initial state
         self.propagated_states = {self.start_epoch: self.initial_state}
@@ -54,40 +56,42 @@ class Trajectory(ABC):
     @abstractmethod
     def validate_trajectory(self) -> bool:
         """Validate the complete trajectory including maneuvers.
-        
+
         Returns
         -------
             bool: True if trajectory is valid
-        
+
         This method should be implemented by subclasses to add specific
         validation logic for different types of trajectories.
         """
 
     def propagate_to(self, target_epoch: datetime) -> OrbitState:
         """Propagate the trajectory to a specific epoch.
-        
+
         Args:
             target_epoch: Time to propagate to
-            
+
         Returns
         -------
             Orbital state at target epoch
-            
+
         Raises
         ------
             ValueError: If target_epoch is invalid or propagation fails
         """
         if target_epoch < self.start_epoch:
-            raise ValueError("Cannot propagate backwards from start epoch")
+            msg = "Cannot propagate backwards from start epoch"
+            raise ValueError(msg)
         if self.end_epoch and target_epoch > self.end_epoch:
-            raise ValueError("Target epoch exceeds trajectory end time")
+            msg = "Target epoch exceeds trajectory end time"
+            raise ValueError(msg)
 
         # Return cached state if available
         if target_epoch in self.propagated_states:
             return self.propagated_states[target_epoch]
 
         # Find last known state and maneuvers to apply
-        last_epoch = max(epoch for epoch in self.propagated_states.keys() if epoch <= target_epoch)
+        last_epoch = max(epoch for epoch in self.propagated_states if epoch <= target_epoch)
         last_state = self.propagated_states[last_epoch]
 
         # Apply maneuvers and propagate segments
@@ -113,18 +117,19 @@ class Trajectory(ABC):
 
     def _propagate_segment(self, state: OrbitState, target_epoch: datetime) -> OrbitState:
         """Propagate a single trajectory segment without maneuvers.
-        
+
         Args:
             state: Initial state to propagate from
             target_epoch: Time to propagate to
-            
+
         Returns
         -------
             Final state after propagation
         """
         dt = (target_epoch - state.epoch).total_seconds()
         if dt < 0:
-            raise ValueError("Cannot propagate backwards")
+            msg = "Cannot propagate backwards"
+            raise ValueError(msg)
 
         # Convert to SI units for propagation
         pos_m = km_to_m(state.position)
@@ -134,8 +139,9 @@ class Trajectory(ABC):
         try:
             final_pos_m, final_vel_ms = propagate_orbit(pos_m, vel_ms, dt)
         except Exception as e:
-            logger.error(f"Propagation failed: {e!s}")
-            raise ValueError(f"Propagation failed: {e!s}")
+            logger.exception(f"Propagation failed: {e!s}")
+            msg = f"Propagation failed: {e!s}"
+            raise ValueError(msg)
 
         # Convert back to km, km/s
         final_pos = m_to_km(final_pos_m)
@@ -149,10 +155,10 @@ class Trajectory(ABC):
 
     def get_state_at(self, epoch: datetime) -> OrbitState:
         """Get the orbital state at a specific epoch.
-        
+
         Args:
             epoch: Time to get state for
-            
+
         Returns
         -------
             Orbital state at specified epoch
@@ -161,18 +167,20 @@ class Trajectory(ABC):
 
     def add_maneuver(self, maneuver: Maneuver) -> None:
         """Add a maneuver to the trajectory.
-        
+
         Args:
             maneuver: Maneuver to add
-            
+
         Raises
         ------
             ValueError: If maneuver epoch is invalid
         """
         if maneuver.epoch < self.start_epoch:
-            raise ValueError("Maneuver epoch cannot be before trajectory start")
+            msg = "Maneuver epoch cannot be before trajectory start"
+            raise ValueError(msg)
         if self.end_epoch and maneuver.epoch > self.end_epoch:
-            raise ValueError("Maneuver epoch cannot be after trajectory end")
+            msg = "Maneuver epoch cannot be after trajectory end"
+            raise ValueError(msg)
 
         self.maneuvers.append(maneuver)
         # Clear cached states after maneuver epoch
@@ -183,7 +191,7 @@ class Trajectory(ABC):
 
     def get_total_delta_v(self) -> float:
         """Calculate total delta-v cost of all maneuvers.
-        
+
         Returns
         -------
             Total delta-v in km/s

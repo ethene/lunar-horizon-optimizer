@@ -50,7 +50,7 @@ class TestBasicUnitConversions:
 
     def test_distance_conversions(self):
         """Test distance unit conversions.
-        
+
         Verifies:
         - Earth radius (~6378 km) converts correctly
         - Lunar distance (~384,400 km) converts correctly
@@ -78,7 +78,7 @@ class TestBasicUnitConversions:
 
     def test_velocity_conversions(self):
         """Test velocity unit conversions.
-        
+
         Verifies:
         - Earth escape velocity (~11.2 km/s) converts correctly
         - LEO orbital velocity (~7.8 km/s) converts correctly
@@ -106,7 +106,7 @@ class TestBasicUnitConversions:
 
     def test_gravitational_parameters(self):
         """Test gravitational parameter conversions.
-        
+
         Verifies:
         - Earth's mu (~398600.4418 km³/s²) converts correctly
         - Moon's mu (~4904.8695 km³/s²) converts correctly
@@ -126,7 +126,7 @@ class TestBasicUnitConversions:
 
     def test_time_duration_conversions(self):
         """Test time duration conversions.
-        
+
         Verifies:
         - Days to seconds conversion is correct
         - Seconds to days conversion is correct
@@ -149,7 +149,7 @@ class TestBasicUnitConversions:
 
     def test_edge_cases(self):
         """Test edge cases and potential error conditions.
-        
+
         Verifies:
         - Zero values convert correctly
         - Negative values convert correctly
@@ -313,9 +313,11 @@ class TestTrajectoryUnitConversions:
         def estimate_hohmann_transfer_dv(r1_m, r2_m, mu_m3s2):
             """Estimate delta-v for a Hohmann transfer between circular orbits."""
             if r1_m <= 0 or r2_m <= 0:
-                raise ValueError("Orbit radii must be positive")
+                msg = "Orbit radii must be positive"
+                raise ValueError(msg)
             if mu_m3s2 <= 0:
-                raise ValueError("Gravitational parameter must be positive")
+                msg = "Gravitational parameter must be positive"
+                raise ValueError(msg)
 
             # Calculate velocities in initial and final circular orbits
             v1_ms = np.sqrt(mu_m3s2 / r1_m)
@@ -329,9 +331,8 @@ class TestTrajectoryUnitConversions:
             # Calculate total delta-v
             dv1_ms = abs(vp_ms - v1_ms)  # First burn
             dv2_ms = abs(v2_ms - va_ms)  # Second burn
-            total_dv_ms = dv1_ms + dv2_ms
+            return dv1_ms + dv2_ms
 
-            return total_dv_ms
 
         # Test with invalid inputs
         with pytest.raises(ValueError, match="Orbit radii must be positive"):

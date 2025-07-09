@@ -19,7 +19,7 @@ logger.setLevel(logging.DEBUG)
 @dataclass
 class Maneuver:
     """Represents an impulsive orbital maneuver.
-    
+
     Attributes
     ----------
         delta_v: Velocity change vector in km/s [dvx, dvy, dvz]
@@ -33,8 +33,9 @@ class Maneuver:
 
     def __post_init__(self):
         """Validate maneuver parameters after initialization."""
-        if not isinstance(self.delta_v, (tuple, list, np.ndarray)) or len(self.delta_v) != 3:
-            raise ValueError("delta_v must be a 3D vector")
+        if not isinstance(self.delta_v, tuple | list | np.ndarray) or len(self.delta_v) != 3:
+            msg = "delta_v must be a 3D vector"
+            raise ValueError(msg)
 
         # Convert to numpy array if needed
         if not isinstance(self.delta_v, np.ndarray):
@@ -43,12 +44,15 @@ class Maneuver:
         # Validate delta-v magnitude using trajectory_physics
         dv_ms = kmps_to_mps(self.delta_v)
         if not validate_delta_v(dv_ms):
-            raise ValueError("Invalid delta-v magnitude")
+            msg = "Invalid delta-v magnitude"
+            raise ValueError(msg)
 
         if not isinstance(self.epoch, datetime):
-            raise ValueError("epoch must be a datetime object")
+            msg = "epoch must be a datetime object"
+            raise ValueError(msg)
         if self.epoch.tzinfo is None:
-            raise ValueError("epoch must be timezone-aware")
+            msg = "epoch must be timezone-aware"
+            raise ValueError(msg)
 
     @property
     def magnitude(self) -> float:
@@ -59,33 +63,39 @@ class Maneuver:
         """Get the delta-v vector in SI units (m/s)."""
         return kmps_to_mps(self.delta_v)
 
+    def get_delta_v_ms(self) -> np.ndarray:
+        """Get the delta-v vector in m/s (alias for get_delta_v_si)."""
+        return self.get_delta_v_si()
+
     def apply_to_velocity(self, velocity: np.ndarray) -> np.ndarray:
         """Apply the maneuver to a velocity vector.
-        
+
         Args:
             velocity: Initial velocity vector in km/s
-            
+
         Returns
         -------
             New velocity vector in km/s after applying the maneuver
         """
         if not isinstance(velocity, np.ndarray) or velocity.shape != (3,):
-            raise ValueError("velocity must be a 3D numpy array")
+            msg = "velocity must be a 3D numpy array"
+            raise ValueError(msg)
 
         return velocity + self.delta_v
 
     def scale(self, factor: float) -> "Maneuver":
         """Create a new maneuver with delta-v scaled by a factor.
-        
+
         Args:
             factor: Scale factor to apply to delta-v
-            
+
         Returns
         -------
             New Maneuver object with scaled delta-v
         """
         if factor < 0:
-            raise ValueError("Scale factor must be non-negative")
+            msg = "Scale factor must be non-negative"
+            raise ValueError(msg)
 
         return Maneuver(
             delta_v=tuple(self.delta_v * factor),
@@ -95,7 +105,7 @@ class Maneuver:
 
     def reverse(self) -> "Maneuver":
         """Create a new maneuver with reversed delta-v direction.
-        
+
         Returns
         -------
             New Maneuver object with reversed delta-v

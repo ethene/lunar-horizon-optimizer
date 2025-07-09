@@ -1,5 +1,5 @@
 """
-Interactive 3D Trajectory Visualization Module
+Interactive 3D Trajectory Visualization Module.
 
 Provides comprehensive 3D visualization capabilities for lunar trajectories using Plotly,
 including Earth-Moon system rendering, trajectory paths, orbital mechanics visualization,
@@ -18,9 +18,9 @@ from dataclasses import dataclass
 from datetime import datetime
 import pykep as pk
 
-from trajectory.earth_moon_trajectories import LambertSolver, generate_earth_moon_trajectory
-from trajectory.nbody_integration import EarthMoonNBodyPropagator
-from trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
+from src.trajectory.earth_moon_trajectories import LambertSolver, generate_earth_moon_trajectory
+from src.trajectory.nbody_integration import EarthMoonNBodyPropagator
+from src.trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
 
 
 @dataclass
@@ -61,7 +61,7 @@ class TrajectoryPlotConfig:
 class TrajectoryVisualizer:
     """
     Interactive 3D trajectory visualization using Plotly.
-    
+
     Provides comprehensive visualization of Earth-Moon trajectories including:
     - 3D trajectory paths with celestial bodies
     - Transfer window analysis visualization
@@ -69,10 +69,10 @@ class TrajectoryVisualizer:
     - Interactive trajectory comparison tools
     """
 
-    def __init__(self, config: TrajectoryPlotConfig | None = None):
+    def __init__(self, config: TrajectoryPlotConfig | None = None) -> None:
         """
         Initialize trajectory visualizer.
-        
+
         Args:
             config: Visualization configuration
         """
@@ -93,11 +93,11 @@ class TrajectoryVisualizer:
     ) -> go.Figure:
         """
         Create comprehensive 3D trajectory visualization.
-        
+
         Args:
             trajectories: Single trajectory or list of trajectories to plot
             title: Optional plot title override
-            
+
         Returns
         -------
             Plotly Figure object with 3D trajectory visualization
@@ -129,14 +129,14 @@ class TrajectoryVisualizer:
     ) -> go.Figure:
         """
         Create transfer window opportunity visualization.
-        
+
         Args:
             start_date: Analysis start date
             end_date: Analysis end date
             earth_orbit_alt: Earth parking orbit altitude [km]
             moon_orbit_alt: Target lunar orbit altitude [km]
             max_windows: Maximum number of windows to display
-            
+
         Returns
         -------
             Plotly Figure with transfer window analysis
@@ -157,7 +157,7 @@ class TrajectoryVisualizer:
                 text="No transfer windows found in specified period",
                 xref="paper", yref="paper",
                 x=0.5, y=0.5, showarrow=False,
-                font=dict(size=16, color=self.config.text_color)
+                font={"size": 16, "color": self.config.text_color}
             )
             return fig
 
@@ -194,13 +194,13 @@ class TrajectoryVisualizer:
                 name="Transfer Windows",
                 text=[f"Departure: {d.strftime('%Y-%m-%d')}" for d in departure_dates],
                 hovertemplate="Transfer Time: %{x:.1f} days<br>Delta-V: %{y:.0f} m/s<br>%{text}<extra></extra>",
-                marker=dict(
-                    size=8,
-                    color=delta_vs,
-                    colorscale="Viridis",
-                    showscale=True,
-                    colorbar=dict(title="Delta-V (m/s)", x=0.45)
-                )
+                marker={
+                    "size": 8,
+                    "color": delta_vs,
+                    "colorscale": "Viridis",
+                    "showscale": True,
+                    "colorbar": {"title": "Delta-V (m/s)", "x": 0.45}
+                }
             ),
             row=1, col=1
         )
@@ -214,7 +214,7 @@ class TrajectoryVisualizer:
                 name="C3 Energy",
                 text=[f"Departure: {d.strftime('%Y-%m-%d')}" for d in departure_dates],
                 hovertemplate="Transfer Time: %{x:.1f} days<br>C3: %{y:.0f} m²/s²<br>%{text}<extra></extra>",
-                marker=dict(size=6, color="orange"),
+                marker={"size": 6, "color": "orange"},
                 showlegend=False
             ),
             row=1, col=2
@@ -228,8 +228,8 @@ class TrajectoryVisualizer:
                 mode="markers+lines",
                 name="Departure Opportunities",
                 hovertemplate="Date: %{x}<br>Delta-V: %{y:.0f} m/s<extra></extra>",
-                marker=dict(size=6, color="cyan"),
-                line=dict(width=2),
+                marker={"size": 6, "color": "cyan"},
+                line={"width": 2},
                 showlegend=False
             ),
             row=2, col=1
@@ -241,7 +241,7 @@ class TrajectoryVisualizer:
                 x=transfer_times,
                 nbinsx=20,
                 name="Duration Distribution",
-                marker=dict(color="lightblue", opacity=0.7),
+                marker={"color": "lightblue", "opacity": 0.7},
                 showlegend=False
             ),
             row=2, col=2
@@ -277,17 +277,18 @@ class TrajectoryVisualizer:
     ) -> go.Figure:
         """
         Create orbital elements evolution visualization.
-        
+
         Args:
             trajectory_data: Trajectory data with positions and velocities
             show_evolution: Whether to show parameter evolution over time
-            
+
         Returns
         -------
             Plotly Figure with orbital elements visualization
         """
         if "positions" not in trajectory_data or "velocities" not in trajectory_data:
-            raise ValueError("Trajectory data must contain 'positions' and 'velocities' arrays")
+            msg = "Trajectory data must contain 'positions' and 'velocities' arrays"
+            raise ValueError(msg)
 
         positions = trajectory_data["positions"]  # Shape: (3, N)
         velocities = trajectory_data["velocities"]  # Shape: (3, N)
@@ -327,7 +328,7 @@ class TrajectoryVisualizer:
                         y=y_data,
                         mode="lines",
                         name=f"{name.upper()} ({unit})",
-                        line=dict(width=2),
+                        line={"width": 2},
                         showlegend=False
                     ),
                     row=row, col=col
@@ -354,18 +355,18 @@ class TrajectoryVisualizer:
 
             fig.add_trace(
                 go.Table(
-                    header=dict(
-                        values=["Orbital Element", "Value"],
-                        fill_color="darkblue",
-                        align="left",
-                        font=dict(color="white", size=14)
-                    ),
-                    cells=dict(
-                        values=list(zip(*summary_data, strict=False)),
-                        fill_color="lightblue",
-                        align="left",
-                        font=dict(size=12)
-                    )
+                    header={
+                        "values": ["Orbital Element", "Value"],
+                        "fill_color": "darkblue",
+                        "align": "left",
+                        "font": {"color": "white", "size": 14}
+                    },
+                    cells={
+                        "values": list(zip(*summary_data, strict=False)),
+                        "fill_color": "lightblue",
+                        "align": "left",
+                        "font": {"size": 12}
+                    }
                 )
             )
 
@@ -385,17 +386,18 @@ class TrajectoryVisualizer:
     ) -> go.Figure:
         """
         Create comparative visualization of multiple trajectories.
-        
+
         Args:
             trajectories: List of trajectory data dictionaries
             labels: Optional labels for each trajectory
-            
+
         Returns
         -------
             Plotly Figure with trajectory comparison
         """
         if not trajectories:
-            raise ValueError("At least one trajectory required for comparison")
+            msg = "At least one trajectory required for comparison"
+            raise ValueError(msg)
 
         if labels is None:
             labels = [f"Trajectory {i+1}" for i in range(len(trajectories))]
@@ -426,11 +428,11 @@ class TrajectoryVisualizer:
                 go.Scatter3d(
                     x=[0], y=[0], z=[0],
                     mode="markers",
-                    marker=dict(
-                        size=self.config.earth_radius_scale,
-                        color="blue",
-                        opacity=0.8
-                    ),
+                    marker={
+                        "size": self.config.earth_radius_scale,
+                        "color": "blue",
+                        "opacity": 0.8
+                    },
                     name="Earth",
                     hovertemplate="Earth<br>Radius: 6,378 km<extra></extra>"
                 )
@@ -443,11 +445,11 @@ class TrajectoryVisualizer:
                 go.Scatter3d(
                     x=[moon_x], y=[0], z=[0],
                     mode="markers",
-                    marker=dict(
-                        size=self.config.moon_radius_scale,
-                        color="gray",
-                        opacity=0.8
-                    ),
+                    marker={
+                        "size": self.config.moon_radius_scale,
+                        "color": "gray",
+                        "opacity": 0.8
+                    },
                     name="Moon",
                     hovertemplate="Moon<br>Radius: 1,737 km<extra></extra>"
                 )
@@ -462,7 +464,8 @@ class TrajectoryVisualizer:
     ) -> None:
         """Add trajectory path to 3D plot."""
         if "positions" not in trajectory:
-            raise ValueError("Trajectory must contain 'positions' data")
+            msg = "Trajectory must contain 'positions' data"
+            raise ValueError(msg)
 
         positions = trajectory["positions"]  # Shape: (3, N)
 
@@ -484,11 +487,11 @@ class TrajectoryVisualizer:
             go.Scatter3d(
                 x=x_km, y=y_km, z=z_km,
                 mode="lines+markers",
-                line=dict(
-                    width=self.config.trajectory_width,
-                    color=color or self.config.trajectory_color
-                ),
-                marker=dict(size=2),
+                line={
+                    "width": self.config.trajectory_width,
+                    "color": color or self.config.trajectory_color
+                },
+                marker={"size": 2},
                 name=name,
                 text=hover_text,
                 hovertemplate="%{text}<extra></extra>"
@@ -499,20 +502,20 @@ class TrajectoryVisualizer:
         """Configure 3D plot layout."""
         fig.update_layout(
             title=title,
-            scene=dict(
-                xaxis_title="X (km)",
-                yaxis_title="Y (km)",
-                zaxis_title="Z (km)",
-                bgcolor=self.config.background_color,
-                xaxis=dict(gridcolor=self.config.grid_color),
-                yaxis=dict(gridcolor=self.config.grid_color),
-                zaxis=dict(gridcolor=self.config.grid_color),
-                aspectmode="data"
-            ),
+            scene={
+                "xaxis_title": "X (km)",
+                "yaxis_title": "Y (km)",
+                "zaxis_title": "Z (km)",
+                "bgcolor": self.config.background_color,
+                "xaxis": {"gridcolor": self.config.grid_color},
+                "yaxis": {"gridcolor": self.config.grid_color},
+                "zaxis": {"gridcolor": self.config.grid_color},
+                "aspectmode": "data"
+            },
             template=self.config.theme,
             width=self.config.width,
             height=self.config.height,
-            font=dict(color=self.config.text_color)
+            font={"color": self.config.text_color}
         )
 
     def _calculate_orbital_elements_evolution(
@@ -522,11 +525,11 @@ class TrajectoryVisualizer:
     ) -> dict[str, np.ndarray]:
         """
         Calculate orbital elements evolution from position/velocity data.
-        
+
         Args:
             positions: Position vectors (3, N)
             velocities: Velocity vectors (3, N)
-            
+
         Returns
         -------
             Dictionary of orbital elements arrays
@@ -575,13 +578,13 @@ def create_quick_trajectory_plot(
 ) -> go.Figure:
     """
     Quick function to create a simple trajectory plot.
-    
+
     Args:
         earth_orbit_alt: Earth orbit altitude [km]
         moon_orbit_alt: Moon orbit altitude [km]
         transfer_time: Transfer time [days]
         departure_epoch: Departure epoch [days since J2000]
-        
+
     Returns
     -------
         Plotly Figure with trajectory visualization
@@ -605,12 +608,11 @@ def create_quick_trajectory_plot(
             "times": trajectory.time_history
         }
 
-        fig = visualizer.create_3d_trajectory_plot(
+        return visualizer.create_3d_trajectory_plot(
             trajectory_data,
             title=f"Earth-Moon Transfer (ΔV: {total_dv:.0f} m/s)"
         )
 
-        return fig
 
     except Exception as e:
         # Create error plot
@@ -619,6 +621,6 @@ def create_quick_trajectory_plot(
             text=f"Trajectory generation failed: {e!s}",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16, color="red")
+            font={"size": 16, "color": "red"}
         )
         return fig

@@ -9,7 +9,7 @@ from typing import Any
 from dataclasses import dataclass
 import logging
 
-from config.costs import CostFactors
+from src.config.costs import CostFactors
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -36,14 +36,14 @@ class CostBreakdown:
 
 class MissionCostModel:
     """Comprehensive mission cost model for lunar missions.
-    
+
     This class provides parametric cost estimation for complete lunar missions
     based on mission characteristics and historical cost data.
     """
 
-    def __init__(self, cost_factors: CostFactors = None):
+    def __init__(self, cost_factors: CostFactors = None) -> None:
         """Initialize mission cost model.
-        
+
         Args:
             cost_factors: Cost factors for calculations
         """
@@ -85,14 +85,14 @@ class MissionCostModel:
                                   complexity: str = "moderate",
                                   schedule: str = "nominal") -> CostBreakdown:
         """Estimate total mission cost with detailed breakdown.
-        
+
         Args:
             spacecraft_mass: Spacecraft mass [kg]
             mission_duration_years: Mission duration [years]
             technology_readiness: Technology readiness level (1-4 scale)
             complexity: Mission complexity ('simple', 'moderate', 'complex', 'flagship')
             schedule: Schedule pressure ('relaxed', 'nominal', 'aggressive', 'crash')
-            
+
         Returns
         -------
             Detailed cost breakdown
@@ -171,19 +171,18 @@ class MissionCostModel:
         else:  # Large payload
             cost_per_kg = 10000  # $10k/kg
 
-        launch_cost = (spacecraft_mass * cost_per_kg) / 1e6  # Convert to $M
+        return (spacecraft_mass * cost_per_kg) / 1e6  # Convert to $M
 
-        return launch_cost
 
     def cost_sensitivity_analysis(self,
                                 base_params: dict[str, Any],
                                 sensitivity_ranges: dict[str, tuple[float, float]]) -> dict[str, Any]:
         """Perform cost sensitivity analysis.
-        
+
         Args:
             base_params: Base mission parameters
             sensitivity_ranges: Parameter ranges for sensitivity analysis
-            
+
         Returns
         -------
             Sensitivity analysis results
@@ -226,12 +225,12 @@ class MissionCostModel:
 
 class LaunchCostModel:
     """Specialized launch cost model with vehicle-specific calculations.
-    
+
     This class provides detailed launch cost analysis including different
     launch vehicle options and payload optimization.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize launch cost model."""
         # Launch vehicle database (costs in $M, capacities in kg)
         self.launch_vehicles = {
@@ -272,12 +271,12 @@ class LaunchCostModel:
                                   destination: str = "tml",
                                   use_reusable: bool = True) -> dict[str, Any]:
         """Find optimal launch vehicle for given payload.
-        
+
         Args:
             payload_mass: Payload mass [kg]
             destination: Destination ('leo', 'gto', 'tml')
             use_reusable: Use reusable vehicle option if available
-            
+
         Returns
         -------
             Optimal launch vehicle analysis
@@ -335,15 +334,15 @@ class LaunchCostModel:
 
     def calculate_multi_launch_strategy(self,
                                       total_payload: float,
-                                      max_single_payload: float = None,
+                                      max_single_payload: float | None = None,
                                       destination: str = "tml") -> dict[str, Any]:
         """Calculate optimal multi-launch strategy for large payloads.
-        
+
         Args:
             total_payload: Total payload mass [kg]
             max_single_payload: Maximum single launch payload [kg]
             destination: Destination orbit
-            
+
         Returns
         -------
             Multi-launch strategy analysis
@@ -410,12 +409,12 @@ class LaunchCostModel:
 
 class OperationalCostModel:
     """Operational cost model for lunar mission operations.
-    
+
     This class provides detailed operational cost estimation including
     mission operations, data processing, and mission extension costs.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize operational cost model."""
         # Operational cost components ($ per month)
         self.monthly_costs = {
@@ -445,12 +444,12 @@ class OperationalCostModel:
                                  mission_phase: str = "nominal",
                                  science_level: str = "standard") -> dict[str, Any]:
         """Estimate operational costs for mission duration.
-        
+
         Args:
             mission_duration_months: Mission duration in months
             mission_phase: Mission phase ('commissioning', 'nominal', 'extended')
             science_level: Science operations level ('minimal', 'standard', 'intensive')
-            
+
         Returns
         -------
             Operational cost breakdown
@@ -520,10 +519,10 @@ class OperationalCostModel:
 
     def cost_reduction_analysis(self, base_costs: dict[str, Any]) -> dict[str, Any]:
         """Analyze potential cost reduction strategies.
-        
+
         Args:
             base_costs: Base operational cost structure
-            
+
         Returns
         -------
             Cost reduction analysis
@@ -609,7 +608,7 @@ class OperationalCostModel:
 
 def create_cost_model_suite() -> dict[str, Any]:
     """Create a complete suite of cost models.
-    
+
     Returns
     -------
         Dictionary containing all cost model instances

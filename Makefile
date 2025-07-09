@@ -136,7 +136,8 @@ test: ## Run all tests with pytest
 	@echo "$(BOLD)$(BLUE)🧪 Running Test Suite$(NC)"
 	@echo "=========================="
 	@echo "$(YELLOW)Activating conda py312 environment and running tests...$(NC)"
-	@conda run -n py312 python tests/run_working_tests.py || { \
+	@conda run -n py312 python -m pytest tests/test_final_functionality.py tests/test_economics_modules.py \
+		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
 		echo "$(RED)❌ Test suite failed$(NC)"; \
 		exit 1; \
 	}

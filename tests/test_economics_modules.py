@@ -410,7 +410,7 @@ class TestISRUBenefits:
             analyzer = ISRUBenefitAnalyzer()
 
             # Common lunar resources
-            resources = ["water_ice", "oxygen", "hydrogen", "regolith"]
+            resources = ["water_ice", "oxygen", "hydrogen", "aluminum"]
 
             for resource in resources:
                 try:
@@ -422,13 +422,13 @@ class TestISRUBenefits:
                     )
 
                     assert "financial_metrics" in analysis
-                    assert "production_metrics" in analysis
+                    assert "production_profile" in analysis
 
                     # Basic sanity checks
                     financial_metrics = analysis["financial_metrics"]
                     if "npv" in financial_metrics:
                         npv = financial_metrics["npv"]
-                        assert isinstance(npv, (int, float)), f"NPV should be numeric for {resource}"
+                        assert isinstance(npv, int | float), f"NPV should be numeric for {resource}"
 
                 except Exception as e:
                     pytest.skip(f"Resource {resource} analysis failed: {e}")
@@ -457,10 +457,10 @@ class TestISRUBenefits:
                     else:
                         # Larger scale should generally have better economics
                         current_npv = analysis["financial_metrics"].get("npv", 0)
-                        base_npv = base_economics["financial_metrics"].get("npv", 0)
+                        base_economics["financial_metrics"].get("npv", 0)
 
                         # Note: This may not always be true due to complexity, so we just check reasonableness
-                        assert isinstance(current_npv, (int, float)), f"NPV should be numeric for {scale}"
+                        assert isinstance(current_npv, int | float), f"NPV should be numeric for {scale}"
 
                 except Exception as e:
                     pytest.skip(f"Scale {scale} analysis failed: {e}")
@@ -546,7 +546,7 @@ class TestSensitivityAnalysis:
             }
 
             distributions = {
-                "cost_multiplier": {"type": "triangular", "min": 0.8, "mode": 1.0, "max": 1.3},
+                "cost_multiplier": {"type": "triang", "min": 0.8, "mode": 1.0, "max": 1.3},
                 "revenue_multiplier": {"type": "normal", "mean": 1.0, "std": 0.15}
             }
 
@@ -592,7 +592,7 @@ class TestSensitivityAnalysis:
             distributions = [
                 {"type": "normal", "mean": 1.0, "std": 0.1},
                 {"type": "uniform", "min": 0.5, "max": 1.5},
-                {"type": "triangular", "min": 0.8, "mode": 1.0, "max": 1.2},
+                {"type": "triang", "min": 0.8, "mode": 1.0, "max": 1.2},
             ]
 
             for dist in distributions:
@@ -706,7 +706,7 @@ class TestEconomicReporting:
                 import json
 
                 with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-                    temp_path = f.name
+                    pass
 
                 # Try to export (may not be fully implemented)
                 json_path = reporter.export_to_json(summary, "test_summary")

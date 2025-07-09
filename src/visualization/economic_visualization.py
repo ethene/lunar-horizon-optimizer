@@ -1,5 +1,5 @@
 """
-Economic Analysis Visualization Module
+Economic Analysis Visualization Module.
 
 Provides comprehensive visualization for lunar mission economic analysis including
 financial dashboards, cost breakdowns, ROI analysis, sensitivity visualization,
@@ -15,10 +15,10 @@ from plotly.subplots import make_subplots
 from typing import Any
 from dataclasses import dataclass
 
-from economics.financial_models import CashFlowModel
-from economics.cost_models import MissionCostModel, CostBreakdown
-from economics.isru_benefits import ISRUBenefitAnalyzer
-from economics.reporting import FinancialSummary
+from src.economics.financial_models import CashFlowModel
+from src.economics.cost_models import MissionCostModel, CostBreakdown
+from src.economics.isru_benefits import ISRUBenefitAnalyzer
+from src.economics.reporting import FinancialSummary
 
 
 @dataclass
@@ -58,20 +58,20 @@ class DashboardConfig:
 class EconomicVisualizer:
     """
     Comprehensive economic analysis visualization using Plotly.
-    
+
     Provides professional-grade visualization of lunar mission economics including:
     - Financial dashboard with key metrics
     - Cost breakdown analysis
-    - Cash flow visualization  
+    - Cash flow visualization
     - ROI and sensitivity analysis
     - ISRU benefit analysis
     - Risk assessment charts
     """
 
-    def __init__(self, config: DashboardConfig | None = None):
+    def __init__(self, config: DashboardConfig | None = None) -> None:
         """
         Initialize economic visualizer.
-        
+
         Args:
             config: Dashboard configuration
         """
@@ -87,12 +87,12 @@ class EconomicVisualizer:
     ) -> go.Figure:
         """
         Create comprehensive financial dashboard.
-        
+
         Args:
             financial_summary: Financial summary data
             cash_flow_model: Optional cash flow model for detailed analysis
             cost_breakdown: Optional cost breakdown for detailed view
-            
+
         Returns
         -------
             Plotly Figure with financial dashboard
@@ -143,16 +143,16 @@ class EconomicVisualizer:
 
         # Update layout
         fig.update_layout(
-            title=dict(
-                text=f"Financial Dashboard - {self.config.title}",
-                x=0.5,
-                font=dict(size=20, family=self.config.font_family)
-            ),
+            title={
+                "text": f"Financial Dashboard - {self.config.title}",
+                "x": 0.5,
+                "font": {"size": 20, "family": self.config.font_family}
+            },
             template=self.config.theme,
             height=self.config.height,
             width=self.config.width,
             showlegend=self.config.show_legend,
-            font=dict(family=self.config.font_family, color=self.config.text_color)
+            font={"family": self.config.font_family, "color": self.config.text_color}
         )
 
         return fig
@@ -164,11 +164,11 @@ class EconomicVisualizer:
     ) -> go.Figure:
         """
         Create detailed cost analysis dashboard.
-        
+
         Args:
             cost_breakdown: Detailed cost breakdown
             comparison_scenarios: Optional cost scenarios for comparison
-            
+
         Returns
         -------
             Plotly Figure with cost analysis dashboard
@@ -206,7 +206,7 @@ class EconomicVisualizer:
             go.Pie(
                 labels=categories,
                 values=values,
-                marker=dict(colors=colors),
+                marker={"colors": colors},
                 textinfo="label+percent+value",
                 texttemplate="%{label}<br>%{percent}<br>$%{value:.1f}M",
                 hovertemplate="%{label}<br>Cost: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>"
@@ -225,8 +225,8 @@ class EconomicVisualizer:
                 y=dev_costs,
                 mode="lines+markers",
                 name="Development Costs",
-                line=dict(color=self.config.primary_color, width=3),
-                marker=dict(size=8)
+                line={"color": self.config.primary_color, "width": 3},
+                marker={"size": 8}
             ),
             row=1, col=2
         )
@@ -237,8 +237,8 @@ class EconomicVisualizer:
                 y=ops_costs,
                 mode="lines+markers",
                 name="Operations Costs",
-                line=dict(color=self.config.secondary_color, width=3),
-                marker=dict(size=8)
+                line={"color": self.config.secondary_color, "width": 3},
+                marker={"size": 8}
             ),
             row=1, col=2
         )
@@ -256,8 +256,8 @@ class EconomicVisualizer:
             go.Bar(
                 x=units,
                 y=unit_costs,
-                marker=dict(color=[self.config.primary_color, self.config.secondary_color,
-                                  self.config.success_color, self.config.warning_color]),
+                marker={"color": [self.config.primary_color, self.config.secondary_color,
+                                  self.config.success_color, self.config.warning_color]},
                 text=[f"${v:.1f}K" for v in unit_costs],
                 textposition="auto"
             ),
@@ -279,7 +279,7 @@ class EconomicVisualizer:
                 go.Bar(
                     x=scenario_names,
                     y=scenario_costs,
-                    marker=dict(color=colors_scenarios),
+                    marker={"color": colors_scenarios},
                     text=[f"${v:.0f}M" for v in scenario_costs],
                     textposition="auto"
                 ),
@@ -305,11 +305,11 @@ class EconomicVisualizer:
     ) -> go.Figure:
         """
         Create ISRU economic analysis dashboard.
-        
+
         Args:
             isru_analysis: ISRU analysis results
             resource_name: Name of primary resource
-            
+
         Returns
         -------
             Plotly Figure with ISRU analysis dashboard
@@ -337,16 +337,16 @@ class EconomicVisualizer:
         # 1. ISRU Key Metrics
         npv = financial_metrics.get("npv", 0) / 1e6  # Convert to millions
         roi = financial_metrics.get("roi", 0) * 100  # Convert to percentage
-        payback = break_even.get("payback_period_months", 0) / 12  # Convert to years
+        break_even.get("payback_period_months", 0) / 12  # Convert to years
 
         fig.add_trace(
             go.Indicator(
                 mode="number+delta",
                 value=npv,
-                title=dict(text="ISRU NPV ($M)"),
-                number=dict(suffix="M", font=dict(size=20)),
-                delta=dict(reference=0, position="bottom"),
-                domain=dict(x=[0, 0.5], y=[0.7, 1])
+                title={"text": "ISRU NPV ($M)"},
+                number={"suffix": "M", "font": {"size": 20}},
+                delta={"reference": 0, "position": "bottom"},
+                domain={"x": [0, 0.5], "y": [0.7, 1]}
             ),
             row=1, col=1
         )
@@ -355,18 +355,18 @@ class EconomicVisualizer:
             go.Indicator(
                 mode="gauge+number",
                 value=roi,
-                title=dict(text="ISRU ROI (%)"),
-                gauge=dict(
-                    axis=dict(range=[None, 100]),
-                    bar=dict(color=self.config.success_color),
-                    steps=[
-                        dict(range=[0, 25], color="lightgray"),
-                        dict(range=[25, 50], color="yellow"),
-                        dict(range=[50, 100], color="lightgreen")
+                title={"text": "ISRU ROI (%)"},
+                gauge={
+                    "axis": {"range": [None, 100]},
+                    "bar": {"color": self.config.success_color},
+                    "steps": [
+                        {"range": [0, 25], "color": "lightgray"},
+                        {"range": [25, 50], "color": "yellow"},
+                        {"range": [50, 100], "color": "lightgreen"}
                     ],
-                    threshold=dict(line=dict(color="red", width=4), thickness=0.75, value=90)
-                ),
-                domain=dict(x=[0, 0.5], y=[0, 0.6])
+                    "threshold": {"line": {"color": "red", "width": 4}, "thickness": 0.75, "value": 90}
+                },
+                domain={"x": [0, 0.5], "y": [0, 0.6]}
             ),
             row=1, col=1
         )
@@ -383,7 +383,7 @@ class EconomicVisualizer:
                     y=production,
                     mode="lines+markers",
                     name="Monthly Production",
-                    line=dict(color=self.config.primary_color, width=3),
+                    line={"color": self.config.primary_color, "width": 3},
                     yaxis="y"
                 ),
                 row=1, col=2
@@ -395,7 +395,7 @@ class EconomicVisualizer:
                     y=cumulative,
                     mode="lines+markers",
                     name="Cumulative Production",
-                    line=dict(color=self.config.secondary_color, width=3),
+                    line={"color": self.config.secondary_color, "width": 3},
                     yaxis="y2"
                 ),
                 row=1, col=2
@@ -422,7 +422,7 @@ class EconomicVisualizer:
                     y=cumulative_cf,
                     mode="lines+markers",
                     name="Cumulative Cash Flow",
-                    line=dict(color=self.config.success_color, width=3),
+                    line={"color": self.config.success_color, "width": 3},
                     fill="tonexty"
                 ),
                 row=2, col=1
@@ -477,11 +477,11 @@ class EconomicVisualizer:
     ) -> go.Figure:
         """
         Create sensitivity and risk analysis dashboard.
-        
+
         Args:
             sensitivity_results: Sensitivity analysis results
             monte_carlo_results: Optional Monte Carlo simulation results
-            
+
         Returns
         -------
             Plotly Figure with sensitivity analysis dashboard
@@ -515,7 +515,7 @@ class EconomicVisualizer:
                 go.Bar(
                     x=list(params_sorted),
                     y=list(sens_sorted),
-                    marker=dict(color=colors),
+                    marker={"color": colors},
                     text=[f"{s:.2f}" for s in sens_sorted],
                     textposition="auto"
                 ),
@@ -533,7 +533,7 @@ class EconomicVisualizer:
                     x=npv_dist,
                     nbinsx=50,
                     name="NPV Distribution",
-                    marker=dict(color=self.config.primary_color, opacity=0.7),
+                    marker={"color": self.config.primary_color, "opacity": 0.7},
                     histnorm="probability density"
                 ),
                 row=1, col=2
@@ -567,18 +567,18 @@ class EconomicVisualizer:
 
             fig.add_trace(
                 go.Table(
-                    header=dict(
-                        values=["Risk Metric", "Value"],
-                        fill_color=self.config.primary_color,
-                        align="left",
-                        font=dict(color="white", size=12)
-                    ),
-                    cells=dict(
-                        values=list(zip(*metrics_data, strict=False)),
-                        fill_color="lightblue",
-                        align="left",
-                        font=dict(size=11)
-                    )
+                    header={
+                        "values": ["Risk Metric", "Value"],
+                        "fill_color": self.config.primary_color,
+                        "align": "left",
+                        "font": {"color": "white", "size": 12}
+                    },
+                    cells={
+                        "values": list(zip(*metrics_data, strict=False)),
+                        "fill_color": "lightblue",
+                        "align": "left",
+                        "font": {"size": 11}
+                    }
                 ),
                 row=2, col=1
             )
@@ -599,13 +599,13 @@ class EconomicVisualizer:
                     mode="markers+text",
                     text=scenario_names,
                     textposition="top center",
-                    marker=dict(
-                        size=[p*100 for p in scenario_probs],  # Size by probability
-                        color=scenario_npvs,
-                        colorscale="RdYlGn",
-                        showscale=True,
-                        colorbar=dict(title="NPV ($M)")
-                    ),
+                    marker={
+                        "size": [p*100 for p in scenario_probs],  # Size by probability
+                        "color": scenario_npvs,
+                        "colorscale": "RdYlGn",
+                        "showscale": True,
+                        "colorbar": {"title": "NPV ($M)"}
+                    },
                     name="Scenarios"
                 ),
                 row=2, col=2
@@ -635,10 +635,10 @@ class EconomicVisualizer:
             go.Indicator(
                 mode="number+delta",
                 value=financial_summary.net_present_value / 1e6,
-                title=dict(text="NPV ($M)"),
-                number=dict(suffix="M", font=dict(size=16)),
-                delta=dict(reference=0, position="bottom"),
-                domain=dict(x=[0, 0.25], y=[0.8, 1])
+                title={"text": "NPV ($M)"},
+                number={"suffix": "M", "font": {"size": 16}},
+                delta={"reference": 0, "position": "bottom"},
+                domain={"x": [0, 0.25], "y": [0.8, 1]}
             ),
             row=row, col=col
         )
@@ -647,9 +647,9 @@ class EconomicVisualizer:
             go.Indicator(
                 mode="number",
                 value=financial_summary.internal_rate_of_return * 100,
-                title=dict(text="IRR (%)"),
-                number=dict(suffix="%", font=dict(size=16)),
-                domain=dict(x=[0.25, 0.5], y=[0.8, 1])
+                title={"text": "IRR (%)"},
+                number={"suffix": "%", "font": {"size": 16}},
+                domain={"x": [0.25, 0.5], "y": [0.8, 1]}
             ),
             row=row, col=col
         )
@@ -658,9 +658,9 @@ class EconomicVisualizer:
             go.Indicator(
                 mode="number",
                 value=financial_summary.payback_period_years,
-                title=dict(text="Payback (Years)"),
-                number=dict(suffix=" yr", font=dict(size=16)),
-                domain=dict(x=[0, 0.25], y=[0.4, 0.7])
+                title={"text": "Payback (Years)"},
+                number={"suffix": " yr", "font": {"size": 16}},
+                domain={"x": [0, 0.25], "y": [0.4, 0.7]}
             ),
             row=row, col=col
         )
@@ -669,17 +669,17 @@ class EconomicVisualizer:
             go.Indicator(
                 mode="gauge+number",
                 value=financial_summary.probability_of_success * 100,
-                title=dict(text="Success Probability"),
-                gauge=dict(
-                    axis=dict(range=[None, 100]),
-                    bar=dict(color=self.config.success_color),
-                    steps=[
-                        dict(range=[0, 50], color="lightgray"),
-                        dict(range=[50, 80], color="yellow"),
-                        dict(range=[80, 100], color="lightgreen")
+                title={"text": "Success Probability"},
+                gauge={
+                    "axis": {"range": [None, 100]},
+                    "bar": {"color": self.config.success_color},
+                    "steps": [
+                        {"range": [0, 50], "color": "lightgray"},
+                        {"range": [50, 80], "color": "yellow"},
+                        {"range": [80, 100], "color": "lightgreen"}
                     ]
-                ),
-                domain=dict(x=[0.25, 0.5], y=[0.4, 0.7])
+                },
+                domain={"x": [0.25, 0.5], "y": [0.4, 0.7]}
             ),
             row=row, col=col
         )
@@ -704,7 +704,7 @@ class EconomicVisualizer:
             go.Bar(
                 x=categories,
                 y=values,
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=[f"${v:.0f}M" for v in values],
                 textposition="auto",
                 showlegend=False
@@ -732,7 +732,7 @@ class EconomicVisualizer:
                 y=cash_flows,
                 mode="lines",
                 name="Monthly Cash Flow",
-                line=dict(color=self.config.primary_color, width=2),
+                line={"color": self.config.primary_color, "width": 2},
                 showlegend=False
             ),
             row=row, col=col
@@ -744,7 +744,7 @@ class EconomicVisualizer:
                 y=cumulative,
                 mode="lines",
                 name="Cumulative Cash Flow",
-                line=dict(color=self.config.secondary_color, width=2),
+                line={"color": self.config.secondary_color, "width": 2},
                 yaxis="y2",
                 showlegend=False
             ),
@@ -794,7 +794,7 @@ class EconomicVisualizer:
             go.Bar(
                 x=years,
                 y=roi_values,
-                marker=dict(color=self.config.success_color),
+                marker={"color": self.config.success_color},
                 text=[f"{v:.1%}" for v in roi_values],
                 textposition="auto",
                 showlegend=False
@@ -822,11 +822,11 @@ class EconomicVisualizer:
                 mode="markers+text",
                 text=scenarios,
                 textposition="top center",
-                marker=dict(
-                    size=15,
-                    color=[self.config.success_color, self.config.primary_color,
+                marker={
+                    "size": 15,
+                    "color": [self.config.success_color, self.config.primary_color,
                           self.config.warning_color, self.config.danger_color]
-                ),
+                },
                 showlegend=False
             ),
             row=row, col=col
@@ -845,7 +845,7 @@ class EconomicVisualizer:
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="gray"),
+            font={"size": 14, "color": "gray"},
             row=row, col=col
         )
 
@@ -860,15 +860,15 @@ def create_quick_financial_dashboard(
 ) -> go.Figure:
     """
     Quick function to create a simple financial dashboard.
-    
+
     Args:
         npv: Net Present Value
-        irr: Internal Rate of Return  
+        irr: Internal Rate of Return
         roi: Return on Investment
         payback_years: Payback period in years
         total_investment: Total investment required
         total_revenue: Total expected revenue
-        
+
     Returns
     -------
         Plotly Figure with financial dashboard

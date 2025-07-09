@@ -39,16 +39,19 @@ class SimpleLunarTransfer:
                          moon_orbit_alt: float, transfer_time: float,
                          max_revolutions: int = 0) -> tuple[SimpleTrajectory, float]:
         """Generate a simplified transfer trajectory.
-        
+
         Returns realistic delta-v values based on typical lunar mission parameters.
         """
         # Validate inputs
         if not (self.min_earth_alt <= earth_orbit_alt <= self.max_earth_alt):
-            raise ValueError(f"Earth altitude {earth_orbit_alt} outside valid range")
+            msg = f"Earth altitude {earth_orbit_alt} outside valid range"
+            raise ValueError(msg)
         if not (self.min_moon_alt <= moon_orbit_alt <= self.max_moon_alt):
-            raise ValueError(f"Moon altitude {moon_orbit_alt} outside valid range")
+            msg = f"Moon altitude {moon_orbit_alt} outside valid range"
+            raise ValueError(msg)
         if not (3.0 <= transfer_time <= 10.0):
-            raise ValueError(f"Transfer time {transfer_time} outside valid range")
+            msg = f"Transfer time {transfer_time} outside valid range"
+            raise ValueError(msg)
 
         # Calculate realistic delta-v based on orbital mechanics approximations
         # Base delta-v for lunar transfer: ~3200 m/s

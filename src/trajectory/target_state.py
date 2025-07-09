@@ -46,7 +46,8 @@ def calculate_target_state(
 
     # Validate vector shapes
     if moon_pos.shape != (3,) or moon_vel.shape != (3,):
-        raise ValueError("Position and velocity vectors must be 3D")
+        msg = "Position and velocity vectors must be 3D"
+        raise ValueError(msg)
 
     # Calculate unit vectors and magnitudes
     moon_pos_mag = np.linalg.norm(moon_pos)
@@ -118,13 +119,13 @@ def calculate_target_state(
 
 def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
     """Create rotation matrix for rotating around axis by angle.
-    
+
     Uses Rodriguez rotation formula.
-    
+
     Args:
         axis: Unit vector of rotation axis
         angle: Rotation angle in radians
-        
+
     Returns
     -------
         3x3 rotation matrix
@@ -137,5 +138,4 @@ def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
                   [axis[2], 0, -axis[0]],
                   [-axis[1], axis[0], 0]])
     I = np.eye(3)
-    R = I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)
-    return R
+    return I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)

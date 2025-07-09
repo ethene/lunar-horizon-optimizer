@@ -3,7 +3,7 @@ Comprehensive integration test suite for Tasks 3, 4, and 5
 
 This module tests the integration between:
 - Task 3: Enhanced Trajectory Generation
-- Task 4: Global Optimization Module  
+- Task 4: Global Optimization Module
 - Task 5: Basic Economic Analysis Module
 
 Tests cover end-to-end workflows, data flow, and system integration.
@@ -93,7 +93,7 @@ class TestTask3Task4Integration:
 
             # Verify fitness structure
             assert len(fitness) == 3  # delta_v, time, cost
-            assert all(isinstance(f, (int, float)) for f in fitness)
+            assert all(isinstance(f, int | float) for f in fitness)
             assert all(f > 0 for f in fitness)
 
         except Exception as e:
@@ -116,7 +116,7 @@ class TestTask3Task4Integration:
             transfer_time = 5.5
 
             decision_vector = [earth_alt, moon_alt, transfer_time]
-            fitness = problem.fitness(decision_vector)
+            problem.fitness(decision_vector)
 
             # Verify trajectory generation received correct parameters
             call_args = mock_instance.generate_transfer.call_args
@@ -340,7 +340,12 @@ class TestTask4Task5Integration:
             self.FinancialParameters = FinancialParameters
             self.MissionCostModel = MissionCostModel
 
-            self.cost_factors = CostFactors()
+            self.cost_factors = CostFactors(
+            launch_cost_per_kg=10000.0,
+            operations_cost_per_day=100000.0,
+            development_cost=1e9,
+            contingency_percentage=20.0
+        )
 
         except ImportError as e:
             pytest.skip(f"Required modules not available: {e}")
@@ -400,7 +405,10 @@ class TestTask4Task5Integration:
             }
 
             total_cost = cost_calculator.calculate_mission_cost(
-                trajectory_params, mission_params
+                total_dv=trajectory_params["total_dv"],
+                transfer_time=trajectory_params["transfer_time"],
+                earth_orbit_alt=trajectory_params["earth_orbit_alt"],
+                moon_orbit_alt=trajectory_params["moon_orbit_alt"]
             )
 
             # Verify cost calculation
@@ -560,7 +568,7 @@ class TestFullSystemIntegration:
             economic_analyses = []
             for solution in best_solutions:
                 # Extract solution parameters
-                params = solution["parameters"]
+                solution["parameters"]
                 objectives = solution["objectives"]
 
                 # Create financial model
@@ -628,7 +636,7 @@ class TestFullSystemIntegration:
             }
 
             # Should be usable by optimization
-            assert all(isinstance(v, (int, float)) for v in trajectory_params.values())
+            assert all(isinstance(v, int | float) for v in trajectory_params.values())
 
             # 2. Optimization results → Economic analysis
             optimization_result = {
@@ -693,7 +701,7 @@ class TestFullSystemIntegration:
             start_time = time.time()
 
             # Simulate integrated workflow with minimal operations
-            cost_factors = self.CostFactors()
+            self.CostFactors()
 
             # Financial analysis
             params = self.FinancialParameters()

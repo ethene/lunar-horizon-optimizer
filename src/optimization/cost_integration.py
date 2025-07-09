@@ -7,7 +7,7 @@ optimization, integrating mission cost factors with trajectory parameters.
 import numpy as np
 import logging
 
-from config.costs import CostFactors
+from src.config.costs import CostFactors
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -15,19 +15,23 @@ logger = logging.getLogger(__name__)
 
 class CostCalculator:
     """Economic cost calculator for lunar mission optimization.
-    
+
     This class provides methods to calculate mission costs based on
     trajectory parameters and economic factors, supporting the cost
     objective in multi-objective optimization.
     """
 
-    def __init__(self, cost_factors: CostFactors = None):
+    def __init__(self, cost_factors: CostFactors | None = None) -> None:
         """Initialize cost calculator.
-        
+
         Args:
             cost_factors: Economic cost parameters
         """
-        self.cost_factors = cost_factors or CostFactors()
+        self.cost_factors = cost_factors or CostFactors(
+            launch_cost_per_kg=10000.0,
+            operations_cost_per_day=50000.0,
+            development_cost=500000000.0
+        )
 
         # Mission parameters for cost calculations
         self.spacecraft_mass = 5000.0  # kg (typical lunar mission)
@@ -43,13 +47,13 @@ class CostCalculator:
                              earth_orbit_alt: float,
                              moon_orbit_alt: float) -> float:
         """Calculate total mission cost based on trajectory parameters.
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
             transfer_time: Transfer time [days]
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
-            
+
         Returns
         -------
             Total mission cost [cost units]
@@ -83,10 +87,10 @@ class CostCalculator:
 
     def _calculate_propellant_cost(self, total_dv: float) -> float:
         """Calculate propellant-related costs.
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
-            
+
         Returns
         -------
             Propellant cost component
@@ -111,10 +115,10 @@ class CostCalculator:
 
     def _calculate_launch_cost(self, earth_orbit_alt: float) -> float:
         """Calculate launch costs based on Earth orbit altitude.
-        
+
         Args:
             earth_orbit_alt: Earth orbit altitude [km]
-            
+
         Returns
         -------
             Launch cost component
@@ -129,10 +133,10 @@ class CostCalculator:
 
     def _calculate_operations_cost(self, transfer_time: float) -> float:
         """Calculate operational costs based on mission duration.
-        
+
         Args:
             transfer_time: Transfer time [days]
-            
+
         Returns
         -------
             Operations cost component
@@ -142,7 +146,7 @@ class CostCalculator:
 
     def _calculate_development_cost(self) -> float:
         """Calculate amortized development costs.
-        
+
         Returns
         -------
             Development cost component
@@ -153,11 +157,11 @@ class CostCalculator:
 
     def _calculate_altitude_cost(self, earth_orbit_alt: float, moon_orbit_alt: float) -> float:
         """Calculate altitude-dependent cost factors.
-        
+
         Args:
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
-            
+
         Returns
         -------
             Altitude-dependent cost component
@@ -178,13 +182,13 @@ class CostCalculator:
                                earth_orbit_alt: float,
                                moon_orbit_alt: float) -> dict[str, float]:
         """Calculate detailed cost breakdown.
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
             transfer_time: Transfer time [days]
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
-            
+
         Returns
         -------
             Dictionary with detailed cost breakdown
@@ -219,14 +223,14 @@ class CostCalculator:
 
 class EconomicObjectives:
     """Economic objective functions for multi-objective optimization.
-    
+
     This class provides various economic objective functions that can be
     used in the global optimization framework.
     """
 
-    def __init__(self, cost_calculator: CostCalculator = None):
+    def __init__(self, cost_calculator: CostCalculator = None) -> None:
         """Initialize economic objectives.
-        
+
         Args:
             cost_calculator: Cost calculator instance
         """
@@ -238,13 +242,13 @@ class EconomicObjectives:
                            earth_orbit_alt: float,
                            moon_orbit_alt: float) -> float:
         """Objective function to minimize total mission cost.
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
             transfer_time: Transfer time [days]
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
-            
+
         Returns
         -------
             Total mission cost [cost units]
@@ -260,14 +264,14 @@ class EconomicObjectives:
                            moon_orbit_alt: float,
                            payload_mass: float = 1000.0) -> float:
         """Objective function to minimize cost per kg of payload.
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
             transfer_time: Transfer time [days]
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
             payload_mass: Payload mass [kg]
-            
+
         Returns
         -------
             Cost per kg of payload [cost units/kg]
@@ -283,15 +287,15 @@ class EconomicObjectives:
                                earth_orbit_alt: float,
                                moon_orbit_alt: float) -> float:
         """Objective function to maximize cost efficiency (minimize negative efficiency).
-        
+
         Cost efficiency is defined as payload capability per unit cost.
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
             transfer_time: Transfer time [days]
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
-            
+
         Returns
         -------
             Negative cost efficiency (for minimization)
@@ -313,14 +317,14 @@ class EconomicObjectives:
                               moon_orbit_alt: float,
                               mission_revenue: float = 5e6) -> float:
         """Calculate ROI-based objective (minimize negative ROI).
-        
+
         Args:
             total_dv: Total delta-v requirement [m/s]
             transfer_time: Transfer time [days]
             earth_orbit_alt: Earth orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
             mission_revenue: Expected mission revenue [cost units]
-            
+
         Returns
         -------
             Negative ROI (for minimization)
@@ -329,10 +333,7 @@ class EconomicObjectives:
             total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt
         )
 
-        if total_cost > 0:
-            roi = (mission_revenue - total_cost) / total_cost
-        else:
-            roi = 0.0
+        roi = (mission_revenue - total_cost) / total_cost if total_cost > 0 else 0.0
 
         # Return negative ROI for minimization
         return -roi
@@ -343,13 +344,13 @@ def create_cost_calculator(launch_cost_per_kg: float = 10000.0,
                           development_cost: float = 1e9,
                           contingency_percentage: float = 20.0) -> CostCalculator:
     """Create cost calculator with specified parameters.
-    
+
     Args:
         launch_cost_per_kg: Launch cost per kg [$/kg]
         operations_cost_per_day: Operations cost per day [$/day]
         development_cost: Development cost [$ total]
         contingency_percentage: Contingency percentage [%]
-        
+
     Returns
     -------
         Configured cost calculator

@@ -368,7 +368,7 @@ class TestEarthMoonTrajectories:
 
             # Validate output structure
             assert trajectory is not None
-            assert isinstance(total_dv, (int, float))
+            assert isinstance(total_dv, int | float)
 
             # Validate delta-v range
             assert TRANSFER_DELTAV_RANGE[0] <= total_dv <= TRANSFER_DELTAV_RANGE[1], \
@@ -401,7 +401,7 @@ class TestEarthMoonTrajectories:
 
             # Validate output
             assert trajectory is not None
-            assert isinstance(total_dv, (int, float))
+            assert isinstance(total_dv, int | float)
 
             # Validate delta-v (patched conics should be close to Lambert)
             assert TRANSFER_DELTAV_RANGE[0] <= total_dv <= TRANSFER_DELTAV_RANGE[1], \
@@ -461,7 +461,7 @@ class TestEarthMoonTrajectories:
 
         # Test smaller date range to avoid timeout issues
         start_date = datetime(2025, 6, 1)
-        end_date = datetime(2025, 6, 15)  # 2 weeks only
+        datetime(2025, 6, 15)  # 2 weeks only
 
         # Test find_optimal_departure_time method (more focused than find_optimal_windows)
         if hasattr(calculator, "find_optimal_departure_time"):

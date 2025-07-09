@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class OptimizationResult:
     """Container for optimization results and analysis.
-    
+
     This class encapsulates the complete results from a multi-objective
     optimization run, including Pareto solutions, statistics, and metadata.
     """
@@ -27,11 +27,12 @@ class OptimizationResult:
     optimization_stats: dict[str, Any]
     problem_config: dict[str, Any]
     algorithm_config: dict[str, Any]
-    timestamp: datetime
+    timestamp: datetime | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Post-initialization processing."""
-        if not isinstance(self.timestamp, datetime):
+        # Ensure timestamp is set if not provided
+        if self.timestamp is None:
             self.timestamp = datetime.now()
 
     @property
@@ -57,17 +58,18 @@ class OptimizationResult:
 
     def get_best_solutions(self, objective: str, num_solutions: int = 5) -> list[dict[str, Any]]:
         """Get best solutions for a specific objective.
-        
+
         Args:
             objective: Objective name ('delta_v', 'time', 'cost')
             num_solutions: Number of solutions to return
-            
+
         Returns
         -------
             List of best solutions for the specified objective
         """
         if objective not in ["delta_v", "time", "cost"]:
-            raise ValueError(f"Invalid objective: {objective}")
+            msg = f"Invalid objective: {objective}"
+            raise ValueError(msg)
 
         # Sort by objective value (ascending - all objectives are minimized)
         sorted_solutions = sorted(
@@ -84,7 +86,7 @@ class OptimizationResult:
             "optimization_stats": self.optimization_stats,
             "problem_config": self.problem_config,
             "algorithm_config": self.algorithm_config,
-            "timestamp": self.timestamp.isoformat(),
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "num_pareto_solutions": self.num_pareto_solutions,
             "objective_ranges": self.objective_ranges
         }
@@ -103,21 +105,21 @@ class OptimizationResult:
 
 class ParetoAnalyzer:
     """Analysis tools for Pareto fronts and multi-objective optimization results.
-    
+
     This class provides methods to analyze, rank, and process Pareto-optimal
     solutions from multi-objective optimization.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Pareto analyzer."""
         logger.info("Initialized ParetoAnalyzer")
 
     def analyze_pareto_front(self, optimization_result: dict[str, Any]) -> OptimizationResult:
         """Analyze optimization results and create structured result object.
-        
+
         Args:
             optimization_result: Raw optimization results from GlobalOptimizer
-            
+
         Returns
         -------
             Structured optimization result with analysis
@@ -147,18 +149,19 @@ class ParetoAnalyzer:
                                    preference_weights: list[float],
                                    normalization_method: str = "minmax") -> list[tuple[float, dict[str, Any]]]:
         """Rank solutions by user preferences using weighted objectives.
-        
+
         Args:
             solutions: List of Pareto solutions
             preference_weights: Weights for [delta_v, time, cost] objectives
             normalization_method: Normalization method ('minmax', 'zscore')
-            
+
         Returns
         -------
             List of (score, solution) tuples sorted by preference score
         """
         if len(preference_weights) != 3:
-            raise ValueError("preference_weights must have 3 elements for [delta_v, time, cost]")
+            msg = "preference_weights must have 3 elements for [delta_v, time, cost]"
+            raise ValueError(msg)
 
         if not solutions:
             return []
@@ -175,7 +178,8 @@ class ParetoAnalyzer:
         elif normalization_method == "zscore":
             normalized_objectives = self._zscore_normalize(objectives_matrix)
         else:
-            raise ValueError(f"Unknown normalization method: {normalization_method}")
+            msg = f"Unknown normalization method: {normalization_method}"
+            raise ValueError(msg)
 
         # Calculate weighted scores
         weights = np.array(preference_weights)
@@ -192,11 +196,11 @@ class ParetoAnalyzer:
 
     def find_knee_solutions(self, solutions: list[dict[str, Any]], num_knees: int = 3) -> list[dict[str, Any]]:
         """Find knee points in the Pareto front (best trade-off solutions).
-        
+
         Args:
             solutions: List of Pareto solutions
             num_knees: Number of knee points to find
-            
+
         Returns
         -------
             List of knee point solutions
@@ -223,10 +227,10 @@ class ParetoAnalyzer:
     def compare_optimization_runs(self,
                                 results: list[OptimizationResult]) -> dict[str, Any]:
         """Compare multiple optimization runs.
-        
+
         Args:
             results: List of optimization results to compare
-            
+
         Returns
         -------
             Comparison analysis
@@ -234,7 +238,7 @@ class ParetoAnalyzer:
         if not results:
             return {}
 
-        comparison = {
+        comparison: dict[str, Any] = {
             "num_runs": len(results),
             "pareto_sizes": [r.num_pareto_solutions for r in results],
             "objective_ranges_comparison": {},
@@ -268,13 +272,13 @@ class ParetoAnalyzer:
 
     def calculate_hypervolume(self,
                             solutions: list[dict[str, Any]],
-                            reference_point: list[float] = None) -> float:
+                            reference_point: list[float] | None = None) -> float:
         """Calculate hypervolume indicator for Pareto front quality.
-        
+
         Args:
             solutions: List of Pareto solutions
             reference_point: Reference point for hypervolume calculation
-            
+
         Returns
         -------
             Hypervolume value
@@ -290,20 +294,20 @@ class ParetoAnalyzer:
 
         # Use worst point as reference if not provided
         if reference_point is None:
-            reference_point = np.max(objectives, axis=0) * 1.1  # 10% worse than worst
-
-        reference_point = np.array(reference_point)
+            reference_point_array = np.max(objectives, axis=0) * 1.1  # 10% worse than worst
+        else:
+            reference_point_array = np.array(reference_point)
 
         # Simple hypervolume calculation for 3D case
         # This is a simplified implementation - for production use, consider pygmo's hypervolume
-        hypervolume = self._calculate_hypervolume_3d(objectives, reference_point)
+        hypervolume = self._calculate_hypervolume_3d(objectives, reference_point_array)
 
         logger.info(f"Calculated hypervolume: {hypervolume:.2e}")
         return hypervolume
 
     def export_results(self, result: OptimizationResult, filepath: str) -> None:
         """Export optimization results to JSON file.
-        
+
         Args:
             result: Optimization result to export
             filepath: Output file path
@@ -313,7 +317,7 @@ class ParetoAnalyzer:
                 json.dump(result.to_dict(), f, indent=2, default=str)
             logger.info(f"Exported optimization results to {filepath}")
         except Exception as e:
-            logger.error(f"Failed to export results: {e}")
+            logger.exception(f"Failed to export results: {e}")
             raise
 
     def _calculate_optimization_stats(self, optimization_result: dict[str, Any]) -> dict[str, Any]:
@@ -352,7 +356,7 @@ class ParetoAnalyzer:
             "optimization_type": "multi_objective"
         }
 
-    def _minmax_normalize(self, objectives: np.ndarray) -> np.ndarray:
+    def _minmax_normalize(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:
         """Min-max normalization of objectives."""
         min_vals = np.min(objectives, axis=0)
         max_vals = np.max(objectives, axis=0)
@@ -361,9 +365,10 @@ class ParetoAnalyzer:
         ranges = max_vals - min_vals
         ranges[ranges == 0] = 1.0
 
-        return (objectives - min_vals) / ranges
+        normalized_result: np.ndarray[np.float64, np.dtype[np.float64]] = (objectives - min_vals) / ranges
+        return normalized_result
 
-    def _zscore_normalize(self, objectives: np.ndarray) -> np.ndarray:
+    def _zscore_normalize(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:
         """Z-score normalization of objectives."""
         means = np.mean(objectives, axis=0)
         stds = np.std(objectives, axis=0)
@@ -371,9 +376,10 @@ class ParetoAnalyzer:
         # Avoid division by zero
         stds[stds == 0] = 1.0
 
-        return (objectives - means) / stds
+        normalized_result: np.ndarray[np.float64, np.dtype[np.float64]] = (objectives - means) / stds
+        return normalized_result
 
-    def _find_knee_points(self, normalized_objectives: np.ndarray, num_knees: int) -> list[int]:
+    def _find_knee_points(self, normalized_objectives: np.ndarray[np.float64, np.dtype[np.float64]], num_knees: int) -> list[int]:
         """Find knee points using perpendicular distance method."""
         if len(normalized_objectives) <= num_knees:
             return list(range(len(normalized_objectives)))
@@ -388,11 +394,10 @@ class ParetoAnalyzer:
         # Sort by distance and select evenly distributed points
         distances.sort()
         step = len(distances) // num_knees
-        knee_indices = [distances[i * step][1] for i in range(num_knees)]
+        return [distances[i * step][1] for i in range(num_knees)]
 
-        return knee_indices
 
-    def _calculate_hypervolume_3d(self, objectives: np.ndarray, reference_point: np.ndarray) -> float:
+    def _calculate_hypervolume_3d(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]], reference_point: np.ndarray[np.float64, np.dtype[np.float64]]) -> float:
         """Simple hypervolume calculation for 3D objectives."""
         # This is a simplified implementation
         # For production, consider using pygmo.hypervolume or similar
@@ -417,7 +422,7 @@ class ParetoAnalyzer:
 
 def create_pareto_analyzer() -> ParetoAnalyzer:
     """Create a Pareto analyzer instance.
-    
+
     Returns
     -------
         Configured ParetoAnalyzer instance

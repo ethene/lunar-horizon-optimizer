@@ -55,11 +55,11 @@ def generate_lunar_transfer(
     initial_orbit_alt: float = TD.DEFAULT_EARTH_ORBIT,
     final_orbit_alt: float = TD.DEFAULT_MOON_ORBIT,
     max_tli_dv: float = TD.MAX_TLI_DELTA_V,
-    min_tli_dv: float = None,
+    min_tli_dv: float | None = None,
     max_revs: int = TD.MAX_REVOLUTIONS
 ) -> tuple[Trajectory, float]:
     """Generate a lunar transfer trajectory.
-    
+
     Args:
         departure_time: Departure time (must be timezone-aware)
         time_of_flight: Transfer time in days
@@ -68,43 +68,48 @@ def generate_lunar_transfer(
         max_tli_dv: Maximum allowed TLI delta-v in m/s (default: 3500 m/s)
         min_tli_dv: Minimum required TLI delta-v in m/s (default: None)
         max_revs: Maximum number of revolutions (default: 1)
-        
+
     Returns
     -------
         Tuple containing:
             - Trajectory object with complete transfer
             - Total delta-v cost in m/s
-            
+
     Raises
     ------
         ValueError: If any parameters are invalid
     """
     # Validate input parameters
     if departure_time.tzinfo is None:
-        raise ValueError("Departure time must be timezone-aware")
+        msg = "Departure time must be timezone-aware"
+        raise ValueError(msg)
 
     TD.validate_earth_orbit(initial_orbit_alt)
     TD.validate_moon_orbit(final_orbit_alt)
     TD.validate_transfer_time(time_of_flight)
 
     if max_tli_dv <= 0:
-        raise ValueError("Maximum delta-v must be positive")
+        msg = "Maximum delta-v must be positive"
+        raise ValueError(msg)
     if min_tli_dv is not None and min_tli_dv >= max_tli_dv:
-        raise ValueError("Maximum delta-v must be greater than minimum")
+        msg = "Maximum delta-v must be greater than minimum"
+        raise ValueError(msg)
     if max_revs < 0:
-        raise ValueError("Maximum revolutions must be non-negative")
+        msg = "Maximum revolutions must be non-negative"
+        raise ValueError(msg)
     if max_revs > TD.MAX_REVOLUTIONS:
-        raise ValueError(f"Maximum revolutions must be less than {TD.MAX_REVOLUTIONS}")
+        msg = f"Maximum revolutions must be less than {TD.MAX_REVOLUTIONS}"
+        raise ValueError(msg)
 
     # Convert altitudes to meters
-    r_park = km_to_m(TD.EARTH_RADIUS/1000.0 + initial_orbit_alt)
-    r_moon_orbit = km_to_m(TD.MOON_MEAN_RADIUS/1000.0 + final_orbit_alt)
+    km_to_m(TD.EARTH_RADIUS/1000.0 + initial_orbit_alt)
+    km_to_m(TD.MOON_MEAN_RADIUS/1000.0 + final_orbit_alt)
 
     # Initialize lunar transfer solver
     transfer = LunarTransfer()
 
     # Generate transfer trajectory
-    trajectory = transfer.generate_transfer(
+    return transfer.generate_transfer(
         epoch=datetime_to_mjd2000(departure_time),
         earth_orbit_alt=initial_orbit_alt,
         moon_orbit_alt=final_orbit_alt,
@@ -112,7 +117,6 @@ def generate_lunar_transfer(
         max_revolutions=max_revs
     )
 
-    return trajectory
 
 def optimize_departure_time(
     reference_epoch: datetime,
@@ -122,18 +126,18 @@ def optimize_departure_time(
     search_window: float = 1.0  # days
 ) -> datetime:
     """Find optimal departure time for minimum delta-v transfer.
-    
+
     Searches for the best departure time within a window around the
     reference epoch by generating trajectories at regular intervals
     and selecting the one with minimum total delta-v.
-    
+
     Args:
         reference_epoch: Center of search window (timezone-aware)
         earth_orbit_altitude: Initial parking orbit altitude [km]
         moon_orbit_altitude: Final lunar orbit altitude [km]
         transfer_time: Nominal transfer duration [days]
         search_window: Time window to search around reference [days]
-        
+
     Returns
     -------
         Optimal departure time
@@ -147,7 +151,7 @@ def optimize_departure_time(
 
     for i in range(num_samples):
         departure = reference_epoch + timedelta(days=(-search_window + i * sample_spacing))
-        arrival = departure + timedelta(days=transfer_time)
+        departure + timedelta(days=transfer_time)
 
         try:
             trajectory, total_dv = generate_lunar_transfer(
@@ -164,7 +168,8 @@ def optimize_departure_time(
             continue
 
     if best_departure is None:
-        raise ValueError("No valid trajectories found in search window")
+        msg = "No valid trajectories found in search window"
+        raise ValueError(msg)
 
     logger.info(f"Optimal departure time found: {best_departure.isoformat()}")
     logger.info(f"Minimum delta-v: {min_dv/1000:.2f} km/s")
@@ -190,7 +195,8 @@ def estimate_hohmann_transfer_dv(r1: float, r2: float) -> tuple[float, float, fl
     """
     # Input validation
     if r1 <= 0 or r2 <= 0:
-        raise ValueError("Orbit radii must be positive")
+        msg = "Orbit radii must be positive"
+        raise ValueError(msg)
 
     # Convert radii to meters for PyKEP
     r1 = r1 * 1000.0  # m

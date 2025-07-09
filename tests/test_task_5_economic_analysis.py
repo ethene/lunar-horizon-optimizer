@@ -610,7 +610,7 @@ class TestSensitivityAnalysis:
             assert "most_likely" in results
 
             # Check scenario results
-            for scenario_name, scenario_result in results.items():
+            for _scenario_name, scenario_result in results.items():
                 assert "parameters" in scenario_result
                 assert "outputs" in scenario_result
                 assert "npv" in scenario_result["outputs"]
@@ -919,7 +919,7 @@ class TestTask5Integration:
 
             # Step 4: ISRU analysis
             isru_analyzer = ISRUBenefitAnalyzer()
-            isru_analysis = isru_analyzer.analyze_isru_economics("water_ice", "commercial", 60)
+            isru_analyzer.analyze_isru_economics("water_ice", "commercial", 60)
 
             # Step 5: Reporting
             temp_dir = tempfile.mkdtemp()
@@ -1000,7 +1000,7 @@ def test_task5_configuration():
 
     # Check for critical modules
     try:
-        import numpy
+        import numpy as np
         import scipy
         assert True
     except ImportError:

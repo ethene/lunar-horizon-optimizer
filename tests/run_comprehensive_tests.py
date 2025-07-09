@@ -55,7 +55,7 @@ class ComprehensiveTestRunner:
 
             # Parse results
             output_lines = result.stdout.split("\n")
-            error_lines = result.stderr.split("\n") if result.stderr else []
+            result.stderr.split("\n") if result.stderr else []
 
             # Count test results
             passed_count = sum(1 for line in output_lines if " PASSED" in line)
@@ -349,11 +349,10 @@ class ComprehensiveTestRunner:
         ]
 
         # Run each test suite
-        all_success = True
         for test_file, suite_name in test_suites:
             success = self.run_test_suite(test_file, suite_name)
             if not success:
-                all_success = False
+                pass
 
         # Validate results
         validation_results = self.validate_test_sanity()

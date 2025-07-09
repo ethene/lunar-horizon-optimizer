@@ -1,5 +1,5 @@
 """
-Visualization Package
+Visualization Package.
 
 Interactive visualization modules for the Lunar Horizon Optimizer:
 - 3D trajectory visualization with Plotly

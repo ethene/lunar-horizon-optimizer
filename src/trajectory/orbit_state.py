@@ -21,7 +21,7 @@ logger.setLevel(logging.DEBUG)
 @dataclass
 class OrbitState:
     """Represents the state of an orbiting body.
-    
+
     Attributes
     ----------
         semi_major_axis: Semi-major axis in kilometers
@@ -44,19 +44,26 @@ class OrbitState:
     def __post_init__(self):
         """Validate orbital elements after initialization."""
         if self.semi_major_axis <= 0:
-            raise ValueError("Semi-major axis must be positive")
+            msg = "Semi-major axis must be positive"
+            raise ValueError(msg)
         if self.eccentricity < 0:
-            raise ValueError("Eccentricity must be non-negative")
+            msg = "Eccentricity must be non-negative"
+            raise ValueError(msg)
         if not 0 <= self.inclination <= 180:
-            raise ValueError("Inclination must be in [0,180]")
+            msg = "Inclination must be in [0,180]"
+            raise ValueError(msg)
         if not 0 <= self.raan < 360:
-            raise ValueError("RAAN must be between 0 and 360 degrees")
+            msg = "RAAN must be between 0 and 360 degrees"
+            raise ValueError(msg)
         if not 0 <= self.arg_periapsis < 360:
-            raise ValueError("Argument of periapsis must be between 0 and 360 degrees")
+            msg = "Argument of periapsis must be between 0 and 360 degrees"
+            raise ValueError(msg)
         if not 0 <= self.true_anomaly < 360:
-            raise ValueError("True anomaly must be between 0 and 360 degrees")
+            msg = "True anomaly must be between 0 and 360 degrees"
+            raise ValueError(msg)
         if isinstance(self.epoch, datetime) and self.epoch.tzinfo is None:
-            raise ValueError("Datetime epoch must be timezone-aware")
+            msg = "Datetime epoch must be timezone-aware"
+            raise ValueError(msg)
 
     @property
     def position(self) -> np.ndarray:
@@ -145,17 +152,17 @@ class OrbitState:
                          epoch: datetime | None = None,
                          mu: float = pk.MU_EARTH) -> "OrbitState":
         """Create an OrbitState from position and velocity vectors.
-        
+
         Args:
             position: Position vector in kilometers [x, y, z]
             velocity: Velocity vector in kilometers per second [vx, vy, vz]
             epoch: Optional epoch time
             mu: Gravitational parameter (default: Earth's mu in m³/s²)
-            
+
         Returns
         -------
             OrbitState object
-            
+
         Note:
             Input vectors must be in a consistent reference frame (e.g., Earth-centered inertial)
         """
@@ -165,11 +172,14 @@ class OrbitState:
 
         # Validate vectors using trajectory_physics
         if not validate_vector_units(r, "position", (1e6, 1e9), "m"):
-            raise ValueError("Invalid position vector")
+            msg = "Invalid position vector"
+            raise ValueError(msg)
         if not validate_vector_units(v, "velocity", (0, 20000), "m/s"):
-            raise ValueError("Invalid velocity vector")
+            msg = "Invalid velocity vector"
+            raise ValueError(msg)
         if not validate_basic_orbital_mechanics(r, v, mu):
-            raise ValueError("Invalid orbital state")
+            msg = "Invalid orbital state"
+            raise ValueError(msg)
 
         # Calculate angular momentum vector
         h = np.cross(r, v)
@@ -227,10 +237,10 @@ class OrbitState:
 
     def to_pykep(self, mu: float) -> pk.planet:
         """Convert to PyKEP planet object.
-        
+
         Args:
             mu: Gravitational parameter in m³/s²
-            
+
         Returns
         -------
             PyKEP planet object
@@ -263,10 +273,10 @@ class OrbitState:
 
     def get_state_vectors(self, mu: float = pk.MU_EARTH) -> tuple[np.ndarray, np.ndarray]:
         """Get position and velocity vectors.
-        
+
         Args:
             mu: Gravitational parameter in m³/s² (default: Earth's mu)
-            
+
         Returns
         -------
             Tuple of position (m) and velocity (m/s) vectors
@@ -275,10 +285,10 @@ class OrbitState:
 
     def get_state_vectors_km(self, mu: float = pk.MU_EARTH) -> tuple[np.ndarray, np.ndarray]:
         """Get position and velocity vectors in km and km/s.
-        
+
         Args:
             mu: Gravitational parameter in m³/s² (default: Earth's mu)
-            
+
         Returns
         -------
             Tuple of position (km) and velocity (km/s) vectors

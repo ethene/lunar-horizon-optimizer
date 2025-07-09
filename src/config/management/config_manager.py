@@ -7,23 +7,23 @@ configuration operations by delegating to specialized components.
 from pathlib import Path
 from typing import Any
 
-from config.models import MissionConfig
-from config.loader import ConfigurationError
+from src.config.models import MissionConfig
+from src.config.loader import ConfigurationError
 from .file_operations import FileOperations
 from .template_manager import TemplateManager
 
 
 class ConfigManager:
     """Manager for handling mission configuration using composition.
-    
+
     This class provides a high-level interface for managing mission configurations,
     delegating specialized operations to focused components:
     - FileOperations: Handle file I/O operations
     - TemplateManager: Handle template-based configuration creation
-    
+
     The manager maintains state for the currently active configuration
     and ensures all operations maintain validation.
-    
+
     Attributes
     ----------
         file_ops (FileOperations): Handler for file operations
@@ -32,9 +32,9 @@ class ConfigManager:
     """
 
     def __init__(self, file_ops: FileOperations | None = None,
-                 template_manager: TemplateManager | None = None):
+                 template_manager: TemplateManager | None = None) -> None:
         """Initialize the configuration manager.
-        
+
         Args:
             file_ops: Optional FileOperations instance. Creates default if not provided.
             template_manager: Optional TemplateManager instance. Creates default if not provided.
@@ -46,7 +46,7 @@ class ConfigManager:
     @property
     def active_config(self) -> MissionConfig | None:
         """Get the currently active configuration.
-        
+
         Returns
         -------
             Currently active MissionConfig or None if not set.
@@ -55,16 +55,16 @@ class ConfigManager:
 
     def load_config(self, file_path: Path) -> MissionConfig:
         """Load a configuration from file and set as active.
-        
+
         Delegates to FileOperations for actual loading operation.
-        
+
         Args:
             file_path: Path to the configuration file.
-            
+
         Returns
         -------
             Loaded and validated configuration.
-            
+
         Raises
         ------
             ConfigurationError: If file cannot be loaded or validation fails.
@@ -75,34 +75,35 @@ class ConfigManager:
 
     def save_config(self, file_path: Path) -> None:
         """Save the active configuration to a file.
-        
+
         Delegates to FileOperations for actual saving operation.
-        
+
         Args:
             file_path: Path where to save the configuration.
-            
+
         Raises
         ------
             ConfigurationError: If no active configuration or save fails.
         """
         if not self._active_config:
-            raise ConfigurationError("No active configuration to save")
+            msg = "No active configuration to save"
+            raise ConfigurationError(msg)
 
         self.file_ops.save_to_file(self._active_config, file_path)
 
     def create_from_template(self, template_name: str, **overrides) -> MissionConfig:
         """Create a new configuration from a template.
-        
+
         Delegates to TemplateManager for template operations.
-        
+
         Args:
             template_name: Name of the template to use.
             **overrides: Values to override in the template.
-            
+
         Returns
         -------
             New configuration based on the template.
-            
+
         Raises
         ------
             KeyError: If template does not exist.
@@ -114,14 +115,14 @@ class ConfigManager:
 
     def validate_config(self, config: dict[str, Any]) -> MissionConfig:
         """Validate a configuration dictionary against the mission config model.
-        
+
         Args:
             config: Configuration dictionary to validate.
-            
+
         Returns
         -------
             Validated MissionConfig instance.
-            
+
         Raises
         ------
             ValidationError: If configuration is invalid.
@@ -130,25 +131,26 @@ class ConfigManager:
 
     def update_config(self, updates: dict[str, Any]) -> MissionConfig:
         """Update the active configuration with new values.
-        
+
         Updates the active configuration with new values, performing a deep
         update that preserves nested structure. The updated configuration
         is automatically validated.
-        
+
         Args:
             updates: Dictionary of values to update.
-            
+
         Returns
         -------
             Updated configuration.
-            
+
         Raises
         ------
             ConfigurationError: If no active configuration.
             ValidationError: If updates are invalid.
         """
         if not self._active_config:
-            raise ConfigurationError("No active configuration to update")
+            msg = "No active configuration to update"
+            raise ConfigurationError(msg)
 
         # Create updated configuration dictionary
         config_dict = self._active_config.model_dump()
@@ -163,9 +165,9 @@ class ConfigManager:
 
     def get_available_templates(self) -> list[str]:
         """Get list of available template names.
-        
+
         Delegates to TemplateManager.
-        
+
         Returns
         -------
             List of available template names.
@@ -174,9 +176,9 @@ class ConfigManager:
 
     def get_supported_file_formats(self) -> list[str]:
         """Get list of supported file formats.
-        
+
         Delegates to FileOperations.
-        
+
         Returns
         -------
             List of supported file extensions.
@@ -185,11 +187,11 @@ class ConfigManager:
 
     def _deep_update(self, d: dict, u: dict) -> dict:
         """Perform deep update of nested dictionaries.
-        
+
         Args:
             d: Base dictionary.
             u: Updates to apply.
-            
+
         Returns
         -------
             Updated dictionary.

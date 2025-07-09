@@ -1,5 +1,5 @@
 """
-Comprehensive Mission Analysis Dashboard Module
+Comprehensive Mission Analysis Dashboard Module.
 
 Provides integrated dashboard combining trajectory analysis, optimization results,
 economic analysis, and mission planning in a unified interactive interface.
@@ -19,8 +19,8 @@ from .optimization_visualization import OptimizationVisualizer
 from .economic_visualization import EconomicVisualizer
 from .mission_visualization import MissionVisualizer, MissionPhase, MissionMilestone
 
-from economics.reporting import FinancialSummary
-from economics.cost_models import CostBreakdown
+from src.economics.reporting import FinancialSummary
+from src.economics.cost_models import CostBreakdown
 
 
 @dataclass
@@ -84,7 +84,7 @@ class MissionAnalysisData:
 class ComprehensiveDashboard:
     """
     Comprehensive mission analysis dashboard combining all visualization modules.
-    
+
     Provides integrated analysis dashboard including:
     - Executive summary with key metrics
     - Trajectory analysis and transfer windows
@@ -94,10 +94,10 @@ class ComprehensiveDashboard:
     - Interactive comparison and decision support tools
     """
 
-    def __init__(self, theme: DashboardTheme | None = None):
+    def __init__(self, theme: DashboardTheme | None = None) -> None:
         """
         Initialize comprehensive dashboard.
-        
+
         Args:
             theme: Dashboard theme configuration
         """
@@ -115,10 +115,10 @@ class ComprehensiveDashboard:
     ) -> go.Figure:
         """
         Create executive summary dashboard with key metrics and insights.
-        
+
         Args:
             mission_data: Complete mission analysis data
-            
+
         Returns
         -------
             Plotly Figure with executive dashboard
@@ -175,16 +175,16 @@ class ComprehensiveDashboard:
 
         # Update layout
         fig.update_layout(
-            title=dict(
-                text=f"Executive Dashboard - {mission_data.mission_name}",
-                x=0.5,
-                font=dict(size=self.theme.title_size, family=self.theme.font_family)
-            ),
+            title={
+                "text": f"Executive Dashboard - {mission_data.mission_name}",
+                "x": 0.5,
+                "font": {"size": self.theme.title_size, "family": self.theme.font_family}
+            },
             template=self.theme.plotly_theme,
             height=1200,
             width=1600,
             showlegend=True,
-            font=dict(family=self.theme.font_family, color=self.theme.text_color)
+            font={"family": self.theme.font_family, "color": self.theme.text_color}
         )
 
         return fig
@@ -195,10 +195,10 @@ class ComprehensiveDashboard:
     ) -> go.Figure:
         """
         Create technical analysis dashboard with detailed engineering data.
-        
+
         Args:
             mission_data: Complete mission analysis data
-            
+
         Returns
         -------
             Plotly Figure with technical dashboard
@@ -251,11 +251,11 @@ class ComprehensiveDashboard:
     ) -> go.Figure:
         """
         Create scenario comparison dashboard.
-        
+
         Args:
             scenarios: List of mission scenarios to compare
             scenario_names: Optional names for scenarios
-            
+
         Returns
         -------
             Plotly Figure with comparison dashboard
@@ -320,10 +320,10 @@ class ComprehensiveDashboard:
     ) -> go.Figure:
         """
         Create interactive mission explorer with drill-down capabilities.
-        
+
         Args:
             mission_data: Complete mission analysis data
-            
+
         Returns
         -------
             Plotly Figure with interactive explorer
@@ -352,38 +352,38 @@ class ComprehensiveDashboard:
             height=1000,
             width=1600,
             updatemenus=[
-                dict(
-                    type="buttons",
-                    direction="left",
-                    buttons=list([
-                        dict(
-                            args=[{"visible": [True, True, True, True]}],
-                            label="Show All",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=[{"visible": [True, False, False, False]}],
-                            label="Parameters Only",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=[{"visible": [False, True, False, False]}],
-                            label="Timeline Only",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=[{"visible": [False, False, True, False]}],
-                            label="Economics Only",
-                            method="restyle"
-                        )
-                    ]),
-                    pad={"r": 10, "t": 10},
-                    showactive=True,
-                    x=0.01,
-                    xanchor="left",
-                    y=1.02,
-                    yanchor="top"
-                ),
+                {
+                    "type": "buttons",
+                    "direction": "left",
+                    "buttons": [
+                        {
+                            "args": [{"visible": [True, True, True, True]}],
+                            "label": "Show All",
+                            "method": "restyle"
+                        },
+                        {
+                            "args": [{"visible": [True, False, False, False]}],
+                            "label": "Parameters Only",
+                            "method": "restyle"
+                        },
+                        {
+                            "args": [{"visible": [False, True, False, False]}],
+                            "label": "Timeline Only",
+                            "method": "restyle"
+                        },
+                        {
+                            "args": [{"visible": [False, False, True, False]}],
+                            "label": "Economics Only",
+                            "method": "restyle"
+                        }
+                    ],
+                    "pad": {"r": 10, "t": 10},
+                    "showactive": True,
+                    "x": 0.01,
+                    "xanchor": "left",
+                    "y": 1.02,
+                    "yanchor": "top"
+                },
             ]
         )
 
@@ -410,18 +410,18 @@ class ComprehensiveDashboard:
 
         fig.add_trace(
             go.Table(
-                header=dict(
-                    values=["Parameter", "Value"],
-                    fill_color=self.theme.primary_color,
-                    align="left",
-                    font=dict(color="white", size=12)
-                ),
-                cells=dict(
-                    values=list(zip(*overview_data, strict=False)),
-                    fill_color="lightblue",
-                    align="left",
-                    font=dict(size=11)
-                )
+                header={
+                    "values": ["Parameter", "Value"],
+                    "fill_color": self.theme.primary_color,
+                    "align": "left",
+                    "font": {"color": "white", "size": 12}
+                },
+                cells={
+                    "values": list(zip(*overview_data, strict=False)),
+                    "fill_color": "lightblue",
+                    "align": "left",
+                    "font": {"size": 11}
+                }
             ),
             row=row, col=col
         )
@@ -439,10 +439,10 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="number+delta",
                 value=financial_summary.net_present_value / 1e6,
-                title=dict(text="NPV ($M)"),
-                number=dict(suffix="M", font=dict(size=16)),
-                delta=dict(reference=0, position="bottom"),
-                domain=dict(x=[0, 0.5], y=[0.7, 1])
+                title={"text": "NPV ($M)"},
+                number={"suffix": "M", "font": {"size": 16}},
+                delta={"reference": 0, "position": "bottom"},
+                domain={"x": [0, 0.5], "y": [0.7, 1]}
             ),
             row=row, col=col
         )
@@ -452,17 +452,17 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="gauge+number",
                 value=financial_summary.internal_rate_of_return * 100,
-                title=dict(text="IRR (%)"),
-                gauge=dict(
-                    axis=dict(range=[None, 30]),
-                    bar=dict(color=self.theme.success_color),
-                    steps=[
-                        dict(range=[0, 10], color="lightgray"),
-                        dict(range=[10, 20], color="yellow"),
-                        dict(range=[20, 30], color="lightgreen")
+                title={"text": "IRR (%)"},
+                gauge={
+                    "axis": {"range": [None, 30]},
+                    "bar": {"color": self.theme.success_color},
+                    "steps": [
+                        {"range": [0, 10], "color": "lightgray"},
+                        {"range": [10, 20], "color": "yellow"},
+                        {"range": [20, 30], "color": "lightgreen"}
                     ]
-                ),
-                domain=dict(x=[0.5, 1], y=[0.7, 1])
+                },
+                domain={"x": [0.5, 1], "y": [0.7, 1]}
             ),
             row=row, col=col
         )
@@ -472,9 +472,9 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="number",
                 value=financial_summary.return_on_investment * 100,
-                title=dict(text="ROI (%)"),
-                number=dict(suffix="%", font=dict(size=14)),
-                domain=dict(x=[0, 0.5], y=[0.3, 0.6])
+                title={"text": "ROI (%)"},
+                number={"suffix": "%", "font": {"size": 14}},
+                domain={"x": [0, 0.5], "y": [0.3, 0.6]}
             ),
             row=row, col=col
         )
@@ -484,9 +484,9 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="number",
                 value=financial_summary.payback_period_years,
-                title=dict(text="Payback (Years)"),
-                number=dict(suffix=" yr", font=dict(size=14)),
-                domain=dict(x=[0.5, 1], y=[0.3, 0.6])
+                title={"text": "Payback (Years)"},
+                number={"suffix": " yr", "font": {"size": 14}},
+                domain={"x": [0.5, 1], "y": [0.3, 0.6]}
             ),
             row=row, col=col
         )
@@ -511,7 +511,7 @@ class ComprehensiveDashboard:
             go.Bar(
                 x=metrics,
                 y=values,
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=[f"{v} {u}" for v, u in zip(values, units, strict=False)],
                 textposition="auto",
                 showlegend=False
@@ -542,8 +542,8 @@ class ComprehensiveDashboard:
                         y=obj2,
                         mode="markers+lines",
                         name="Pareto Front",
-                        marker=dict(size=8, color=self.theme.primary_color),
-                        line=dict(color=self.theme.primary_color, width=2),
+                        marker={"size": 8, "color": self.theme.primary_color},
+                        line={"color": self.theme.primary_color, "width": 2},
                         showlegend=False
                     ),
                     row=row, col=col
@@ -606,7 +606,7 @@ class ComprehensiveDashboard:
             go.Bar(
                 x=statuses,
                 y=counts,
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=counts,
                 textposition="auto",
                 showlegend=False
@@ -638,7 +638,7 @@ class ComprehensiveDashboard:
             go.Bar(
                 x=risks,
                 y=counts,
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=counts,
                 textposition="auto",
                 showlegend=False
@@ -662,17 +662,17 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="gauge+number",
                 value=values[0],
-                title=dict(text=metrics[0]),
-                gauge=dict(
-                    axis=dict(range=[None, 100]),
-                    bar=dict(color=self.theme.success_color),
-                    steps=[
-                        dict(range=[0, 50], color="lightgray"),
-                        dict(range=[50, 80], color="yellow"),
-                        dict(range=[80, 100], color="lightgreen")
+                title={"text": metrics[0]},
+                gauge={
+                    "axis": {"range": [None, 100]},
+                    "bar": {"color": self.theme.success_color},
+                    "steps": [
+                        {"range": [0, 50], "color": "lightgray"},
+                        {"range": [50, 80], "color": "yellow"},
+                        {"range": [80, 100], "color": "lightgreen"}
                     ]
-                ),
-                domain=dict(x=[0, 1], y=[0.7, 1])
+                },
+                domain={"x": [0, 1], "y": [0.7, 1]}
             ),
             row=row, col=col
         )
@@ -681,12 +681,12 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="gauge+number",
                 value=values[1],
-                title=dict(text=metrics[1]),
-                gauge=dict(
-                    axis=dict(range=[None, 100]),
-                    bar=dict(color=self.theme.info_color)
-                ),
-                domain=dict(x=[0, 0.5], y=[0, 0.6])
+                title={"text": metrics[1]},
+                gauge={
+                    "axis": {"range": [None, 100]},
+                    "bar": {"color": self.theme.info_color}
+                },
+                domain={"x": [0, 0.5], "y": [0, 0.6]}
             ),
             row=row, col=col
         )
@@ -695,12 +695,12 @@ class ComprehensiveDashboard:
             go.Indicator(
                 mode="gauge+number",
                 value=values[2],
-                title=dict(text=metrics[2]),
-                gauge=dict(
-                    axis=dict(range=[None, 100]),
-                    bar=dict(color=self.theme.warning_color)
-                ),
-                domain=dict(x=[0.5, 1], y=[0, 0.6])
+                title={"text": metrics[2]},
+                gauge={
+                    "axis": {"range": [None, 100]},
+                    "bar": {"color": self.theme.warning_color}
+                },
+                domain={"x": [0.5, 1], "y": [0, 0.6]}
             ),
             row=row, col=col
         )
@@ -723,36 +723,36 @@ class ComprehensiveDashboard:
 
         fig.add_trace(
             go.Table(
-                header=dict(
-                    values=["Priority", "Recommendation"],
-                    fill_color=self.theme.primary_color,
-                    align="left",
-                    font=dict(color="white", size=11)
-                ),
-                cells=dict(
-                    values=list(zip(*recommendations, strict=False)),
-                    fill_color=["lightcoral", "lightblue", "lightgreen", "lightyellow", "lightgray"],
-                    align="left",
-                    font=dict(size=10)
-                )
+                header={
+                    "values": ["Priority", "Recommendation"],
+                    "fill_color": self.theme.primary_color,
+                    "align": "left",
+                    "font": {"color": "white", "size": 11}
+                },
+                cells={
+                    "values": list(zip(*recommendations, strict=False)),
+                    "fill_color": ["lightcoral", "lightblue", "lightgreen", "lightyellow", "lightgray"],
+                    "align": "left",
+                    "font": {"size": 10}
+                }
             ),
             row=row, col=col
         )
 
     # Placeholder methods for complex components
 
-    def _add_3d_trajectory_placeholder(self, fig, trajectory_data, row, col):
+    def _add_3d_trajectory_placeholder(self, fig, trajectory_data, row, col) -> None:
         """Placeholder for 3D trajectory visualization."""
         fig.add_annotation(
             text="3D Trajectory Visualization<br>(Requires specialized implementation)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="gray"),
+            font={"size": 14, "color": "gray"},
             row=row, col=col
         )
 
-    def _add_pareto_front(self, fig, optimization_results, row, col):
+    def _add_pareto_front(self, fig, optimization_results, row, col) -> None:
         """Add Pareto front visualization."""
         # Simplified implementation - would use OptimizationVisualizer
         fig.add_annotation(
@@ -760,29 +760,29 @@ class ComprehensiveDashboard:
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="gray"),
+            font={"size": 14, "color": "gray"},
             row=row, col=col
         )
 
-    def _add_sensitivity_analysis(self, fig, sensitivity_results, row, col):
+    def _add_sensitivity_analysis(self, fig, sensitivity_results, row, col) -> None:
         """Add sensitivity analysis visualization."""
         fig.add_annotation(
             text="Economic Sensitivity Analysis<br>(Detailed implementation available)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="gray"),
+            font={"size": 14, "color": "gray"},
             row=row, col=col
         )
 
-    def _add_critical_path(self, fig, mission_phases, row, col):
+    def _add_critical_path(self, fig, mission_phases, row, col) -> None:
         """Add critical path visualization."""
         fig.add_annotation(
             text="Mission Critical Path<br>(Detailed implementation available)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="gray"),
+            font={"size": 14, "color": "gray"},
             row=row, col=col
         )
 
@@ -795,34 +795,34 @@ class ComprehensiveDashboard:
             "risk_metrics": []
         }
 
-    def _add_financial_comparison(self, fig, data, names, row, col):
+    def _add_financial_comparison(self, fig, data, names, row, col) -> None:
         """Add financial comparison chart."""
 
-    def _add_performance_comparison(self, fig, data, names, row, col):
+    def _add_performance_comparison(self, fig, data, names, row, col) -> None:
         """Add performance comparison chart."""
 
-    def _add_risk_comparison(self, fig, data, names, row, col):
+    def _add_risk_comparison(self, fig, data, names, row, col) -> None:
         """Add risk comparison chart."""
 
-    def _add_cost_comparison(self, fig, data, names, row, col):
+    def _add_cost_comparison(self, fig, data, names, row, col) -> None:
         """Add cost comparison chart."""
 
-    def _add_timeline_comparison(self, fig, data, names, row, col):
+    def _add_timeline_comparison(self, fig, data, names, row, col) -> None:
         """Add timeline comparison chart."""
 
-    def _add_tradeoff_analysis(self, fig, data, names, row, col):
+    def _add_tradeoff_analysis(self, fig, data, names, row, col) -> None:
         """Add trade-off analysis chart."""
 
-    def _add_parameter_explorer(self, fig, mission_data, row, col):
+    def _add_parameter_explorer(self, fig, mission_data, row, col) -> None:
         """Add parameter explorer."""
 
-    def _add_interactive_timeline(self, fig, mission_data, row, col):
+    def _add_interactive_timeline(self, fig, mission_data, row, col) -> None:
         """Add interactive timeline."""
 
-    def _add_cost_benefit_explorer(self, fig, mission_data, row, col):
+    def _add_cost_benefit_explorer(self, fig, mission_data, row, col) -> None:
         """Add cost-benefit explorer."""
 
-    def _add_sensitivity_explorer(self, fig, mission_data, row, col):
+    def _add_sensitivity_explorer(self, fig, mission_data, row, col) -> None:
         """Add sensitivity explorer."""
 
     def _create_empty_plot(self, message: str) -> go.Figure:
@@ -832,7 +832,7 @@ class ComprehensiveDashboard:
             text=message,
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16, color="gray")
+            font={"size": 16, "color": "gray"}
         )
         return fig
 
@@ -840,7 +840,7 @@ class ComprehensiveDashboard:
 def create_sample_dashboard() -> go.Figure:
     """
     Create a sample comprehensive dashboard for demonstration.
-    
+
     Returns
     -------
         Plotly Figure with sample dashboard

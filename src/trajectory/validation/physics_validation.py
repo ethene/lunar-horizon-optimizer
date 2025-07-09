@@ -1,13 +1,13 @@
 """Physics validation functions for trajectory calculations.
 
-This module provides functions for validating physical constraints and 
+This module provides functions for validating physical constraints and
 orbital mechanics relationships in trajectory calculations.
 """
 
 import numpy as np
 import logging
 
-from trajectory.constants import PhysicalConstants
+from src.trajectory.constants import PhysicalConstants
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 def validate_basic_orbital_mechanics(r: np.ndarray, v: np.ndarray, mu: float) -> bool:
     """
     Validate basic orbital mechanics relationships for a state vector.
-    
+
     Args:
         r: Position vector [m]
         v: Velocity vector [m/s]
         mu: Gravitational parameter [m³/s²]
-        
+
     Returns
     -------
         bool: True if state vector represents valid orbital motion
@@ -73,13 +73,13 @@ def validate_basic_orbital_mechanics(r: np.ndarray, v: np.ndarray, mu: float) ->
 def validate_transfer_time(r1: np.ndarray, r2: np.ndarray, tof: float, mu: float) -> bool:
     """
     Validate if transfer time is physically reasonable.
-    
+
     Args:
         r1: Initial position vector [m]
         r2: Final position vector [m]
         tof: Time of flight [s]
         mu: Gravitational parameter [m³/s²]
-        
+
     Returns
     -------
         bool: True if transfer time is reasonable
@@ -111,16 +111,16 @@ def validate_transfer_time(r1: np.ndarray, r2: np.ndarray, tof: float, mu: float
     return True
 
 
-def validate_solution_physics(r1, v1, r2, v2, transfer_time):
+def validate_solution_physics(r1, v1, r2, v2, transfer_time) -> bool:
     """
     Validate the physics of a transfer solution.
-    
+
     For lunar transfers, we use modified validation criteria that account for the three-body effects:
     1. Direction of angular momentum should be roughly preserved
     2. Energy should increase due to Moon's gravitational assist
     3. Velocities should be reasonable for Earth-Moon transfer
     4. Transfer time should be physically achievable
-    
+
     Parameters
     ----------
     r1 : array_like
@@ -133,7 +133,7 @@ def validate_solution_physics(r1, v1, r2, v2, transfer_time):
         Final velocity vector [m/s]
     transfer_time : float
         Time of flight [s]
-    
+
     Returns
     -------
     bool
@@ -214,11 +214,11 @@ def validate_solution_physics(r1, v1, r2, v2, transfer_time):
 
 def calculate_circular_velocity(radius: float, mu: float) -> float:
     """Calculate circular orbit velocity.
-    
+
     Args:
         radius: Orbit radius [m]
         mu: Gravitational parameter [m³/s²]
-        
+
     Returns
     -------
         float: Circular orbit velocity [m/s]

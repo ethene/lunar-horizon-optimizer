@@ -131,7 +131,7 @@ class TestIntegratedAnalysisWorkflow:
 
     def test_optimization_component(self, optimizer):
         """Test optimization component."""
-        with patch("optimization.global_optimizer.LunarMissionProblem") as mock_problem_class:
+        with patch("optimization.global_optimizer.LunarMissionProblem"):
             with patch("optimization.global_optimizer.GlobalOptimizer") as mock_optimizer_class:
                 # Mock optimization results
                 mock_optimization_results = {
@@ -427,7 +427,7 @@ class TestPerformanceAndScalability:
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
         # Create optimizer and run small analysis
-        optimizer = LunarHorizonOptimizer()
+        LunarHorizonOptimizer()
 
         final_memory = process.memory_info().rss / 1024 / 1024  # MB
         memory_increase = final_memory - initial_memory

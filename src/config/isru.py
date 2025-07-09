@@ -80,18 +80,20 @@ class IsruCapabilities(BaseModel):
     )
 
     @validator("extraction_rates")
-    def validate_extraction_rates(cls, v):
+    @classmethod
+    def validate_extraction_rates(cls, v: dict[IsruResourceType, ResourceExtractionRate]) -> dict[IsruResourceType, ResourceExtractionRate]:
         """Validate that extraction rates are provided for supported resource types."""
         if not v:
-            raise ValueError("At least one resource extraction rate must be defined")
+            msg = "At least one resource extraction rate must be defined"
+            raise ValueError(msg)
         return v
 
     def calculate_power_consumption(self, active_resources: dict[IsruResourceType, float]) -> float:
         """Calculate total power consumption based on active resource extraction rates.
-        
+
         Args:
             active_resources: Dict mapping resource types to their current extraction rates (kg/day)
-            
+
         Returns
         -------
             Total power consumption in kW
@@ -100,10 +102,12 @@ class IsruCapabilities(BaseModel):
 
         for resource_type, rate in active_resources.items():
             if resource_type not in self.extraction_rates:
-                raise ValueError(f"No extraction rate defined for resource type: {resource_type}")
+                msg = f"No extraction rate defined for resource type: {resource_type}"
+                raise ValueError(msg)
 
             if rate > self.extraction_rates[resource_type].max_rate:
-                raise ValueError(f"Requested rate exceeds maximum for {resource_type}")
+                msg = f"Requested rate exceeds maximum for {resource_type}"
+                raise ValueError(msg)
 
             power += rate * self.extraction_rates[resource_type].power_per_kg
 

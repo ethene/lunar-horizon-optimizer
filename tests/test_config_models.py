@@ -9,6 +9,8 @@ from src.config.mission_config import (
     IsruTarget,
     IsruResourceType
 )
+from src.config.isru import ResourceExtractionRate
+from src.config.orbit import OrbitParameters
 
 def test_valid_mission_config():
     """Test creation of a valid mission configuration."""
@@ -28,24 +30,36 @@ def test_valid_mission_config():
         ),
         isru_targets=[
             IsruTarget(
-                resource_type=IsruResourceType.WATER,
-                target_rate=10.0,
-                setup_time_days=30.0,
-                market_value_per_kg=1000.0
+                mass=1000.0,
+                base_power=5.0,
+                extraction_rates={
+                    IsruResourceType.WATER: ResourceExtractionRate(
+                        resource_type=IsruResourceType.WATER,
+                        max_rate=10.0,
+                        efficiency=85.0,
+                        power_per_kg=2.0
+                    )
+                },
+                processing_efficiency=85.0,
+                startup_time_days=30.0,
+                maintenance_downtime=2.0,
+                max_storage_capacity={
+                    IsruResourceType.WATER: 1000.0
+                }
             )
         ],
         mission_duration_days=180.0,
-        target_orbit={
-            "semi_major_axis": 384400.0,  # km
-            "eccentricity": 0.1,
-            "inclination": 45.0
-        }
+        target_orbit=OrbitParameters(
+            semi_major_axis=384400.0,  # km
+            eccentricity=0.1,
+            inclination=45.0
+        )
     )
 
     assert config.name == "Test Mission"
     assert config.payload.dry_mass == 1000.0
     assert len(config.isru_targets) == 1
-    assert config.isru_targets[0].resource_type == IsruResourceType.WATER
+    assert IsruResourceType.WATER in config.isru_targets[0].extraction_rates
 
 def test_invalid_payload_mass():
     """Test validation of payload mass against dry mass."""
@@ -100,11 +114,11 @@ def test_invalid_eccentricity():
                 development_cost=1000000.0
             ),
             mission_duration_days=180.0,
-            target_orbit={
-                "semi_major_axis": 384400.0,
-                "eccentricity": 1.5,  # Invalid: must be < 1
-                "inclination": 45.0
-            }
+            target_orbit=OrbitParameters(
+                semi_major_axis=384400.0,
+                eccentricity=1.5,  # Invalid: must be < 1
+                inclination=45.0
+            )
         )
     assert "Input should be less than 1" in str(exc_info.value)
 
@@ -123,10 +137,22 @@ def test_isru_target_validation():
     """Test validation of ISRU targets."""
     with pytest.raises(ValidationError) as exc_info:
         IsruTarget(
-            resource_type=IsruResourceType.WATER,
-            target_rate=-10.0,  # Invalid: must be positive
-            setup_time_days=30.0,
-            market_value_per_kg=1000.0
+            mass=1000.0,
+            base_power=5.0,
+            extraction_rates={
+                IsruResourceType.WATER: ResourceExtractionRate(
+                    resource_type=IsruResourceType.WATER,
+                    max_rate=-10.0,  # Invalid: must be positive
+                    efficiency=85.0,
+                    power_per_kg=2.0
+                )
+            },
+            processing_efficiency=85.0,
+            startup_time_days=30.0,
+            maintenance_downtime=2.0,
+            max_storage_capacity={
+                IsruResourceType.WATER: 1000.0
+            }
         )
 
     assert "greater than 0" in str(exc_info.value)
@@ -147,11 +173,11 @@ def test_optional_description():
             development_cost=1000000.0
         ),
         mission_duration_days=180.0,
-        target_orbit={
-            "semi_major_axis": 384400.0,
-            "eccentricity": 0.1,
-            "inclination": 45.0
-        }
+        target_orbit=OrbitParameters(
+            semi_major_axis=384400.0,
+            eccentricity=0.1,
+            inclination=45.0
+        )
     )
 
     assert config.description is None
@@ -172,11 +198,11 @@ def test_empty_isru_targets():
             development_cost=1000000.0
         ),
         mission_duration_days=180.0,
-        target_orbit={
-            "semi_major_axis": 384400.0,
-            "eccentricity": 0.1,
-            "inclination": 45.0
-        }
+        target_orbit=OrbitParameters(
+            semi_major_axis=384400.0,
+            eccentricity=0.1,
+            inclination=45.0
+        )
     )
 
     assert len(config.isru_targets) == 0

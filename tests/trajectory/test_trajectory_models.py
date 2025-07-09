@@ -14,7 +14,7 @@ Key validation areas:
 
 Test organization:
 - TestOrbitState: Orbital elements validation
-- TestManeuver: Delta-v and epoch validation  
+- TestManeuver: Delta-v and epoch validation
 - TestTrajectory: End-to-end trajectory validation
 """
 
@@ -25,7 +25,7 @@ from src.trajectory.models import OrbitState, Maneuver, Trajectory
 
 class TestOrbitState:
     """Test suite for OrbitState model validation.
-    
+
     Constants:
         VALID_LEO_SMA: Semi-major axis for typical LEO orbit (km)
         VALID_INCLINATION: Typical launch site inclination (degrees)
@@ -36,7 +36,7 @@ class TestOrbitState:
 
     def test_valid_parameters(self):
         """Test OrbitState creation with valid parameters.
-        
+
         Verifies:
         - All parameters within valid ranges are accepted
         - Object creation succeeds with typical LEO values
@@ -54,7 +54,7 @@ class TestOrbitState:
 
     def test_invalid_semi_major_axis(self):
         """Test validation of semi-major axis.
-        
+
         Verifies:
         - Negative values raise ValueError
         - Zero values raise ValueError
@@ -71,7 +71,7 @@ class TestOrbitState:
 
     def test_invalid_eccentricity(self):
         """Test validation of eccentricity.
-        
+
         Verifies:
         - Values >= 1.0 raise ValueError (hyperbolic/parabolic orbits not supported)
         - Negative values raise ValueError
@@ -88,7 +88,7 @@ class TestOrbitState:
 
     def test_invalid_inclination(self):
         """Test validation of inclination.
-        
+
         Verifies:
         - Values outside [0,180] degrees raise ValueError
         """
@@ -104,7 +104,7 @@ class TestOrbitState:
 
     def test_invalid_angles(self):
         """Test validation of orbital angles.
-        
+
         Verifies:
         - RAAN outside [0,360] raises ValueError
         - Argument of periapsis outside [0,360] raises ValueError
@@ -129,7 +129,7 @@ class TestOrbitState:
 
 class TestManeuver:
     """Test suite for Maneuver model validation.
-    
+
     Constants:
         VALID_DELTA_V: Typical TLI delta-v magnitude (km/s)
         VALID_EPOCH: Reference epoch for tests (MJD2000)
@@ -140,7 +140,7 @@ class TestManeuver:
 
     def test_valid_parameters(self):
         """Test Maneuver creation with valid parameters.
-        
+
         Verifies:
         - 3D delta-v vector is accepted
         - Valid epoch is accepted
@@ -156,7 +156,7 @@ class TestManeuver:
 
     def test_invalid_delta_v(self):
         """Test validation of delta-v vector.
-        
+
         Verifies:
         - Non-3D vectors raise ValueError
         - Invalid shapes raise ValueError
@@ -169,7 +169,7 @@ class TestManeuver:
 
     def test_invalid_epoch(self):
         """Test validation of maneuver epoch.
-        
+
         Verifies:
         - Non-timezone-aware datetime raises ValueError
         """
@@ -181,7 +181,7 @@ class TestManeuver:
 
 class TestTrajectory:
     """Test suite for Trajectory model validation.
-    
+
     Constants:
         LEO_ALTITUDE: Low Earth orbit altitude (km)
         LUNAR_DISTANCE: Average Earth-Moon distance (km)
@@ -196,7 +196,7 @@ class TestTrajectory:
 
     def setup_method(self):
         """Set up test fixtures.
-        
+
         Creates common orbit states and maneuvers for testing:
         - Initial state in LEO
         - Final state at lunar distance
@@ -232,7 +232,7 @@ class TestTrajectory:
 
     def test_valid_parameters(self):
         """Test Trajectory creation with valid parameters.
-        
+
         Verifies:
         - Valid states and maneuvers are accepted
         - Time ordering is correct
@@ -250,7 +250,7 @@ class TestTrajectory:
 
     def test_invalid_time_order(self):
         """Test validation of trajectory time ordering.
-        
+
         Verifies:
         - Arrival before departure raises ValueError
         - Equal epochs raise ValueError
@@ -267,7 +267,7 @@ class TestTrajectory:
 
     def test_invalid_maneuver_timing(self):
         """Test validation of maneuver timing.
-        
+
         Verifies:
         - Maneuvers outside trajectory timespan raise ValueError
         - Maneuvers at trajectory endpoints raise ValueError

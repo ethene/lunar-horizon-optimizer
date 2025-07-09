@@ -32,12 +32,12 @@ class TestOrbitStateConversion:
 
     def test_circular_orbit(self):
         """Test conversion of circular OrbitState to PyKEP planet.
-        
+
         Verifies:
         - Position magnitude matches semi-major axis
         - Velocity magnitude matches circular orbit velocity
         - Units are correctly converted between user input (km) and PyKEP native (m)
-        
+
         Test case: 300 km circular orbit at 28.5° inclination
         """
         # Create orbit with user-friendly units (km)
@@ -71,12 +71,12 @@ class TestOrbitStateConversion:
 
     def test_elliptical_orbit(self):
         """Test conversion of elliptical OrbitState to PyKEP planet.
-        
+
         Verifies:
         - Position at apoapsis matches expected radius
         - Velocity at apoapsis matches vis-viva equation
         - Units are correctly converted between user input (km) and PyKEP native (m)
-        
+
         Test case: Highly elliptical orbit (e=0.7) at apoapsis
         """
         # Create orbit with user-friendly units (km)
@@ -113,7 +113,7 @@ class TestCelestialBodyStates:
 
     def test_moon_state(self):
         """Test Moon state vector calculations.
-        
+
         Verifies:
         - Position and velocity units are correct (returns m, m/s)
         - Distance from Earth is in expected range (~384,400 km)
@@ -146,7 +146,7 @@ class TestCelestialBodyStates:
 
     def test_earth_state(self):
         """Test Earth state vector calculations.
-        
+
         Verifies:
         - Position is at expected distance from Sun (~1 AU = 149.6e6 km)
         - Heliocentric orbital velocity matches expected value (~29.8 km/s)

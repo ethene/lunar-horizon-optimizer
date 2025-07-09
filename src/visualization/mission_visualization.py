@@ -172,10 +172,11 @@ class MissionVisualizer:
 
         # Extract all resource types if not specified
         if resource_types is None:
-            resource_types = set()
+            resource_types_set: set[str] = set()
             for phase in phases:
-                resource_types.update(phase.resources.keys())
-            resource_types = sorted(resource_types)
+                if phase.resources:
+                    resource_types_set.update(phase.resources.keys())
+            resource_types = sorted(resource_types_set)
 
         if not resource_types:
             return self._create_empty_plot("No resource data available")
@@ -200,11 +201,11 @@ class MissionVisualizer:
             daily_utilization = np.zeros(len(date_range))
 
             for phase in phases:
-                if resource_type in phase.resources:
+                if phase.resources and resource_type in phase.resources:
                     phase_start_idx = max(0, (phase.start_date - start_date).days)
                     phase_end_idx = min(len(date_range), (phase.end_date - start_date).days + 1)
 
-                    if phase_end_idx > phase_start_idx:
+                    if phase_end_idx > phase_start_idx and phase.resources:
                         daily_amount = phase.resources[resource_type] / (phase_end_idx - phase_start_idx)
                         daily_utilization[phase_start_idx:phase_end_idx] += daily_amount
 
@@ -459,7 +460,7 @@ class MissionVisualizer:
 
     def _add_milestones(self, fig: go.Figure, milestones: list[MissionMilestone]) -> None:
         """Add milestones to timeline."""
-        milestone_y_positions = {}
+        milestone_y_positions: dict[str, str] = {}
 
         for milestone in milestones:
             # Create unique y-position for milestone
@@ -494,9 +495,10 @@ class MissionVisualizer:
         phase_dict = {phase.name: phase for phase in phases}
 
         for phase in phases:
-            for dep_name in phase.dependencies:
-                if dep_name in phase_dict:
-                    dep_phase = phase_dict[dep_name]
+            if phase.dependencies:
+                for dep_name in phase.dependencies:
+                    if dep_name in phase_dict:
+                        dep_phase = phase_dict[dep_name]
 
                     # Add dependency arrow
                     fig.add_annotation(
@@ -659,9 +661,10 @@ class MissionVisualizer:
         phase_dict = {phase.name: phase for phase in phases}
 
         for phase in phases:
-            for dep_name in phase.dependencies:
-                if dep_name in phase_dict:
-                    dep_phase = phase_dict[dep_name]
+            if phase.dependencies:
+                for dep_name in phase.dependencies:
+                    if dep_name in phase_dict:
+                        dep_phase = phase_dict[dep_name]
 
                     arrow_color = self.config.critical_path_color if (
                         phase.critical_path and dep_phase.critical_path

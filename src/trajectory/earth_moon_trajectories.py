@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 class LambertSolver:
     """Lambert problem solver for Earth-Moon trajectory generation.
-    
+
     This class provides Lambert problem solutions for two-body trajectories
     between Earth and Moon, supporting the core trajectory generation needs.
     """
 
-    def __init__(self, central_body_mu: float = PC.EARTH_MU):
+    def __init__(self, central_body_mu: float = PC.EARTH_MU) -> None:
         """Initialize Lambert solver.
-        
+
         Args:
             central_body_mu: Gravitational parameter of central body [m³/s²]
         """
@@ -44,18 +44,18 @@ class LambertSolver:
                      direction: int = 0,
                      max_revolutions: int = 0) -> tuple[np.ndarray, np.ndarray]:
         """Solve Lambert problem for given position vectors and time.
-        
+
         Args:
             r1: Initial position vector [m]
             r2: Final position vector [m]
             time_of_flight: Time of flight [s]
             direction: Transfer direction (0=auto, 1=prograde, -1=retrograde)
             max_revolutions: Maximum number of revolutions
-            
+
         Returns
         -------
             Tuple of (initial_velocity, final_velocity) [m/s]
-            
+
         Raises
         ------
             ValueError: If Lambert solution fails to converge
@@ -68,7 +68,8 @@ class LambertSolver:
             )
 
             if not lambert.get_v1():
-                raise ValueError("Lambert solver failed to find solution")
+                msg = "Lambert solver failed to find solution"
+                raise ValueError(msg)
 
             v1 = np.array(lambert.get_v1()[0])  # Initial velocity
             v2 = np.array(lambert.get_v2()[0])  # Final velocity
@@ -79,7 +80,8 @@ class LambertSolver:
             return v1, v2
 
         except Exception as e:
-            raise ValueError(f"Lambert problem solution failed: {e!s}")
+            msg = f"Lambert problem solution failed: {e!s}"
+            raise ValueError(msg)
 
     def solve_multiple_revolution(self,
                                 r1: np.ndarray,
@@ -87,13 +89,13 @@ class LambertSolver:
                                 time_of_flight: float,
                                 max_revs: int = 2) -> list[tuple[np.ndarray, np.ndarray]]:
         """Solve Lambert problem for multiple revolution cases.
-        
+
         Args:
             r1: Initial position vector [m]
             r2: Final position vector [m]
             time_of_flight: Time of flight [s]
             max_revs: Maximum revolutions to consider
-            
+
         Returns
         -------
             List of (v1, v2) solutions for different revolution numbers
@@ -119,14 +121,14 @@ class LambertSolver:
                                 v2_target: np.ndarray,
                                 time_of_flight: float) -> tuple[float, np.ndarray, np.ndarray]:
         """Calculate delta-v required for Lambert transfer.
-        
+
         Args:
             r1: Initial position [m]
             v1_current: Current velocity at r1 [m/s]
             r2: Final position [m]
             v2_target: Target velocity at r2 [m/s]
             time_of_flight: Time of flight [s]
-            
+
         Returns
         -------
             Tuple of (total_deltav, deltav1, deltav2) [m/s]
@@ -145,13 +147,13 @@ class LambertSolver:
 
 class PatchedConicsApproximation:
     """Patched conics approximation for Earth-Moon trajectories.
-    
+
     This class implements the patched conics method for approximating
     trajectories in the Earth-Moon system, providing faster calculations
     than full n-body integration.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize patched conics approximation."""
         self.earth_soi = 9.24e8  # Earth sphere of influence [m]
         self.moon_soi = PC.MOON_SOI  # Moon sphere of influence [m]
@@ -164,12 +166,12 @@ class PatchedConicsApproximation:
                            moon_arrival: OrbitState,
                            transfer_time: float) -> dict[str, any]:
         """Calculate trajectory using patched conics approximation.
-        
+
         Args:
             earth_departure: Departure orbit state around Earth
             moon_arrival: Arrival orbit state around Moon
             transfer_time: Transfer time [s]
-            
+
         Returns
         -------
             Dictionary with trajectory components and characteristics
@@ -206,10 +208,10 @@ class PatchedConicsApproximation:
 
     def _calculate_earth_escape(self, departure_state: OrbitState) -> dict[str, any]:
         """Calculate Earth escape phase.
-        
+
         Args:
             departure_state: Departure orbit around Earth
-            
+
         Returns
         -------
             Earth escape trajectory data
@@ -239,12 +241,12 @@ class PatchedConicsApproximation:
                                      moon_arrival: OrbitState,
                                      transfer_time: float) -> dict[str, any]:
         """Calculate Earth-Moon transfer phase.
-        
+
         Args:
             earth_escape: Earth escape trajectory data
             moon_arrival: Moon arrival orbit state
             transfer_time: Transfer time [s]
-            
+
         Returns
         -------
             Transfer trajectory data
@@ -273,11 +275,11 @@ class PatchedConicsApproximation:
                               arrival_state: OrbitState,
                               transfer_data: dict[str, any]) -> dict[str, any]:
         """Calculate Moon capture phase.
-        
+
         Args:
             arrival_state: Arrival orbit around Moon
             transfer_data: Transfer trajectory data
-            
+
         Returns
         -------
             Moon capture trajectory data
@@ -303,12 +305,12 @@ class PatchedConicsApproximation:
 
 class OptimalTimingCalculator:
     """Calculator for optimal departure and arrival timing.
-    
+
     This class provides methods to calculate optimal launch windows
     and arrival times for Earth-Moon trajectories.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize optimal timing calculator."""
         self.celestial = CelestialBody()
         self.lunar_transfer = LunarTransfer()
@@ -321,13 +323,13 @@ class OptimalTimingCalculator:
                                    earth_orbit_alt: float = 300.0,
                                    moon_orbit_alt: float = 100.0) -> dict[str, any]:
         """Find optimal departure time within search period.
-        
+
         Args:
             start_epoch: Search start epoch [days since J2000]
             search_days: Number of days to search
             earth_orbit_alt: Earth parking orbit altitude [km]
             moon_orbit_alt: Moon orbit altitude [km]
-            
+
         Returns
         -------
             Dictionary with optimal timing information
@@ -387,12 +389,12 @@ class OptimalTimingCalculator:
                                month: int = 6,
                                num_windows: int = 5) -> list[dict[str, any]]:
         """Calculate multiple launch windows for a given month.
-        
+
         Args:
             year: Launch year
             month: Launch month
             num_windows: Number of windows to find
-            
+
         Returns
         -------
             List of launch window opportunities
@@ -432,13 +434,13 @@ class OptimalTimingCalculator:
 
     def analyze_timing_sensitivity(self,
                                  optimal_epoch: float,
-                                 time_variations: list[float] = None) -> dict[str, any]:
+                                 time_variations: list[float] | None = None) -> dict[str, any]:
         """Analyze sensitivity to timing variations.
-        
+
         Args:
             optimal_epoch: Optimal departure epoch [days since J2000]
             time_variations: Time variations to test [days]
-            
+
         Returns
         -------
             Timing sensitivity analysis
@@ -496,14 +498,14 @@ def generate_earth_moon_trajectory(departure_epoch: float,
                                  transfer_time: float = 4.0,
                                  method: str = "lambert") -> tuple[Trajectory, float]:
     """Convenience function for Earth-Moon trajectory generation.
-    
+
     Args:
         departure_epoch: Departure epoch [days since J2000]
         earth_orbit_alt: Earth orbit altitude [km]
         moon_orbit_alt: Moon orbit altitude [km]
         transfer_time: Transfer time [days]
         method: Generation method ('lambert', 'patched_conics')
-        
+
     Returns
     -------
         Tuple of (trajectory, total_deltav)
@@ -556,7 +558,8 @@ def generate_earth_moon_trajectory(departure_epoch: float,
         )
 
         return trajectory, trajectory_data["total_deltav"]
-    raise ValueError(f"Unknown trajectory generation method: {method}")
+    msg = f"Unknown trajectory generation method: {method}"
+    raise ValueError(msg)
 
 
 def find_optimal_launch_window(target_date: datetime,
@@ -564,13 +567,13 @@ def find_optimal_launch_window(target_date: datetime,
                              earth_orbit_alt: float = 300.0,
                              moon_orbit_alt: float = 100.0) -> dict[str, any]:
     """Find optimal launch window around target date.
-    
+
     Args:
         target_date: Target launch date
         window_days: Search window size [days]
         earth_orbit_alt: Earth orbit altitude [km]
         moon_orbit_alt: Moon orbit altitude [km]
-        
+
     Returns
     -------
         Optimal launch window information

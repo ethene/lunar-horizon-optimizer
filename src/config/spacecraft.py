@@ -40,28 +40,32 @@ class PayloadSpecification(BaseModel):
     def validate_masses(self) -> "PayloadSpecification":
         """Validate mass relationships."""
         if self.payload_mass >= self.dry_mass:
-            raise ValueError(
+            msg = (
                 f"Payload mass ({self.payload_mass} kg) must be less than "
                 f"dry mass ({self.dry_mass} kg)"
+            )
+            raise ValueError(
+                msg
             )
         return self
 
     def calculate_delta_v(self, propellant_mass: float) -> float:
         """Calculate available delta-v using the rocket equation.
-        
+
         Args:
             propellant_mass: Mass of propellant to use (kg)
-            
+
         Returns
         -------
             Available delta-v in m/s
-        
+
         Raises
         ------
             ValueError: If propellant mass exceeds capacity
         """
         if propellant_mass > self.max_propellant_mass:
-            raise ValueError(f"Propellant mass exceeds capacity: {self.max_propellant_mass} kg")
+            msg = f"Propellant mass exceeds capacity: {self.max_propellant_mass} kg"
+            raise ValueError(msg)
 
         g0 = 9.80665  # Standard gravity in m/s^2
         mass_ratio = (self.dry_mass + propellant_mass) / self.dry_mass

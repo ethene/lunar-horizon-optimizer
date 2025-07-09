@@ -112,7 +112,7 @@ class TestBasicPhysics:
         # Delta-v calculations
         dv1 = abs(v1_transfer - v_circ1)
         dv2 = abs(v2_transfer - v_circ2)
-        total_dv = dv1 + dv2
+        dv1 + dv2
 
         # Transfer time
         transfer_time = np.pi * np.sqrt(a_transfer**3 / PC.EARTH_MU)
@@ -473,8 +473,7 @@ class TestLunarTransfer:
         # Test with phase angles near 0, π/2, π, 3π/2
         critical_phases = [0.0, np.pi/2, np.pi, 3*np.pi/2]
         r_park = PC.EARTH_RADIUS + 400_000  # 400 km orbit
-        target_pos = np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
-        transfer_time = 3.0 * 86400  # 3 days in seconds
+        np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
         moon_h_unit = np.array([0, 0, 1])
 
         for phase in critical_phases:
@@ -530,9 +529,12 @@ class TestLunarTransfer:
         )
 
         # Check results
-        assert dv_total is not None and dv_total < float("inf")
-        assert v1 is not None and v2 is not None
-        assert np.all(np.isfinite(v1)) and np.all(np.isfinite(v2))
+        assert dv_total is not None
+        assert dv_total < float("inf")
+        assert v1 is not None
+        assert v2 is not None
+        assert np.all(np.isfinite(v1))
+        assert np.all(np.isfinite(v2))
 
         # Verify velocities are reasonable
         v1_mag = np.linalg.norm(v1)

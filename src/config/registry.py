@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 class ConfigRegistry:
     """Registry for managing configuration templates and defaults."""
 
-    def __init__(self, templates_dir: Path | None = None):
+    def __init__(self, templates_dir: Path | None = None) -> None:
         """Initialize the configuration registry.
-        
+
         Args:
             templates_dir: Optional directory containing configuration templates.
                          If not provided, uses default templates.
@@ -94,40 +94,42 @@ class ConfigRegistry:
 
     def register_template(self, name: str, config: MissionConfig) -> None:
         """Register a new configuration template.
-        
+
         Args:
             name: Unique name for the template.
             config: MissionConfig object to use as template.
-            
+
         Raises
         ------
             ValueError: If template name already exists in default templates.
         """
         if name in self._default_templates:
-            raise ValueError(f"Cannot override default template '{name}'")
+            msg = f"Cannot override default template '{name}'"
+            raise ValueError(msg)
         self._templates[name] = config
 
     def get_template(self, name: str) -> MissionConfig:
         """Get a configuration template by name.
-        
+
         Args:
             name: Name of the template to retrieve.
-            
+
         Returns
         -------
             Copy of the requested template configuration.
-            
+
         Raises
         ------
             KeyError: If template does not exist.
         """
         if name not in self._templates:
-            raise KeyError(f"Template '{name}' not found")
+            msg = f"Template '{name}' not found"
+            raise KeyError(msg)
         return self._templates[name].model_copy(deep=True)
 
     def list_templates(self) -> list[str]:
         """Get list of available template names.
-        
+
         Returns
         -------
             List of template names.
@@ -136,13 +138,13 @@ class ConfigRegistry:
 
     def load_template_file(self, file_path: Path) -> None:
         """Load a template configuration from a file.
-        
+
         The template name will be derived from the file name without extension.
         If a template with the same name already exists, it will be overwritten.
-        
+
         Args:
             file_path: Path to the template file (JSON or YAML).
-            
+
         Raises
         ------
             ConfigurationError: If file cannot be loaded.
@@ -155,20 +157,22 @@ class ConfigRegistry:
             self._templates[name] = config
             logger.info(f"Loaded template '{name}' from {file_path}")
         except Exception as e:
-            raise ConfigurationError(f"Failed to load template from {file_path}: {e!s}")
+            msg = f"Failed to load template from {file_path}: {e!s}"
+            raise ConfigurationError(msg)
 
     def load_templates_dir(self, directory: Path) -> None:
         """Load all template configurations from a directory.
-        
+
         Args:
             directory: Path to directory containing template files.
-            
+
         Raises
         ------
             ConfigurationError: If directory cannot be processed.
         """
         if not directory.is_dir():
-            raise ConfigurationError(f"Template directory not found: {directory}")
+            msg = f"Template directory not found: {directory}"
+            raise ConfigurationError(msg)
 
         for file_path in directory.glob("*.{json,yml,yaml}"):
             try:
@@ -179,21 +183,23 @@ class ConfigRegistry:
 
     def save_template(self, name: str, file_path: Path) -> None:
         """Save a template configuration to a file.
-        
+
         Args:
             name: Name of the template to save.
             file_path: Path where to save the template.
-            
+
         Raises
         ------
             KeyError: If template does not exist.
             ConfigurationError: If file cannot be saved.
         """
         if name not in self._templates:
-            raise KeyError(f"Template '{name}' not found")
+            msg = f"Template '{name}' not found"
+            raise KeyError(msg)
 
         loader = ConfigLoader()
         try:
             loader.save_config(self._templates[name], file_path)
         except Exception as e:
-            raise ConfigurationError(f"Failed to save template to {file_path}: {e!s}")
+            msg = f"Failed to save template to {file_path}: {e!s}"
+            raise ConfigurationError(msg)

@@ -3,7 +3,7 @@
 This module is maintained for backward compatibility only.
 Please import from the new validation package modules:
 - src.trajectory.validation.physics_validation
-- src.trajectory.validation.constraint_validation  
+- src.trajectory.validation.constraint_validation
 - src.trajectory.validation.vector_validation
 
 This module will be removed in a future version.
@@ -36,16 +36,16 @@ from .validation.vector_validation import (
 )
 
 __all__ = [
+    "calculate_circular_velocity",
+    "propagate_orbit",
     # Physics validation
     "validate_basic_orbital_mechanics",
-    "validate_transfer_time",
+    "validate_delta_v",
     "validate_solution_physics",
-    "calculate_circular_velocity",
+    "validate_state_vector",
     # Constraint validation
     "validate_trajectory_constraints",
+    "validate_transfer_time",
     # Vector validation
-    "validate_vector_units",
-    "validate_delta_v",
-    "validate_state_vector",
-    "propagate_orbit"
+    "validate_vector_units"
 ]

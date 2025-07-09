@@ -8,7 +8,7 @@ import numpy as np
 import logging
 import pykep as pk
 
-from trajectory.constants import PhysicalConstants
+from src.trajectory.constants import PhysicalConstants
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -20,18 +20,18 @@ def validate_trajectory_constraints(r1: np.ndarray,
                                  v2: np.ndarray,
                                  tof: float) -> bool:
     """Validate physical constraints for the complete trajectory.
-    
+
     Args:
         r1: Initial position vector [m]
         v1: Initial velocity vector [m/s]
         r2: Final position vector [m]
         v2: Final velocity vector [m/s]
         tof: Time of flight [s]
-        
+
     Returns
     -------
         bool: True if trajectory is valid
-        
+
     Raises
     ------
         ValueError: If trajectory violates physical constraints
@@ -53,7 +53,8 @@ def validate_trajectory_constraints(r1: np.ndarray,
 
     # Allow velocities up to 1.8 times escape velocity for lunar transfer
     if v1_mag > 1.8 * v_esc or v2_mag > 2.0 * v_esc:
-        raise ValueError(f"Excessive velocity detected: {v1_mag/1000:.1f} or {v2_mag/1000:.1f} km/s (escape velocity: {v_esc/1000:.1f} km/s)")
+        msg = f"Excessive velocity detected: {v1_mag/1000:.1f} or {v2_mag/1000:.1f} km/s (escape velocity: {v_esc/1000:.1f} km/s)"
+        raise ValueError(msg)
 
     # Verify trajectory doesn't impact Earth
     try:
@@ -64,9 +65,11 @@ def validate_trajectory_constraints(r1: np.ndarray,
             states.append(np.concatenate([rt, vt]))
             r_mag = np.linalg.norm(rt)
             if r_mag < PhysicalConstants.EARTH_RADIUS + 100000:  # 100 km safety margin
-                raise ValueError(f"Trajectory passes too close to Earth: {(r_mag-PhysicalConstants.EARTH_RADIUS)/1000:.0f} km altitude")
+                msg = f"Trajectory passes too close to Earth: {(r_mag-PhysicalConstants.EARTH_RADIUS)/1000:.0f} km altitude"
+                raise ValueError(msg)
     except RuntimeError as e:
-        raise ValueError(f"Invalid trajectory: {e!s}")
+        msg = f"Invalid trajectory: {e!s}"
+        raise ValueError(msg)
 
     # Verify angular momentum conservation with 10% tolerance for lunar effects
     h1 = np.cross(r1, v1)
@@ -76,24 +79,28 @@ def validate_trajectory_constraints(r1: np.ndarray,
     h2_mag = np.linalg.norm(h2)
 
     if h1_mag < 1e-10 or h2_mag < 1e-10:
-        raise ValueError("Near-zero angular momentum detected")
+        msg = "Near-zero angular momentum detected"
+        raise ValueError(msg)
 
     h_diff = abs(h1_mag - h2_mag) / h1_mag
     if h_diff > 0.10:
-        raise ValueError(f"Angular momentum not conserved: relative difference {h_diff:.1%}")
+        msg = f"Angular momentum not conserved: relative difference {h_diff:.1%}"
+        raise ValueError(msg)
 
     # Verify energy consistency with 15% tolerance for lunar effects
     e1 = v1_mag**2/2 - PhysicalConstants.EARTH_MU/r1_mag
-    e2 = v2_mag**2/2 - PhysicalConstants.EARTH_MU/r2_mag
+    v2_mag**2/2 - PhysicalConstants.EARTH_MU/r2_mag
 
     # For lunar transfer, allow slightly positive energy
     if e1 > 1e4:
-        raise ValueError(f"Initial orbit too energetic (e = {e1:.2e} m²/s²)")
+        msg = f"Initial orbit too energetic (e = {e1:.2e} m²/s²)"
+        raise ValueError(msg)
 
     # Verify minimum transfer time
     min_time = np.pi * np.sqrt(min(r1_mag, r2_mag)**3 / (8 * PhysicalConstants.EARTH_MU))
     if tof < 0.5 * min_time:
-        raise ValueError(f"Transfer time {tof:.1f}s is less than 50% of minimum time {min_time:.1f}s")
+        msg = f"Transfer time {tof:.1f}s is less than 50% of minimum time {min_time:.1f}s"
+        raise ValueError(msg)
 
     # Check intermediate states for physical constraints
     for i, state in enumerate(states):

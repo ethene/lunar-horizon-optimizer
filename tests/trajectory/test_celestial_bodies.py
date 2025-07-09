@@ -20,7 +20,7 @@ from src.utils.unit_conversions import datetime_to_j2000
 class TestCelestialBodies:
     """
     Tests for celestial body state calculations using SPICE.
-    
+
     All tests verify:
     1. Correct state vector calculations in the J2000 frame
     2. Proper error handling for invalid inputs
@@ -36,7 +36,7 @@ class TestCelestialBodies:
     def test_earth_state_heliocentric(self):
         """
         Verify Earth's heliocentric state vector calculation.
-        
+
         Tests:
         1. Position magnitude ~1 AU (1.496e11 m ± 5%)
         2. Velocity magnitude ~29.8 km/s (29800 m/s ± 5%)
@@ -64,7 +64,7 @@ class TestCelestialBodies:
     def test_moon_state_heliocentric(self):
         """
         Verify Moon's heliocentric state vector calculation.
-        
+
         Tests:
         1. Position magnitude ~1 AU (similar to Earth)
         2. Heliocentric velocity magnitude ~29.8 km/s (± 5%)
@@ -87,7 +87,7 @@ class TestCelestialBodies:
     def test_moon_state_earth_centered(self):
         """
         Verify Moon's geocentric state vector calculation.
-        
+
         Tests:
         1. Position magnitude ~384,400 km (384.4e6 m ± 10%)
         2. Velocity magnitude ~1.022 km/s (1022 m/s ± 10%)
@@ -118,7 +118,7 @@ class TestCelestialBodies:
     def test_invalid_epoch(self):
         """
         Verify proper error handling for invalid epochs.
-        
+
         Tests:
         1. Very large epoch values
         2. Very small (negative) epoch values
@@ -137,7 +137,7 @@ class TestCelestialBodies:
 
     def test_local_frame(self):
         """Test local frame transformations.
-        
+
         Verifies:
         - Earth-centered Moon position matches direct calculation
         - Earth-centered Moon velocity matches direct calculation

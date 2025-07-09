@@ -258,12 +258,12 @@ class TestLunarMissionProblem:
                 # First evaluation
                 start_time = time.time()
                 fitness1 = problem.fitness(test_params)
-                first_eval_time = time.time() - start_time
+                time.time() - start_time
 
                 # Second evaluation (should be cached)
                 start_time = time.time()
                 fitness2 = problem.fitness(test_params)
-                second_eval_time = time.time() - start_time
+                time.time() - start_time
 
                 # Results should be identical
                 assert fitness1 == fitness2, "Cached fitness should be identical"
@@ -407,7 +407,7 @@ class TestGlobalOptimizer:
             assert "weighted_score" in solution
 
             # Validate weighted score is a number
-            assert isinstance(solution["weighted_score"], (int, float)), "Weighted score should be numeric"
+            assert isinstance(solution["weighted_score"], int | float), "Weighted score should be numeric"
             assert solution["weighted_score"] >= 0, "Weighted score should be non-negative"
 
         except Exception as e:

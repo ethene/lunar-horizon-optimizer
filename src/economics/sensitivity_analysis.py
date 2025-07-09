@@ -21,14 +21,14 @@ class EconomicSensitivityAnalyzer:
     sensitivity, scenario analysis, and Monte Carlo simulation.
     """
 
-    def __init__(self, base_model_function: Callable | None = None) -> None:
+    def __init__(self, base_model_function: Callable[..., dict[str, float]] | None = None) -> None:
         """Initialize economic sensitivity analyzer.
 
         Args:
             base_model_function: Function that calculates economic metrics given parameters
         """
         self.base_model_function = base_model_function
-        self.sensitivity_results = {}
+        self.sensitivity_results: dict[str, Any] = {}
 
         logger.info("Initialized EconomicSensitivityAnalyzer")
 
@@ -57,7 +57,7 @@ class EconomicSensitivityAnalyzer:
         base_result = self.base_model_function(base_parameters)
         base_npv = base_result.get("npv", 0) if isinstance(base_result, dict) else base_result
 
-        sensitivity_results = {
+        sensitivity_results: dict[str, Any] = {
             "base_npv": base_npv,
             "base_parameters": base_parameters,
             "variables": {}
@@ -134,7 +134,7 @@ class EconomicSensitivityAnalyzer:
         base_result = self.base_model_function(base_parameters)
         base_npv = base_result.get("npv", 0) if isinstance(base_result, dict) else base_result
 
-        tornado_data = {
+        tornado_data: dict[str, Any] = {
             "base_npv": base_npv,
             "variables": {}
         }
@@ -201,7 +201,7 @@ class EconomicSensitivityAnalyzer:
         base_result = self.base_model_function(base_parameters)
         base_npv = base_result.get("npv", 0) if isinstance(base_result, dict) else base_result
 
-        scenario_results = {
+        scenario_results: dict[str, Any] = {
             "base_case": {
                 "parameters": base_parameters,
                 "result": base_result,
@@ -339,7 +339,7 @@ class EconomicSensitivityAnalyzer:
 
         return mc_results
 
-    def _calculate_elasticity(self, param_values: np.ndarray, npv_values: list[float],
+    def _calculate_elasticity(self, param_values: np.ndarray[np.float64, np.dtype[np.float64]], npv_values: list[float],
                              base_param: float, base_npv: float) -> float:
         """Calculate elasticity at base point."""
         # Find closest points to base value
@@ -361,13 +361,13 @@ class EconomicSensitivityAnalyzer:
         if delta_param != 0 and base_npv != 0 and base_param != 0:
             elasticity = (delta_npv / base_npv) / (delta_param / base_param)
         else:
-            elasticity = 0
+            elasticity = 0.0
 
-        return elasticity
+        return float(elasticity)
 
     def _generate_monte_carlo_samples(self,
                                     distributions: dict[str, dict[str, Any]],
-                                    num_samples: int) -> dict[str, np.ndarray]:
+                                    num_samples: int) -> dict[str, np.ndarray[np.float64, np.dtype[np.float64]]]:
         """Generate Monte Carlo samples from specified distributions."""
         samples = {}
 
@@ -398,25 +398,25 @@ class EconomicSensitivityAnalyzer:
 
         return samples
 
-    def _calculate_skewness(self, data: np.ndarray) -> float:
+    def _calculate_skewness(self, data: np.ndarray[np.float64, np.dtype[np.float64]]) -> float:
         """Calculate skewness of data."""
         mean = np.mean(data)
         std = np.std(data)
         if std == 0:
-            return 0
-        return np.mean(((data - mean) / std) ** 3)
+            return 0.0
+        return float(np.mean(((data - mean) / std) ** 3))
 
-    def _calculate_kurtosis(self, data: np.ndarray) -> float:
+    def _calculate_kurtosis(self, data: np.ndarray[np.float64, np.dtype[np.float64]]) -> float:
         """Calculate kurtosis of data."""
         mean = np.mean(data)
         std = np.std(data)
         if std == 0:
-            return 0
-        return np.mean(((data - mean) / std) ** 4) - 3  # Excess kurtosis
+            return 0.0
+        return float(np.mean(((data - mean) / std) ** 4) - 3)  # Excess kurtosis
 
     def _analyze_parameter_correlations(self,
-                                      samples: dict[str, np.ndarray],
-                                      results: np.ndarray) -> dict[str, Any]:
+                                      samples: dict[str, np.ndarray[np.float64, np.dtype[np.float64]]],
+                                      results: np.ndarray[np.float64, np.dtype[np.float64]]) -> dict[str, Any]:
         """Analyze correlations between parameters and results."""
         correlations = {}
 
@@ -492,7 +492,7 @@ class EconomicSensitivityAnalyzer:
 
     def _generate_sensitivity_summary(self, report: dict[str, Any]) -> dict[str, Any]:
         """Generate summary of sensitivity analysis results."""
-        summary = {
+        summary: dict[str, Any] = {
             "key_findings": [],
             "risk_assessment": {},
             "recommendations": []

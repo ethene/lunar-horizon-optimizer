@@ -36,55 +36,56 @@ import numpy as np
 from typing import Union
 
 # Type alias for numeric types
-NumericType = Union[float, list[float], tuple[float, ...], np.ndarray]
+NumericType = Union[float, list[float], tuple[float, ...], np.ndarray[tuple[int, ...], np.dtype[np.float64]]]
 
-def ensure_array(x: NumericType) -> np.ndarray:
+def ensure_array(x: NumericType) -> np.ndarray[tuple[int, ...], np.dtype[np.float64]]:
     """Convert input to numpy array if it isn't already.
-    
+
     Args:
         x: Input value or array
-        
+
     Returns
     -------
         numpy.ndarray: Array version of input
     """
     return np.array(x) if not isinstance(x, np.ndarray) else x
 
-def restore_type(x: NumericType, arr: np.ndarray) -> NumericType:
+def restore_type(x: NumericType, arr: np.ndarray[tuple[int, ...], np.dtype[np.float64]]) -> NumericType:
     """Restore original type of input after array operations.
-    
+
     Args:
         x: Original input
         arr: Numpy array to convert back
-        
+
     Returns
     -------
         Same type as input x
     """
-    if isinstance(x, (list, tuple)):
+    if isinstance(x, list | tuple):
         return type(x)(arr.tolist())
     return arr if isinstance(x, np.ndarray) else float(arr)
 
 def datetime_to_mjd2000(dt: datetime) -> float:
     """Convert datetime to Modified Julian Date 2000 (MJD2000).
-    
+
     MJD2000 is days since 2000-01-01 00:00:00 UTC, which is PyKEP's reference epoch.
     A value of 0.0 corresponds to 2000-01-01 00:00:00 UTC.
     A value of 0.5 corresponds to 2000-01-01 12:00:00 UTC (J2000 epoch).
-    
+
     Args:
         dt: Timezone-aware datetime object to convert
-        
+
     Returns
     -------
         float: Days since MJD2000 epoch
-        
+
     Raises
     ------
         ValueError: If datetime is naive (no timezone)
     """
     if dt.tzinfo is None:
-        raise ValueError("Datetime must be timezone-aware")
+        msg = "Datetime must be timezone-aware"
+        raise ValueError(msg)
 
     # Convert to UTC if needed
     dt_utc = dt.astimezone(UTC)
@@ -98,18 +99,18 @@ def datetime_to_mjd2000(dt: datetime) -> float:
 
 def datetime_to_j2000(dt: datetime) -> float:
     """Convert datetime to days since J2000 epoch.
-    
+
     J2000 is days since 2000-01-01 12:00:00 UTC.
     A value of 0.0 corresponds to 2000-01-01 12:00:00 UTC.
     A value of -0.5 corresponds to 2000-01-01 00:00:00 UTC (MJD2000 epoch).
-    
+
     Args:
         dt: Timezone-aware datetime object to convert
-        
+
     Returns
     -------
         float: Days since J2000 epoch
-        
+
     Raises
     ------
         ValueError: If datetime is naive (no timezone)
@@ -119,63 +120,78 @@ def datetime_to_j2000(dt: datetime) -> float:
 
 def datetime_to_pykep_epoch(dt: datetime) -> float:
     """Convert datetime to PyKEP epoch (MJD2000).
-    
+
     This is an alias for datetime_to_mjd2000() to make PyKEP interfacing explicit.
     PyKEP uses MJD2000 internally, where:
         pk.epoch(0) = 2000-01-01 00:00:00 UTC
         pk.epoch(0.5) = 2000-01-01 12:00:00 UTC (J2000)
-    
+
     Args:
         dt: Timezone-aware datetime object to convert
-        
+
     Returns
     -------
         float: PyKEP epoch value (days since MJD2000)
     """
     return datetime_to_mjd2000(dt)
 
-def km_to_m(km: float | list | tuple) -> float | list | tuple:
+def km_to_m(km: NumericType) -> NumericType:
     """Convert kilometers to meters.
-    
+
     Args:
         km: Distance in kilometers
-        
+
     Returns
     -------
         Distance in meters, preserving input type
     """
-    return km * 1000.0
+    if isinstance(km, (list, tuple)):
+        return type(km)([x * 1000.0 for x in km])
+    elif isinstance(km, np.ndarray):
+        return km * 1000.0
+    else:
+        return km * 1000.0
 
-def m_to_km(m: float | list | tuple) -> float | list | tuple:
+def m_to_km(m: NumericType) -> NumericType:
     """Convert meters to kilometers.
-    
+
     Args:
         m: Distance in meters
-        
+
     Returns
     -------
         Distance in kilometers, preserving input type
     """
-    return m / 1000.0
+    if isinstance(m, (list, tuple)):
+        return type(m)([x / 1000.0 for x in m])
+    elif isinstance(m, np.ndarray):
+        return m / 1000.0
+    else:
+        return m / 1000.0
 
-def kmps_to_mps(kmps: float | list | tuple) -> float | list | tuple:
+def kmps_to_mps(kmps: NumericType) -> NumericType:
     """Convert kilometers per second to meters per second.
-    
+
     Args:
         kmps: Velocity in kilometers per second
-        
+
     Returns
     -------
         Velocity in meters per second, preserving input type
     """
-    return kmps * 1000.0
+    if isinstance(kmps, (list, tuple)):
+        return type(kmps)([x * 1000.0 for x in kmps])
+    elif isinstance(kmps, np.ndarray):
+        return kmps * 1000.0
+    else:
+        return kmps * 1000.0
 
-def mps_to_kmps(mps: float | list | tuple) -> float | list | tuple:
+def mps_to_kmps(mps: NumericType) -> NumericType:
     """Convert meters per second to kilometers per second.
-    
+
     Args:
         mps: Velocity in meters per second
-        
+
     Returns
     -------
         Velocity in kilometers per second, preserving input type
@@ -185,10 +201,10 @@ def mps_to_kmps(mps: float | list | tuple) -> float | list | tuple:
 
 def deg_to_rad(deg: NumericType) -> NumericType:
     """Convert degrees to radians.
-    
+
     Args:
         deg: Angle in degrees
-        
+
     Returns
     -------
         Angle in radians, preserving input type
@@ -198,10 +214,10 @@ def deg_to_rad(deg: NumericType) -> NumericType:
 
 def rad_to_deg(rad: NumericType) -> NumericType:
     """Convert radians to degrees.
-    
+
     Args:
         rad: Angle in radians
-        
+
     Returns
     -------
         Angle in degrees, preserving input type
@@ -211,10 +227,10 @@ def rad_to_deg(rad: NumericType) -> NumericType:
 
 def km3s2_to_m3s2(mu: float) -> float:
     """Convert gravitational parameter from km³/s² to m³/s².
-    
+
     Args:
         mu: Gravitational parameter in km³/s²
-        
+
     Returns
     -------
         float: Gravitational parameter in m³/s²
@@ -223,10 +239,10 @@ def km3s2_to_m3s2(mu: float) -> float:
 
 def m3s2_to_km3s2(mu: float) -> float:
     """Convert gravitational parameter from m³/s² to km³/s².
-    
+
     Args:
         mu: Gravitational parameter in m³/s²
-        
+
     Returns
     -------
         float: Gravitational parameter in km³/s²
@@ -235,10 +251,10 @@ def m3s2_to_km3s2(mu: float) -> float:
 
 def days_to_seconds(days: float) -> float:
     """Convert days to seconds.
-    
+
     Args:
         days: Time duration in days
-        
+
     Returns
     -------
         float: Time duration in seconds
@@ -247,10 +263,10 @@ def days_to_seconds(days: float) -> float:
 
 def seconds_to_days(seconds: float) -> float:
     """Convert seconds to days.
-    
+
     Args:
         seconds: Time duration in seconds
-        
+
     Returns
     -------
         float: Time duration in days
@@ -259,10 +275,10 @@ def seconds_to_days(seconds: float) -> float:
 
 def pykep_epoch_to_datetime(epoch: float) -> datetime:
     """Convert PyKEP epoch (MJD2000) to datetime.
-    
+
     Args:
         epoch: PyKEP epoch value (days since MJD2000)
-        
+
     Returns
     -------
         datetime: Timezone-aware datetime object in UTC

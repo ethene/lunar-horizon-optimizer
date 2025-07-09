@@ -7,11 +7,11 @@ integrator for high-precision propagation.
 Example:
     ```python
     from .celestial_bodies import CelestialBody
-    
+
     # Initialize propagator
     celestial = CelestialBody()
     propagator = TrajectoryPropagator(celestial)
-    
+
     # Propagate trajectory
     r1, v1 = propagator.propagate_to_target(
         r0=initial_position,  # [m]
@@ -29,28 +29,28 @@ from .celestial_bodies import CelestialBody
 
 class TrajectoryPropagator:
     """Handles trajectory propagation with gravity effects.
-    
+
     This class manages the propagation of spacecraft trajectories in the Earth-Moon
     system, taking into account:
     - Earth's gravitational field
     - Moon's gravitational perturbations
     - Conservation of energy
     - Numerical integration accuracy
-    
+
     The propagator uses PyKEP's Taylor integrator for high-precision propagation
     and includes detailed logging of the propagation process.
-    
+
     Attributes
     ----------
         celestial (CelestialBody): Instance for calculating celestial body states
     """
 
-    def __init__(self, celestial: CelestialBody):
+    def __init__(self, celestial: CelestialBody) -> None:
         """Initialize propagator.
-        
+
         Args:
             celestial: CelestialBody instance for state calculations
-            
+
         Note:
             The CelestialBody instance should be properly initialized with
             up-to-date ephemeris data.
@@ -60,17 +60,17 @@ class TrajectoryPropagator:
     def propagate_to_target(self, initial_position: np.ndarray, initial_velocity: np.ndarray, time_of_flight: float, departure_epoch: float = 0.0) -> tuple[np.ndarray, np.ndarray]:
         """
         Propagate spacecraft trajectory to target using high-precision integration.
-        
+
         Args:
             initial_position (np.ndarray): Initial position vector [x, y, z] in meters
             initial_velocity (np.ndarray): Initial velocity vector [vx, vy, vz] in m/s
             time_of_flight (float): Time of flight in seconds
             departure_epoch (float): Departure epoch in days since J2000 (default 0.0)
-            
+
         Returns
         -------
             Tuple[np.ndarray, np.ndarray]: Final position and velocity vectors
-            
+
         Raises
         ------
             ValueError: If input vectors have wrong shape or time of flight is negative
@@ -78,9 +78,11 @@ class TrajectoryPropagator:
         """
         # Input validation
         if initial_position.shape != (3,) or initial_velocity.shape != (3,):
-            raise ValueError("Position and velocity vectors must be 3D")
+            msg = "Position and velocity vectors must be 3D"
+            raise ValueError(msg)
         if time_of_flight <= 0:
-            raise ValueError("Time of flight must be positive")
+            msg = "Time of flight must be positive"
+            raise ValueError(msg)
 
         # Convert numpy arrays to lists for PyKEP
         r0 = initial_position.tolist()
@@ -139,15 +141,16 @@ class TrajectoryPropagator:
             return final_pos, final_vel
 
         except Exception as e:
-            raise RuntimeError(f"Propagation failed: {e!s}")
+            msg = f"Propagation failed: {e!s}"
+            raise RuntimeError(msg)
 
     def _calculate_energy(self, position: np.ndarray, velocity: np.ndarray) -> float:
         """Calculate the specific energy of a spacecraft at a given position and velocity.
-        
+
         Args:
             position (np.ndarray): Position vector [x, y, z] in meters
             velocity (np.ndarray): Velocity vector [vx, vy, vz] in m/s
-            
+
         Returns
         -------
             float: Specific energy in m²/s²

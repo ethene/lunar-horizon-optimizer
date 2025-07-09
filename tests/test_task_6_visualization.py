@@ -302,7 +302,7 @@ class TestOptimizationVisualization:
         pareto_solutions = []
 
         # Generate realistic trade-offs between delta-v, time, and cost
-        for i in range(20):
+        for _i in range(20):
             # Delta-v typically 3-6 km/s for lunar missions
             delta_v = 3000 + np.random.uniform(-500, 1500)
 
@@ -516,7 +516,7 @@ class TestEconomicVisualization:
         for trace in fig.data:
             if hasattr(trace, "value"):
                 value = trace.value
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     # Check that financial values are reasonable
                     if abs(value) > 1:  # Large values (millions)
                         assert abs(value) < 1000  # Less than $1B in millions

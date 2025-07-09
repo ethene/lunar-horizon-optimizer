@@ -24,7 +24,7 @@ from .orbit import OrbitParameters
 
 class MissionConfig(BaseModel):
     """Complete mission configuration.
-    
+
     This class combines all mission configuration parameters including:
     - Mission identification and description
     - Spacecraft and payload specifications
@@ -32,7 +32,7 @@ class MissionConfig(BaseModel):
     - ISRU targets and capabilities
     - Orbital parameters and constraints
     - Mission timeline and duration
-    
+
     Attributes
     ----------
         name: Unique mission identifier
@@ -85,9 +85,12 @@ class MissionConfig(BaseModel):
     def validate_mission_parameters(self) -> "MissionConfig":
         """Validate overall mission parameters."""
         if self.mission_duration_days > 1095:  # 3 years
-            raise ValueError(
+            msg = (
                 f"Mission duration ({self.mission_duration_days} days) exceeds "
                 "3 years - please verify this is intended"
+            )
+            raise ValueError(
+                msg
             )
         return self
 

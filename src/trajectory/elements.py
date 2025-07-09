@@ -9,21 +9,21 @@ import pykep as pk
 
 def orbital_period(semi_major_axis: float, mu: float = pk.MU_EARTH) -> float:
     """Calculate orbital period using Kepler's Third Law.
-    
+
     Args:
         semi_major_axis: Semi-major axis in kilometers
         mu: Gravitational parameter in m^3/s^2 (defaults to Earth's mu)
-        
+
     Returns
     -------
         Orbital period in seconds
-        
+
     Example:
         >>> period = orbital_period(6778.0)  # LEO orbit
         >>> print(f"Period: {period/60:.1f} minutes")
     """
     a = semi_major_axis * 1000  # Convert to meters
-    return 2 * np.pi * np.sqrt(a**3 / mu)
+    return float(2 * np.pi * np.sqrt(a**3 / mu))
 
 def velocity_at_point(
     semi_major_axis: float,
@@ -32,17 +32,17 @@ def velocity_at_point(
     mu: float = pk.MU_EARTH
 ) -> tuple[float, float]:
     """Calculate radial and tangential velocity components at a point in orbit.
-    
+
     Args:
         semi_major_axis: Semi-major axis in kilometers
         eccentricity: Orbital eccentricity (0-1)
         true_anomaly: True anomaly in degrees
         mu: Gravitational parameter in m^3/s^2 (defaults to Earth's mu)
-        
+
     Returns
     -------
         Tuple of (radial_velocity, tangential_velocity) in km/s
-        
+
     Example:
         >>> v_r, v_t = velocity_at_point(6778.0, 0.001, 45.0)
         >>> print(f"Velocity: radial={v_r:.2f}, tangential={v_t:.2f} km/s")
@@ -64,15 +64,15 @@ def velocity_at_point(
 
 def mean_to_true_anomaly(mean_anomaly: float, eccentricity: float) -> float:
     """Convert mean anomaly to true anomaly using iterative solver.
-    
+
     Args:
         mean_anomaly: Mean anomaly in degrees
         eccentricity: Orbital eccentricity (0-1)
-        
+
     Returns
     -------
         True anomaly in degrees
-        
+
     Example:
         >>> nu = mean_to_true_anomaly(45.0, 0.1)
         >>> print(f"True anomaly: {nu:.2f} degrees")
@@ -80,10 +80,7 @@ def mean_to_true_anomaly(mean_anomaly: float, eccentricity: float) -> float:
     M = np.radians(mean_anomaly)
 
     # Initial guess for eccentric anomaly
-    if eccentricity < 0.8:
-        E = M
-    else:
-        E = np.pi
+    E = M if eccentricity < 0.8 else np.pi
 
     # Newton-Raphson iteration to solve Kepler's equation
     for _ in range(10):  # Usually converges in <10 iterations
@@ -94,19 +91,19 @@ def mean_to_true_anomaly(mean_anomaly: float, eccentricity: float) -> float:
 
     # Convert eccentric anomaly to true anomaly
     nu = 2 * np.arctan(np.sqrt((1 + eccentricity)/(1 - eccentricity)) * np.tan(E/2))
-    return np.degrees(nu) % 360
+    return float(np.degrees(nu) % 360)
 
 def true_to_mean_anomaly(true_anomaly: float, eccentricity: float) -> float:
     """Convert true anomaly to mean anomaly.
-    
+
     Args:
         true_anomaly: True anomaly in degrees
         eccentricity: Orbital eccentricity (0-1)
-        
+
     Returns
     -------
         Mean anomaly in degrees
-        
+
     Example:
         >>> M = true_to_mean_anomaly(60.0, 0.1)
         >>> print(f"Mean anomaly: {M:.2f} degrees")
@@ -118,4 +115,4 @@ def true_to_mean_anomaly(true_anomaly: float, eccentricity: float) -> float:
 
     # Calculate mean anomaly
     M = E - eccentricity * np.sin(E)
-    return np.degrees(M) % 360
+    return float(np.degrees(M) % 360)

@@ -12,7 +12,10 @@ from poliastro.bodies import Earth, Moon
 
 def test_scipy_version():
     """Verify SciPy version is compatible with PyKEP."""
-    assert scipy.__version__ == "1.13.1", "SciPy version must be 1.13.1 for PyKEP compatibility"
+    # PyKEP works with SciPy 1.13.1 or higher
+    version_parts = scipy.__version__.split('.')
+    major, minor = int(version_parts[0]), int(version_parts[1])
+    assert major > 1 or (major == 1 and minor >= 13), f"SciPy version {scipy.__version__} must be >= 1.13.1 for PyKEP compatibility"
 
 def test_jax_configuration():
     """Verify JAX is properly configured."""

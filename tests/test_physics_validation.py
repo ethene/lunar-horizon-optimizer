@@ -440,7 +440,7 @@ class TestMissionConstraintValidation:
         transfer_times_days = [3.0, 4.5, 7.0, 14.0, 30.0]
 
         for time_days in transfer_times_days:
-            time_seconds = time_days * 86400
+            time_days * 86400
 
             # Physical limits
             assert time_days >= 3.0, f"Transfer time too short: {time_days} days"

@@ -17,12 +17,12 @@ def calculate_initial_position(r_park: float,
                              phase: float,
                              moon_h_unit: np.ndarray) -> np.ndarray:
     """Calculate initial position vector for given phase angle.
-    
+
     Args:
         r_park: Parking orbit radius [m]
         phase: Phase angle [rad]
         moon_h_unit: Moon's orbital angular momentum unit vector
-        
+
     Returns
     -------
         np.ndarray: Initial position vector [m]
@@ -40,14 +40,15 @@ def calculate_initial_position(r_park: float,
         radial = np.cross(moon_h_unit, ref_dir)
         radial_norm = np.linalg.norm(radial)
         if radial_norm < 1e-10:
-            raise ValueError("Failed to calculate radial vector")
+            msg = "Failed to calculate radial vector"
+            raise ValueError(msg)
         radial = radial / radial_norm
     except Exception as e:
-        raise ValueError(f"Failed to calculate radial vector: {e!s}")
+        msg = f"Failed to calculate radial vector: {e!s}"
+        raise ValueError(msg)
 
     # Calculate initial position
-    pos = r_park * (np.cos(phase) * ref_dir + np.sin(phase) * radial)
-    return pos
+    return r_park * (np.cos(phase) * ref_dir + np.sin(phase) * radial)
 
 def evaluate_transfer_solution(
     r1: np.ndarray,
@@ -58,7 +59,7 @@ def evaluate_transfer_solution(
     max_revs: int = 0
 ) -> tuple[float, np.ndarray | None, np.ndarray | None]:
     """Evaluate a transfer solution for given initial conditions.
-    
+
     Args:
         r1: Initial position vector [m]
         moon_pos: Moon position vector [m]
@@ -66,14 +67,14 @@ def evaluate_transfer_solution(
         transfer_time: Transfer time [s]
         orbit_radius: Target orbit radius around Moon [m]
         max_revs: Maximum number of revolutions (default: 0)
-        
+
     Returns
     -------
         Tuple containing:
         - Total delta-v [m/s]
         - Initial velocity vector [m/s]
         - Final velocity vector [m/s]
-        
+
     If no valid solution is found, returns (inf, None, None)
     """
     logger.debug("Evaluating transfer solution:")
@@ -90,7 +91,8 @@ def evaluate_transfer_solution(
     moon_vel = np.array(moon_vel, dtype=float)
 
     if r1.shape != (3,) or moon_pos.shape != (3,):
-        raise ValueError("Position vectors must be 3D")
+        msg = "Position vectors must be 3D"
+        raise ValueError(msg)
 
     # Calculate magnitudes for validation
     r1_mag = np.linalg.norm(r1)
@@ -193,7 +195,7 @@ def evaluate_transfer_solution(
             return float("inf"), None, None
 
     except (ValueError, RuntimeError) as e:
-        logger.error(f"Lambert solver failed: {e!s}")
+        logger.exception(f"Lambert solver failed: {e!s}")
         return float("inf"), None, None
 
     return min_dv, best_v1, best_v2
@@ -257,7 +259,8 @@ def find_optimal_phase(
             best_r1 = r1
 
     if best_phase is None:
-        raise ValueError("No valid transfer trajectory found")
+        msg = "No valid transfer trajectory found"
+        raise ValueError(msg)
 
     return best_phase, best_r1
 
@@ -282,5 +285,4 @@ def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
                   [axis[2], 0, -axis[0]],
                   [-axis[1], axis[0], 0]])
     I = np.eye(3)
-    R = I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)
-    return R
+    return I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)

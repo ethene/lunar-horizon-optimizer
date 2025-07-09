@@ -16,10 +16,10 @@ import pykep as pk
 
 def get_num_solutions(max_revolutions: int) -> int:
     """Calculate number of solutions for given maximum revolutions.
-    
+
     Args:
         max_revolutions: Maximum number of revolutions
-        
+
     Returns
     -------
         Number of possible solutions
@@ -29,16 +29,16 @@ def get_num_solutions(max_revolutions: int) -> int:
     return 2 * max_revolutions + 1
 
 def solve_lambert(
-    r1: np.ndarray,
-    r2: np.ndarray,
+    r1: np.ndarray[np.float64, np.dtype[np.float64]],
+    r2: np.ndarray[np.float64, np.dtype[np.float64]],
     tof: float,
     mu: float,
     max_revolutions: int = 0,
     prograde: bool = True,
     solution_index: int | None = None
-) -> tuple[np.ndarray, np.ndarray] | list[tuple[np.ndarray, np.ndarray]]:
+) -> tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]] | list[tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]]:
     """Solve Lambert's problem using PyKEP.
-    
+
     Args:
         r1: Initial position vector [x, y, z] in meters
         r2: Final position vector [x, y, z] in meters
@@ -47,7 +47,7 @@ def solve_lambert(
         max_revolutions: Maximum number of revolutions (default: 0)
         prograde: If True, seek prograde solution (default: True)
         solution_index: Index of solution to return (default: None, returns minimum energy solution)
-        
+
     Returns
     -------
         If max_revolutions == 0 or solution_index is specified:
@@ -58,7 +58,7 @@ def solve_lambert(
             List of tuples, each containing:
                 - Initial velocity vector [vx, vy, vz] in m/s
                 - Final velocity vector [vx, vy, vz] in m/s
-            
+
     Raises
     ------
         ValueError: If no solution found, input parameters invalid, or solution_index out of range
@@ -66,9 +66,11 @@ def solve_lambert(
     """
     # Validate input types and shapes
     if not isinstance(r1, np.ndarray) or not isinstance(r2, np.ndarray):
-        raise TypeError("Position vectors must be numpy arrays")
+        msg = "Position vectors must be numpy arrays"
+        raise TypeError(msg)
     if r1.shape != (3,) or r2.shape != (3,):
-        raise ValueError("Position vectors must have shape (3,)")
+        msg = "Position vectors must have shape (3,)"
+        raise ValueError(msg)
 
     # Convert inputs to PyKEP format and ensure float type
     r1 = np.array(r1, dtype=float)
@@ -76,19 +78,24 @@ def solve_lambert(
 
     # Validate inputs
     if np.allclose(r1, r2):
-        raise ValueError("Initial and final positions are the same")
+        msg = "Initial and final positions are the same"
+        raise ValueError(msg)
     if tof <= 0:
-        raise ValueError("Time of flight must be positive")
+        msg = "Time of flight must be positive"
+        raise ValueError(msg)
     if mu <= 0:
-        raise ValueError("Gravitational parameter must be positive")
+        msg = "Gravitational parameter must be positive"
+        raise ValueError(msg)
 
     # Check for zero magnitude position vectors with explicit tolerance
     r1_norm = np.linalg.norm(r1)
     r2_norm = np.linalg.norm(r2)
     if r1_norm < 1e-10:  # 0.1 mm tolerance
-        raise ValueError("Initial position vector has zero magnitude")
+        msg = "Initial position vector has zero magnitude"
+        raise ValueError(msg)
     if r2_norm < 1e-10:  # 0.1 mm tolerance
-        raise ValueError("Final position vector has zero magnitude")
+        msg = "Final position vector has zero magnitude"
+        raise ValueError(msg)
 
     # Create Lambert problem
     try:
@@ -101,24 +108,29 @@ def solve_lambert(
             cw=(not prograde)
         )
     except RuntimeError as e:
-        raise ValueError(f"Failed to solve Lambert's problem: {e!s}")
+        msg = f"Failed to solve Lambert's problem: {e!s}"
+        raise ValueError(msg)
     except Exception as e:
-        raise ValueError(f"Unexpected error in PyKEP Lambert solver: {e!s}")
+        msg = f"Unexpected error in PyKEP Lambert solver: {e!s}"
+        raise ValueError(msg)
 
     # Get all solutions
     try:
         v1_list = lambert.get_v1()
         v2_list = lambert.get_v2()
     except Exception as e:
-        raise ValueError(f"Failed to extract velocity vectors: {e!s}")
+        msg = f"Failed to extract velocity vectors: {e!s}"
+        raise ValueError(msg)
 
     if not v1_list or not v2_list:
-        raise ValueError("No valid solutions found")
+        msg = "No valid solutions found"
+        raise ValueError(msg)
 
     # Return single solution if requested
     if solution_index is not None:
         if solution_index >= len(v1_list):
-            raise ValueError(f"Solution index {solution_index} out of range (0-{len(v1_list)-1})")
+            msg = f"Solution index {solution_index} out of range (0-{len(v1_list)-1})"
+            raise ValueError(msg)
         return np.array(v1_list[solution_index]), np.array(v2_list[solution_index])
 
     # Return single solution for zero revolutions
@@ -129,15 +141,15 @@ def solve_lambert(
     return [(np.array(v1), np.array(v2)) for v1, v2 in zip(v1_list, v2_list, strict=False)]
 
 def get_all_solutions(
-    r1: np.ndarray,
-    r2: np.ndarray,
+    r1: np.ndarray[np.float64, np.dtype[np.float64]],
+    r2: np.ndarray[np.float64, np.dtype[np.float64]],
     tof: float,
     mu: float,
     max_revolutions: int = 0,
     prograde: bool = True
-) -> list[tuple[np.ndarray, np.ndarray]]:
+) -> list[tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]]:
     """Get all possible solutions for the Lambert problem.
-    
+
     Args:
         r1: Initial position vector [x, y, z] in meters
         r2: Final position vector [x, y, z] in meters
@@ -145,7 +157,7 @@ def get_all_solutions(
         mu: Gravitational parameter in m³/s²
         max_revolutions: Maximum number of revolutions (default: 0)
         prograde: If True, seek prograde solution (default: True)
-        
+
     Returns
     -------
         List of tuples, each containing:

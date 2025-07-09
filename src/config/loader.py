@@ -22,9 +22,9 @@ class ConfigLoader:
 
     SUPPORTED_FORMATS = {".json", ".yml", ".yaml"}
 
-    def __init__(self, default_config: dict[str, Any] | None = None):
+    def __init__(self, default_config: dict[str, Any] | None = None) -> None:
         """Initialize the configuration loader.
-        
+
         Args:
             default_config: Optional dictionary containing default configuration values.
         """
@@ -32,14 +32,14 @@ class ConfigLoader:
 
     def load_file(self, file_path: str | Path) -> MissionConfig:
         """Load and validate a configuration file.
-        
+
         Args:
             file_path: Path to the configuration file.
-            
+
         Returns
         -------
             Validated MissionConfig object.
-            
+
         Raises
         ------
             ConfigurationError: If the file cannot be loaded or validation fails.
@@ -47,12 +47,16 @@ class ConfigLoader:
         file_path = Path(file_path)
 
         if not file_path.exists():
-            raise ConfigurationError(f"Configuration file not found: {file_path}")
+            msg = f"Configuration file not found: {file_path}"
+            raise ConfigurationError(msg)
 
         if file_path.suffix not in self.SUPPORTED_FORMATS:
-            raise ConfigurationError(
+            msg = (
                 f"Unsupported file format: {file_path.suffix}. "
                 f"Supported formats: {', '.join(self.SUPPORTED_FORMATS)}"
+            )
+            raise ConfigurationError(
+                msg
             )
 
         try:
@@ -61,18 +65,21 @@ class ConfigLoader:
             return self._validate_config(merged_config)
 
         except yaml.YAMLError as e:
-            raise ConfigurationError(f"Invalid YAML format in {file_path}: {e!s}")
+            msg = f"Invalid YAML format in {file_path}: {e!s}"
+            raise ConfigurationError(msg)
         except json.JSONDecodeError as e:
-            raise ConfigurationError(f"Invalid JSON format in {file_path}: {e!s}")
+            msg = f"Invalid JSON format in {file_path}: {e!s}"
+            raise ConfigurationError(msg)
         except Exception as e:
-            raise ConfigurationError(f"Error loading configuration: {e!s}")
+            msg = f"Error loading configuration: {e!s}"
+            raise ConfigurationError(msg)
 
     def _read_config_file(self, file_path: Path) -> dict[str, Any]:
         """Read configuration from a file.
-        
+
         Args:
             file_path: Path to the configuration file.
-            
+
         Returns
         -------
             Dictionary containing the configuration data.
@@ -84,10 +91,10 @@ class ConfigLoader:
 
     def _merge_with_defaults(self, config: dict[str, Any]) -> dict[str, Any]:
         """Merge configuration with default values.
-        
+
         Args:
             config: Configuration dictionary to merge.
-            
+
         Returns
         -------
             Merged configuration dictionary.
@@ -98,14 +105,14 @@ class ConfigLoader:
 
     def _validate_config(self, config: dict[str, Any]) -> MissionConfig:
         """Validate configuration data using Pydantic model.
-        
+
         Args:
             config: Configuration dictionary to validate.
-            
+
         Returns
         -------
             Validated MissionConfig object.
-            
+
         Raises
         ------
             ValidationError: If validation fails.
@@ -125,11 +132,11 @@ class ConfigLoader:
 
     def save_config(self, config: MissionConfig, file_path: str | Path) -> None:
         """Save configuration to a file.
-        
+
         Args:
             config: MissionConfig object to save.
             file_path: Path where to save the configuration.
-            
+
         Raises
         ------
             ConfigurationError: If the file cannot be saved.
@@ -137,9 +144,12 @@ class ConfigLoader:
         file_path = Path(file_path)
 
         if file_path.suffix not in self.SUPPORTED_FORMATS:
-            raise ConfigurationError(
+            msg = (
                 f"Unsupported output format: {file_path.suffix}. "
                 f"Supported formats: {', '.join(self.SUPPORTED_FORMATS)}"
+            )
+            raise ConfigurationError(
+                msg
             )
 
         try:
@@ -151,12 +161,13 @@ class ConfigLoader:
                 else:
                     yaml.safe_dump(config_dict, f, default_flow_style=False)
         except Exception as e:
-            raise ConfigurationError(f"Failed to save configuration to {file_path}: {e!s}")
+            msg = f"Failed to save configuration to {file_path}: {e!s}"
+            raise ConfigurationError(msg)
 
     @classmethod
     def load_default_config(cls) -> "ConfigLoader":
         """Create a ConfigLoader with default lunar mission configuration.
-        
+
         Returns
         -------
             ConfigLoader initialized with default configuration.
