@@ -31,15 +31,12 @@ Example:
     >>> v = [0.0, 7800.0, 0.0]  # Velocity in m/s
 """
 
-from datetime import datetime, timezone, timedelta
-import pykep as pk
-from astropy.time import Time
-from astropy import units as u
+from datetime import datetime, timedelta, UTC
 import numpy as np
-from typing import Union, List, Tuple, Any
+from typing import Union
 
 # Type alias for numeric types
-NumericType = Union[float, List[float], Tuple[float, ...], np.ndarray]
+NumericType = Union[float, list[float], tuple[float, ...], np.ndarray]
 
 def ensure_array(x: NumericType) -> np.ndarray:
     """Convert input to numpy array if it isn't already.
@@ -47,7 +44,8 @@ def ensure_array(x: NumericType) -> np.ndarray:
     Args:
         x: Input value or array
         
-    Returns:
+    Returns
+    -------
         numpy.ndarray: Array version of input
     """
     return np.array(x) if not isinstance(x, np.ndarray) else x
@@ -59,7 +57,8 @@ def restore_type(x: NumericType, arr: np.ndarray) -> NumericType:
         x: Original input
         arr: Numpy array to convert back
         
-    Returns:
+    Returns
+    -------
         Same type as input x
     """
     if isinstance(x, (list, tuple)):
@@ -76,21 +75,23 @@ def datetime_to_mjd2000(dt: datetime) -> float:
     Args:
         dt: Timezone-aware datetime object to convert
         
-    Returns:
+    Returns
+    -------
         float: Days since MJD2000 epoch
         
-    Raises:
+    Raises
+    ------
         ValueError: If datetime is naive (no timezone)
     """
     if dt.tzinfo is None:
         raise ValueError("Datetime must be timezone-aware")
-    
+
     # Convert to UTC if needed
-    dt_utc = dt.astimezone(timezone.utc)
-    
+    dt_utc = dt.astimezone(UTC)
+
     # Reference epoch (MJD2000)
-    mjd2000_epoch = datetime(2000, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-    
+    mjd2000_epoch = datetime(2000, 1, 1, 0, 0, 0, tzinfo=UTC)
+
     # Calculate days since MJD2000
     delta = dt_utc - mjd2000_epoch
     return delta.total_seconds() / (24.0 * 3600.0)
@@ -105,10 +106,12 @@ def datetime_to_j2000(dt: datetime) -> float:
     Args:
         dt: Timezone-aware datetime object to convert
         
-    Returns:
+    Returns
+    -------
         float: Days since J2000 epoch
         
-    Raises:
+    Raises
+    ------
         ValueError: If datetime is naive (no timezone)
     """
     # Convert to MJD2000 and adjust for J2000 offset
@@ -125,51 +128,56 @@ def datetime_to_pykep_epoch(dt: datetime) -> float:
     Args:
         dt: Timezone-aware datetime object to convert
         
-    Returns:
+    Returns
+    -------
         float: PyKEP epoch value (days since MJD2000)
     """
     return datetime_to_mjd2000(dt)
 
-def km_to_m(km: Union[float, list, tuple]) -> Union[float, list, tuple]:
+def km_to_m(km: float | list | tuple) -> float | list | tuple:
     """Convert kilometers to meters.
     
     Args:
         km: Distance in kilometers
         
-    Returns:
+    Returns
+    -------
         Distance in meters, preserving input type
     """
     return km * 1000.0
 
-def m_to_km(m: Union[float, list, tuple]) -> Union[float, list, tuple]:
+def m_to_km(m: float | list | tuple) -> float | list | tuple:
     """Convert meters to kilometers.
     
     Args:
         m: Distance in meters
         
-    Returns:
+    Returns
+    -------
         Distance in kilometers, preserving input type
     """
     return m / 1000.0
 
-def kmps_to_mps(kmps: Union[float, list, tuple]) -> Union[float, list, tuple]:
+def kmps_to_mps(kmps: float | list | tuple) -> float | list | tuple:
     """Convert kilometers per second to meters per second.
     
     Args:
         kmps: Velocity in kilometers per second
         
-    Returns:
+    Returns
+    -------
         Velocity in meters per second, preserving input type
     """
     return kmps * 1000.0
 
-def mps_to_kmps(mps: Union[float, list, tuple]) -> Union[float, list, tuple]:
+def mps_to_kmps(mps: float | list | tuple) -> float | list | tuple:
     """Convert meters per second to kilometers per second.
     
     Args:
         mps: Velocity in meters per second
         
-    Returns:
+    Returns
+    -------
         Velocity in kilometers per second, preserving input type
     """
     arr = ensure_array(mps)
@@ -181,7 +189,8 @@ def deg_to_rad(deg: NumericType) -> NumericType:
     Args:
         deg: Angle in degrees
         
-    Returns:
+    Returns
+    -------
         Angle in radians, preserving input type
     """
     arr = ensure_array(deg)
@@ -193,7 +202,8 @@ def rad_to_deg(rad: NumericType) -> NumericType:
     Args:
         rad: Angle in radians
         
-    Returns:
+    Returns
+    -------
         Angle in degrees, preserving input type
     """
     arr = ensure_array(rad)
@@ -205,7 +215,8 @@ def km3s2_to_m3s2(mu: float) -> float:
     Args:
         mu: Gravitational parameter in km³/s²
         
-    Returns:
+    Returns
+    -------
         float: Gravitational parameter in m³/s²
     """
     return mu * 1e9
@@ -216,7 +227,8 @@ def m3s2_to_km3s2(mu: float) -> float:
     Args:
         mu: Gravitational parameter in m³/s²
         
-    Returns:
+    Returns
+    -------
         float: Gravitational parameter in km³/s²
     """
     return mu * 1e-9
@@ -227,7 +239,8 @@ def days_to_seconds(days: float) -> float:
     Args:
         days: Time duration in days
         
-    Returns:
+    Returns
+    -------
         float: Time duration in seconds
     """
     return days * 86400.0
@@ -238,7 +251,8 @@ def seconds_to_days(seconds: float) -> float:
     Args:
         seconds: Time duration in seconds
         
-    Returns:
+    Returns
+    -------
         float: Time duration in days
     """
     return seconds / 86400.0
@@ -249,12 +263,13 @@ def pykep_epoch_to_datetime(epoch: float) -> datetime:
     Args:
         epoch: PyKEP epoch value (days since MJD2000)
         
-    Returns:
+    Returns
+    -------
         datetime: Timezone-aware datetime object in UTC
     """
     # Reference epoch (MJD2000)
-    mjd2000_epoch = datetime(2000, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-    
+    mjd2000_epoch = datetime(2000, 1, 1, 0, 0, 0, tzinfo=UTC)
+
     # Add days to reference epoch
     delta = timedelta(days=epoch)
-    return mjd2000_epoch + delta 
+    return mjd2000_epoch + delta

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""
-Lunar Horizon Optimizer - Command Line Interface
+"""Lunar Horizon Optimizer - Command Line Interface.
+
 ===============================================
 
 Command-line interface for the Lunar Horizon Optimizer providing easy access
@@ -15,30 +15,29 @@ import argparse
 import sys
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional
-from datetime import datetime
+from typing import Any
+from datetime import datetime, timezone
 
-from lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig, AnalysisResults
-from config.mission_config import MissionConfig
-from config.costs import CostFactors
-from config.spacecraft import SpacecraftConfig
+from src.lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig
+from src.config.mission_config import MissionConfig
+from src.config.costs import CostFactors
+from src.config.spacecraft import SpacecraftConfig
 
 
-def setup_logging(verbose: bool = False):
-    """Setup logging configuration."""
+def setup_logging(verbose: bool = False) -> None:
+    """Set up logging configuration."""
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%H:%M:%S'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%H:%M:%S"
     )
 
 
-def load_config_from_file(config_path: str) -> Dict[str, Any]:
+def load_config_from_file(config_path: str) -> dict[str, Any]:
     """Load configuration from JSON file."""
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path) as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"❌ Configuration file not found: {config_path}")
@@ -48,55 +47,57 @@ def load_config_from_file(config_path: str) -> Dict[str, Any]:
         sys.exit(1)
 
 
-def create_mission_config_from_dict(config_dict: Dict[str, Any]) -> MissionConfig:
+def create_mission_config_from_dict(config_dict: dict[str, Any]) -> MissionConfig:
     """Create MissionConfig from dictionary."""
-    mission_params = config_dict.get('mission', {})
+    mission_params = config_dict.get("mission", {})
     return MissionConfig(
-        name=mission_params.get('name', 'CLI Mission'),
-        earth_orbit_alt=mission_params.get('earth_orbit_alt', 400.0),
-        moon_orbit_alt=mission_params.get('moon_orbit_alt', 100.0),
-        transfer_time=mission_params.get('transfer_time', 4.5),
-        departure_epoch=mission_params.get('departure_epoch', 10000.0)
+        name=mission_params.get("name", "CLI Mission"),
+        earth_orbit_alt=mission_params.get("earth_orbit_alt", 400.0),
+        moon_orbit_alt=mission_params.get("moon_orbit_alt", 100.0),
+        transfer_time=mission_params.get("transfer_time", 4.5),
+        departure_epoch=mission_params.get("departure_epoch", 10000.0)
     )
 
 
-def create_cost_factors_from_dict(config_dict: Dict[str, Any]) -> CostFactors:
+def create_cost_factors_from_dict(config_dict: dict[str, Any]) -> CostFactors:
     """Create CostFactors from dictionary."""
-    cost_params = config_dict.get('costs', {})
+    cost_params = config_dict.get("costs", {})
     return CostFactors(
-        launch_cost_per_kg=cost_params.get('launch_cost_per_kg', 10000.0),
-        operations_cost_per_day=cost_params.get('operations_cost_per_day', 100000.0),
-        development_cost=cost_params.get('development_cost', 1e9),
-        contingency_percentage=cost_params.get('contingency_percentage', 20.0)
+        launch_cost_per_kg=cost_params.get("launch_cost_per_kg", 10000.0),
+        operations_cost_per_day=cost_params.get("operations_cost_per_day", 100000.0),
+        development_cost=cost_params.get("development_cost", 1e9),
+        contingency_percentage=cost_params.get("contingency_percentage", 20.0)
     )
 
 
-def create_spacecraft_config_from_dict(config_dict: Dict[str, Any]) -> SpacecraftConfig:
+def create_spacecraft_config_from_dict(config_dict: dict[str, Any]) -> SpacecraftConfig:
     """Create SpacecraftConfig from dictionary."""
-    spacecraft_params = config_dict.get('spacecraft', {})
+    spacecraft_params = config_dict.get("spacecraft", {})
     return SpacecraftConfig(
-        name=spacecraft_params.get('name', 'CLI Spacecraft'),
-        dry_mass=spacecraft_params.get('dry_mass', 5000.0),
-        propellant_mass=spacecraft_params.get('propellant_mass', 3000.0),
-        payload_mass=spacecraft_params.get('payload_mass', 1000.0),
-        power_system_mass=spacecraft_params.get('power_system_mass', 500.0),
-        propulsion_isp=spacecraft_params.get('propulsion_isp', 320.0)
+        name=spacecraft_params.get("name", "CLI Spacecraft"),
+        dry_mass=spacecraft_params.get("dry_mass", 5000.0),
+        propellant_mass=spacecraft_params.get("propellant_mass", 3000.0),
+        payload_mass=spacecraft_params.get("payload_mass", 1000.0),
+        power_system_mass=spacecraft_params.get("power_system_mass", 500.0),
+        propulsion_isp=spacecraft_params.get("propulsion_isp", 320.0)
     )
 
 
-def create_optimization_config_from_dict(config_dict: Dict[str, Any]) -> OptimizationConfig:
+def create_optimization_config_from_dict(
+    config_dict: dict[str, Any]
+) -> OptimizationConfig:
     """Create OptimizationConfig from dictionary."""
-    opt_params = config_dict.get('optimization', {})
+    opt_params = config_dict.get("optimization", {})
     return OptimizationConfig(
-        population_size=opt_params.get('population_size', 100),
-        num_generations=opt_params.get('num_generations', 100),
-        seed=opt_params.get('seed', 42),
-        min_earth_alt=opt_params.get('min_earth_alt', 200.0),
-        max_earth_alt=opt_params.get('max_earth_alt', 1000.0),
-        min_moon_alt=opt_params.get('min_moon_alt', 50.0),
-        max_moon_alt=opt_params.get('max_moon_alt', 500.0),
-        min_transfer_time=opt_params.get('min_transfer_time', 3.0),
-        max_transfer_time=opt_params.get('max_transfer_time', 10.0)
+        population_size=opt_params.get("population_size", 100),
+        num_generations=opt_params.get("num_generations", 100),
+        seed=opt_params.get("seed", 42),
+        min_earth_alt=opt_params.get("min_earth_alt", 200.0),
+        max_earth_alt=opt_params.get("max_earth_alt", 1000.0),
+        min_moon_alt=opt_params.get("min_moon_alt", 50.0),
+        max_moon_alt=opt_params.get("max_moon_alt", 500.0),
+        min_transfer_time=opt_params.get("min_transfer_time", 3.0),
+        max_transfer_time=opt_params.get("max_transfer_time", 10.0)
     )
 
 
@@ -104,36 +105,36 @@ def analyze_command(args):
     """Handle the analyze command."""
     print("🚀 Lunar Horizon Optimizer - Mission Analysis")
     print("=" * 50)
-    
+
     # Load configuration if provided
     config_dict = {}
     if args.config:
         config_dict = load_config_from_file(args.config)
         print(f"📋 Loaded configuration from: {args.config}")
-    
+
     # Create configuration objects
     mission_config = create_mission_config_from_dict(config_dict)
     cost_factors = create_cost_factors_from_dict(config_dict)
     spacecraft_config = create_spacecraft_config_from_dict(config_dict)
     optimization_config = create_optimization_config_from_dict(config_dict)
-    
+
     # Override with command line arguments
     if args.mission_name:
         mission_config.name = args.mission_name
-    
+
     if args.population_size:
         optimization_config.population_size = args.population_size
-    
+
     if args.generations:
         optimization_config.num_generations = args.generations
-    
+
     # Initialize optimizer
     optimizer = LunarHorizonOptimizer(
         mission_config=mission_config,
         cost_factors=cost_factors,
         spacecraft_config=spacecraft_config
     )
-    
+
     # Run analysis
     results = optimizer.analyze_mission(
         mission_name=mission_config.name,
@@ -142,12 +143,12 @@ def analyze_command(args):
         include_isru=not args.no_isru,
         verbose=args.verbose
     )
-    
+
     # Export results
-    output_dir = args.output or f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    output_dir = args.output or f"analysis_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
     optimizer.export_results(results, output_dir)
     print(f"📁 Results exported to: {output_dir}")
-    
+
     # Show visualizations if requested
     if args.show_plots:
         print("📈 Opening visualizations...")
@@ -157,7 +158,7 @@ def analyze_command(args):
                     fig.show()
                 except Exception as e:
                     print(f"⚠️  Could not display {name}: {e}")
-    
+
     return results
 
 
@@ -197,12 +198,12 @@ def config_command(args):
             "max_transfer_time": 10.0
         }
     }
-    
+
     output_file = args.output or "sample_config.json"
-    
-    with open(output_file, 'w') as f:
+
+    with open(output_file, "w") as f:
         json.dump(sample_config, f, indent=2)
-    
+
     print(f"📋 Sample configuration created: {output_file}")
     print("Edit this file and use it with: lunar-optimizer analyze --config sample_config.json")
 
@@ -211,9 +212,9 @@ def validate_command(args):
     """Handle the validate command to check environment and dependencies."""
     print("🔍 Validating Lunar Horizon Optimizer Environment")
     print("=" * 50)
-    
+
     validation_passed = True
-    
+
     # Check Python version
     python_version = sys.version_info
     print(f"🐍 Python version: {python_version.major}.{python_version.minor}.{python_version.micro}")
@@ -222,17 +223,17 @@ def validate_command(args):
         validation_passed = False
     else:
         print("✅ Python version OK")
-    
+
     # Check required packages
     required_packages = [
-        ('numpy', 'NumPy'),
-        ('scipy', 'SciPy'),
-        ('plotly', 'Plotly'),
-        ('pandas', 'Pandas'),
-        ('pykep', 'PyKEP'),
-        ('pygmo', 'PyGMO')
+        ("numpy", "NumPy"),
+        ("scipy", "SciPy"),
+        ("plotly", "Plotly"),
+        ("pandas", "Pandas"),
+        ("pykep", "PyKEP"),
+        ("pygmo", "PyGMO")
     ]
-    
+
     print("\n📦 Checking required packages:")
     for package, display_name in required_packages:
         try:
@@ -241,7 +242,7 @@ def validate_command(args):
         except ImportError:
             print(f"❌ {display_name} - Not installed")
             validation_passed = False
-    
+
     # Try to initialize optimizer
     print("\n🚀 Testing optimizer initialization:")
     try:
@@ -250,7 +251,7 @@ def validate_command(args):
     except Exception as e:
         print(f"❌ Optimizer initialization failed: {e}")
         validation_passed = False
-    
+
     # Summary
     print("\n" + "=" * 50)
     if validation_passed:
@@ -266,16 +267,16 @@ def create_sample_command(args):
     """Handle the sample command to run a quick demo analysis."""
     print("🎯 Running Sample Analysis")
     print("=" * 30)
-    
+
     # Quick configuration for demo
     optimization_config = OptimizationConfig(
         population_size=20,
         num_generations=10,
         seed=42
     )
-    
+
     optimizer = LunarHorizonOptimizer()
-    
+
     results = optimizer.analyze_mission(
         mission_name="Sample Demo Mission",
         optimization_config=optimization_config,
@@ -283,10 +284,10 @@ def create_sample_command(args):
         include_isru=False,
         verbose=True
     )
-    
+
     print("🎉 Sample analysis completed!")
     print("Use 'lunar-optimizer analyze' for full analysis.")
-    
+
     return results
 
 
@@ -296,12 +297,12 @@ def main():
         description="Lunar Horizon Optimizer - Integrated Mission Analysis",
         prog="lunar-optimizer"
     )
-    
+
     parser.add_argument("--verbose", "-v", action="store_true",
                        help="Enable verbose output")
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Analyze command
     analyze_parser = subparsers.add_parser("analyze", help="Run mission analysis")
     analyze_parser.add_argument("--config", "-c", type=str,
@@ -320,35 +321,34 @@ def main():
                                help="Skip ISRU analysis")
     analyze_parser.add_argument("--show-plots", action="store_true",
                                help="Show plots after analysis")
-    
+
     # Config command
     config_parser = subparsers.add_parser("config", help="Generate sample configuration")
     config_parser.add_argument("--output", "-o", type=str,
                               help="Output configuration file")
-    
+
     # Validate command
     validate_parser = subparsers.add_parser("validate", help="Validate environment")
-    
+
     # Sample command
     sample_parser = subparsers.add_parser("sample", help="Run quick sample analysis")
-    
+
     args = parser.parse_args()
-    
+
     # Setup logging
     setup_logging(args.verbose)
-    
+
     # Route to appropriate command
     if args.command == "analyze":
         return analyze_command(args)
-    elif args.command == "config":
+    if args.command == "config":
         return config_command(args)
-    elif args.command == "validate":
+    if args.command == "validate":
         return validate_command(args)
-    elif args.command == "sample":
+    if args.command == "sample":
         return create_sample_command(args)
-    else:
-        parser.print_help()
-        return None
+    parser.print_help()
+    return None
 
 
 if __name__ == "__main__":

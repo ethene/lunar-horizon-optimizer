@@ -58,7 +58,7 @@ format: ## Format code with black
 	@echo "$(BOLD)$(BLUE)1. Code Formatting with Black$(NC)"
 	@echo "====================================="
 	@echo "$(YELLOW)Formatting Python code in $(SRC_DIR)/ and $(TESTS_DIR)/...$(NC)"
-	@black --line-length 88 --target-version py312 $(ALL_DIRS) || { \
+	@conda run -n py312 black --line-length 88 --target-version py312 $(ALL_DIRS) || { \
 		echo "$(RED)❌ Black formatting failed$(NC)"; \
 		exit 1; \
 	}
@@ -69,7 +69,7 @@ lint: ## Lint with ruff (flake8 + pylint rules)
 	@echo "$(BOLD)$(BLUE)2. Linting with Ruff$(NC)"
 	@echo "====================="
 	@echo "$(YELLOW)Running comprehensive linting (flake8 + pylint rules)...$(NC)"
-	@ruff check $(ALL_DIRS) --select=E,W,F,B,C,N,D,UP,YTT,ANN,S,BLE,FBT,A,COM,C4,DTZ,T10,EM,EXE,ISC,ICN,G,INP,PIE,T20,PT,Q,RSE,RET,SLF,SIM,TID,TCH,ARG,PTH,ERA,PD,PGH,PL,TRY,NPY,RUF || { \
+	@conda run -n py312 ruff check $(ALL_DIRS) --select=E,W,F,B,C,N,D,UP,YTT,ANN,S,BLE,FBT,A,COM,C4,DTZ,T10,EM,EXE,ISC,ICN,G,INP,PIE,T20,PT,Q,RSE,RET,SLF,SIM,TID,TCH,ARG,PTH,ERA,PD,PGH,PL,TRY,NPY,RUF || { \
 		echo "$(RED)❌ Ruff linting failed$(NC)"; \
 		exit 1; \
 	}
@@ -80,19 +80,19 @@ complexity: ## Check maintainability and complexity with radon and xenon
 	@echo "$(BOLD)$(BLUE)3. Complexity and Maintainability Analysis$(NC)"
 	@echo "============================================="
 	@echo "$(YELLOW)Analyzing cyclomatic complexity with radon...$(NC)"
-	@radon cc $(ALL_DIRS) -a -nc || { \
+	@conda run -n py312 radon cc $(ALL_DIRS) -a -nc || { \
 		echo "$(RED)❌ Radon complexity analysis failed$(NC)"; \
 		exit 1; \
 	}
 	@echo ""
 	@echo "$(YELLOW)Analyzing maintainability index...$(NC)"
-	@radon mi $(ALL_DIRS) -nc || { \
+	@conda run -n py312 radon mi $(ALL_DIRS) -nc || { \
 		echo "$(RED)❌ Radon maintainability analysis failed$(NC)"; \
 		exit 1; \
 	}
 	@echo ""
 	@echo "$(YELLOW)Checking complexity thresholds with xenon...$(NC)"
-	@xenon --max-absolute B --max-modules A --max-average A $(ALL_DIRS) || { \
+	@conda run -n py312 xenon --max-absolute B --max-modules A --max-average A $(ALL_DIRS) || { \
 		echo "$(RED)❌ Xenon complexity check failed$(NC)"; \
 		exit 1; \
 	}
@@ -103,7 +103,7 @@ type-check: ## Type checking with mypy
 	@echo "$(BOLD)$(BLUE)4. Type Checking with MyPy$(NC)"
 	@echo "============================="
 	@echo "$(YELLOW)Running static type analysis...$(NC)"
-	@mypy $(SRC_DIR) --strict --show-error-codes --pretty || { \
+	@conda run -n py312 mypy $(SRC_DIR) --strict --show-error-codes --pretty || { \
 		echo "$(RED)❌ MyPy type checking failed$(NC)"; \
 		exit 1; \
 	}
@@ -114,7 +114,7 @@ refactor: ## AI-based refactor suggestions with sourcery
 	@echo "$(BOLD)$(BLUE)5. AI-Based Refactor Suggestions$(NC)"
 	@echo "=================================="
 	@echo "$(YELLOW)Analyzing code for refactor opportunities...$(NC)"
-	@sourcery review $(ALL_DIRS) --no-summary || { \
+	@conda run -n py312 sourcery review $(ALL_DIRS) --no-summary || { \
 		echo "$(YELLOW)⚠️  Sourcery analysis completed with suggestions$(NC)"; \
 		echo "$(YELLOW)Note: Sourcery suggestions are recommendations, not failures$(NC)"; \
 	}
@@ -125,7 +125,7 @@ security: ## Security scan with bandit
 	@echo "$(BOLD)$(BLUE)6. Security Analysis with Bandit$(NC)"
 	@echo "================================="
 	@echo "$(YELLOW)Scanning for security vulnerabilities...$(NC)"
-	@bandit -r $(SRC_DIR) -f text --skip B101,B601 || { \
+	@conda run -n py312 bandit -r $(SRC_DIR) -f txt --skip B101,B601 || { \
 		echo "$(RED)❌ Bandit security scan failed$(NC)"; \
 		exit 1; \
 	}

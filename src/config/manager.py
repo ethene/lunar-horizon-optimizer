@@ -24,7 +24,7 @@ from .management.template_manager import TemplateManager
 from .management.file_operations import FileOperations
 
 __all__ = [
-    'ConfigManager',
-    'TemplateManager',
-    'FileOperations'
+    "ConfigManager",
+    "FileOperations",
+    "TemplateManager"
 ]

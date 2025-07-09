@@ -1,7 +1,6 @@
 """Tests for configuration manager functionality."""
 
 import pytest
-from pathlib import Path
 import json
 import yaml
 from pydantic import ValidationError
@@ -50,9 +49,9 @@ def test_init_manager():
 def test_load_config(tmp_path, manager, sample_config):
     """Test loading a configuration from file."""
     config_file = tmp_path / "config.json"
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         json.dump(sample_config.model_dump(), f)
-    
+
     config = manager.load_config(config_file)
     assert isinstance(config, MissionConfig)
     assert config.name == "Test Mission"
@@ -62,19 +61,19 @@ def test_save_config(tmp_path, manager, sample_config):
     """Test saving a configuration to file."""
     # Set active config
     manager._active_config = sample_config
-    
+
     # Save in both formats
     json_file = tmp_path / "config.json"
     yaml_file = tmp_path / "config.yaml"
-    
+
     manager.save_config(json_file)
     manager.save_config(yaml_file)
-    
+
     # Verify JSON content
     with open(json_file) as f:
         json_data = json.load(f)
     assert json_data["name"] == "Test Mission"
-    
+
     # Verify YAML content
     with open(yaml_file) as f:
         yaml_data = yaml.safe_load(f)
@@ -121,7 +120,7 @@ def test_validate_config(manager):
             "inclination": 0.0
         }
     }
-    
+
     validated = manager.validate_config(config_dict)
     assert isinstance(validated, MissionConfig)
     assert validated.name == "Test Mission"
@@ -132,14 +131,14 @@ def test_validate_invalid_config(manager):
         "name": "Test Mission",
         # Missing required fields
     }
-    
+
     with pytest.raises(ValidationError):
         manager.validate_config(invalid_config)
 
 def test_update_config(manager, sample_config):
     """Test updating configuration values."""
     manager._active_config = sample_config
-    
+
     updates = {
         "name": "Updated Mission",
         "payload": {
@@ -149,7 +148,7 @@ def test_update_config(manager, sample_config):
             "specific_impulse": 300.0
         }
     }
-    
+
     updated = manager.update_config(updates)
     assert updated.name == "Updated Mission"
     assert updated.payload.dry_mass == 1500.0
@@ -164,10 +163,10 @@ def test_update_without_active_config(manager):
 def test_update_with_invalid_data(manager, sample_config):
     """Test updating with invalid configuration data."""
     manager._active_config = sample_config
-    
+
     with pytest.raises(ValidationError):
         manager.update_config({
             "payload": {
                 "dry_mass": -1000.0  # Invalid negative mass
             }
-        }) 
+        })

@@ -20,7 +20,7 @@ Test organization:
 
 import pytest
 import numpy as np
-from datetime import datetime, timezone
+from datetime import datetime
 from src.trajectory.models import OrbitState, Maneuver, Trajectory
 
 class TestOrbitState:
@@ -30,10 +30,10 @@ class TestOrbitState:
         VALID_LEO_SMA: Semi-major axis for typical LEO orbit (km)
         VALID_INCLINATION: Typical launch site inclination (degrees)
     """
-    
+
     VALID_LEO_SMA = 6678.0  # km (typical LEO)
     VALID_INCLINATION = 28.5  # degrees (KSC latitude)
-    
+
     def test_valid_parameters(self):
         """Test OrbitState creation with valid parameters.
         
@@ -51,7 +51,7 @@ class TestOrbitState:
             true_anomaly=0.0
         )
         assert orbit is not None, "Valid orbit state creation failed"
-    
+
     def test_invalid_semi_major_axis(self):
         """Test validation of semi-major axis.
         
@@ -68,7 +68,7 @@ class TestOrbitState:
                 arg_periapsis=0.0,
                 true_anomaly=0.0
             )
-    
+
     def test_invalid_eccentricity(self):
         """Test validation of eccentricity.
         
@@ -85,7 +85,7 @@ class TestOrbitState:
                 arg_periapsis=0.0,
                 true_anomaly=0.0
             )
-    
+
     def test_invalid_inclination(self):
         """Test validation of inclination.
         
@@ -101,7 +101,7 @@ class TestOrbitState:
                 arg_periapsis=0.0,
                 true_anomaly=0.0
             )
-    
+
     def test_invalid_angles(self):
         """Test validation of orbital angles.
         
@@ -134,10 +134,10 @@ class TestManeuver:
         VALID_DELTA_V: Typical TLI delta-v magnitude (km/s)
         VALID_EPOCH: Reference epoch for tests (MJD2000)
     """
-    
+
     VALID_DELTA_V = 3.1  # km/s (typical TLI)
     VALID_EPOCH = 1000.0  # MJD2000
-    
+
     def test_valid_parameters(self):
         """Test Maneuver creation with valid parameters.
         
@@ -153,7 +153,7 @@ class TestManeuver:
         )
         assert maneuver is not None, "Valid maneuver creation failed"
         np.testing.assert_array_equal(maneuver.delta_v, delta_v, "Delta-v vector mismatch")
-    
+
     def test_invalid_delta_v(self):
         """Test validation of delta-v vector.
         
@@ -166,7 +166,7 @@ class TestManeuver:
                 delta_v=np.array([1.0, 0.0]),
                 epoch=1000.0
             )
-    
+
     def test_invalid_epoch(self):
         """Test validation of maneuver epoch.
         
@@ -188,12 +188,12 @@ class TestTrajectory:
         EARTH_RADIUS: Earth's mean radius (km)
         TLI_DELTA_V: Typical trans-lunar injection delta-v (km/s)
     """
-    
+
     LEO_ALTITUDE = 300.0  # km
     LUNAR_DISTANCE = 384400.0  # km
     EARTH_RADIUS = 6378.0  # km
     TLI_DELTA_V = 3.1  # km/s
-    
+
     def setup_method(self):
         """Set up test fixtures.
         
@@ -204,7 +204,7 @@ class TestTrajectory:
         """
         self.departure_epoch = 0.0  # MJD2000
         self.arrival_epoch = 5.0    # MJD2000 (+5 days)
-        
+
         self.initial_state = OrbitState(
             semi_major_axis=self.EARTH_RADIUS + self.LEO_ALTITUDE,
             eccentricity=0.0,
@@ -213,7 +213,7 @@ class TestTrajectory:
             arg_periapsis=0.0,
             true_anomaly=0.0
         )
-        
+
         self.final_state = OrbitState(
             semi_major_axis=self.LUNAR_DISTANCE,
             eccentricity=0.0,
@@ -222,14 +222,14 @@ class TestTrajectory:
             arg_periapsis=0.0,
             true_anomaly=0.0
         )
-        
+
         self.maneuvers = [
             Maneuver(
                 delta_v=np.array([self.TLI_DELTA_V, 0.0, 0.0]),
                 epoch=1.0  # MJD2000 (+1 day)
             )
         ]
-    
+
     def test_valid_parameters(self):
         """Test Trajectory creation with valid parameters.
         
@@ -247,7 +247,7 @@ class TestTrajectory:
             arrival_epoch=self.arrival_epoch
         )
         assert trajectory is not None
-    
+
     def test_invalid_time_order(self):
         """Test validation of trajectory time ordering.
         
@@ -264,7 +264,7 @@ class TestTrajectory:
                 departure_epoch=self.arrival_epoch,
                 arrival_epoch=self.departure_epoch
             )
-    
+
     def test_invalid_maneuver_timing(self):
         """Test validation of maneuver timing.
         
@@ -286,4 +286,4 @@ class TestTrajectory:
                 central_body="Earth",
                 departure_epoch=self.departure_epoch,
                 arrival_epoch=self.arrival_epoch
-            ) 
+            )

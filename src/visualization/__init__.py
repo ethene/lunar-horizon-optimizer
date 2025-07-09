@@ -19,16 +19,16 @@ from .mission_visualization import MissionVisualizer, TimelineConfig
 from .dashboard import ComprehensiveDashboard, DashboardTheme
 
 __all__ = [
-    'TrajectoryVisualizer',
-    'TrajectoryPlotConfig', 
-    'OptimizationVisualizer',
-    'ParetoPlotConfig',
-    'EconomicVisualizer',
-    'DashboardConfig',
-    'MissionVisualizer',
-    'TimelineConfig',
-    'ComprehensiveDashboard',
-    'DashboardTheme'
+    "ComprehensiveDashboard",
+    "DashboardConfig",
+    "DashboardTheme",
+    "EconomicVisualizer",
+    "MissionVisualizer",
+    "OptimizationVisualizer",
+    "ParetoPlotConfig",
+    "TimelineConfig",
+    "TrajectoryPlotConfig",
+    "TrajectoryVisualizer"
 ]
 
 __version__ = "0.9.0"

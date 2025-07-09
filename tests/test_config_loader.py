@@ -36,7 +36,7 @@ def valid_config_dict():
 def temp_json_config(tmp_path: Path, valid_config_dict):
     """Fixture creating a temporary JSON configuration file."""
     config_file = tmp_path / "config.json"
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         json.dump(valid_config_dict, f)
     return config_file
 
@@ -44,7 +44,7 @@ def temp_json_config(tmp_path: Path, valid_config_dict):
 def temp_yaml_config(tmp_path: Path, valid_config_dict):
     """Fixture creating a temporary YAML configuration file."""
     config_file = tmp_path / "config.yaml"
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         yaml.safe_dump(valid_config_dict, f)
     return config_file
 
@@ -75,7 +75,7 @@ def test_load_invalid_format(tmp_path):
     """Test loading a file with unsupported format."""
     invalid_file = tmp_path / "config.txt"
     invalid_file.touch()
-    
+
     loader = ConfigLoader()
     with pytest.raises(ConfigurationError) as exc_info:
         loader.load_file(invalid_file)
@@ -84,9 +84,9 @@ def test_load_invalid_format(tmp_path):
 def test_load_invalid_json(tmp_path):
     """Test loading an invalid JSON file."""
     config_file = tmp_path / "invalid.json"
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         f.write("invalid json content")
-    
+
     loader = ConfigLoader()
     with pytest.raises(ConfigurationError) as exc_info:
         loader.load_file(config_file)
@@ -95,9 +95,9 @@ def test_load_invalid_json(tmp_path):
 def test_load_invalid_yaml(tmp_path):
     """Test loading an invalid YAML file."""
     config_file = tmp_path / "invalid.yaml"
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         f.write("invalid:\nyaml:\ncontent:\n  - [}")
-    
+
     loader = ConfigLoader()
     with pytest.raises(ConfigurationError) as exc_info:
         loader.load_file(config_file)
@@ -110,10 +110,10 @@ def test_merge_with_defaults(valid_config_dict):
         "description": "Default description",
         "extra_field": "default value"
     }
-    
+
     loader = ConfigLoader(default_config=default_config)
     merged = loader._merge_with_defaults(valid_config_dict)
-    
+
     assert merged["name"] == "Test Mission"  # Overridden by loaded config
     assert merged["extra_field"] == "default value"  # Preserved from defaults
 
@@ -121,10 +121,10 @@ def test_save_config_json(tmp_path, valid_config_dict):
     """Test saving configuration to JSON file."""
     config = MissionConfig(**valid_config_dict)
     output_file = tmp_path / "output.json"
-    
+
     loader = ConfigLoader()
     loader.save_config(config, output_file)
-    
+
     assert output_file.exists()
     with open(output_file) as f:
         saved_config = json.load(f)
@@ -134,10 +134,10 @@ def test_save_config_yaml(tmp_path, valid_config_dict):
     """Test saving configuration to YAML file."""
     config = MissionConfig(**valid_config_dict)
     output_file = tmp_path / "output.yaml"
-    
+
     loader = ConfigLoader()
     loader.save_config(config, output_file)
-    
+
     assert output_file.exists()
     with open(output_file) as f:
         saved_config = yaml.safe_load(f)
@@ -148,7 +148,7 @@ def test_load_default_config():
     loader = ConfigLoader.load_default_config()
     assert isinstance(loader, ConfigLoader)
     assert loader.default_config["name"] == "Default Lunar Mission"
-    
+
     # Test loading partial config with defaults
     partial_config = {
         "name": "Custom Mission",
@@ -159,18 +159,18 @@ def test_load_default_config():
             "specific_impulse": 310.0
         }
     }
-    
+
     # Save and load partial config
     tmp_path = Path("tests/temp")
     tmp_path.mkdir(exist_ok=True)
     config_file = tmp_path / "partial.json"
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         json.dump(partial_config, f)
-    
+
     config = loader.load_file(config_file)
     assert config.name == "Custom Mission"  # From partial config
     assert config.mission_duration_days == 180.0  # From defaults
-    
+
     # Cleanup
     config_file.unlink()
-    tmp_path.rmdir() 
+    tmp_path.rmdir()

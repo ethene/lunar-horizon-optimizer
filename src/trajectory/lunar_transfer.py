@@ -31,23 +31,21 @@ Example:
 """
 
 import numpy as np
-from typing import Tuple, Optional, Dict
-import pykep as pk
-import logging
 
 from .constants import PhysicalConstants as PC
 from .celestial_bodies import CelestialBody
-from .models import Maneuver, OrbitState
+from .models import Maneuver
 from .trajectory_base import Trajectory
 from .target_state import calculate_target_state
 from .phase_optimization import find_optimal_phase
 from .trajectory_validator import TrajectoryValidator  # Import from renamed module
 from .propagator import TrajectoryPropagator
+from datetime import UTC
 
 
 class LunarTrajectory:
     """Simple concrete implementation for lunar transfers."""
-    
+
     def __init__(self, departure_epoch, arrival_epoch, departure_pos, departure_vel, arrival_pos, arrival_vel):
         """Initialize lunar trajectory with departure and arrival states."""
         self.departure_epoch = departure_epoch
@@ -57,7 +55,7 @@ class LunarTrajectory:
         self.arrival_pos = np.array(arrival_pos)
         self.arrival_vel = np.array(arrival_vel)
         self.maneuvers = []  # Will be populated by _add_maneuvers_to_trajectory
-        
+
     def validate_trajectory(self) -> bool:
         """Validate the lunar trajectory."""
         try:
@@ -66,23 +64,23 @@ class LunarTrajectory:
                 return False
             if not np.isfinite(self.arrival_pos).all() or not np.isfinite(self.arrival_vel).all():
                 return False
-                
+
             # Check that trajectory duration is reasonable (between 1 and 30 days)
             duration = self.arrival_epoch - self.departure_epoch
             if not (1.0 <= duration <= 30.0):
                 return False
-                
+
             return True
         except Exception:
             return False
-    
+
     def add_maneuver(self, maneuver):
         """Add a maneuver to the trajectory."""
         self.maneuvers.append(maneuver)
-    
+
     def get_total_delta_v(self) -> float:
         """Calculate total delta-v cost of all maneuvers."""
-        return sum(getattr(maneuver, 'magnitude', 0.0) for maneuver in self.maneuvers)
+        return sum(getattr(maneuver, "magnitude", 0.0) for maneuver in self.maneuvers)
 
 
 class LunarTransfer:
@@ -101,14 +99,15 @@ class LunarTransfer:
     - target_state.py: Target state calculation
     - phase_optimization.py: Phase angle optimization
     
-    Attributes:
+    Attributes
+    ----------
         moon_soi (float): Moon's sphere of influence radius [m]
         moon_radius (float): Moon's radius [m]
         celestial (CelestialBody): Celestial body calculator instance
         validator (TrajectoryValidator): Trajectory parameter validator
         propagator (TrajectoryPropagator): Trajectory propagator
     """
-    
+
     def __init__(self,
                 moon_soi: float = PC.MOON_SOI,
                 moon_radius: float = PC.MOON_RADIUS,
@@ -133,7 +132,7 @@ class LunarTransfer:
         self.moon_soi = moon_soi
         self.moon_radius = moon_radius
         self.celestial = CelestialBody()
-        
+
         # Initialize components
         self.validator = TrajectoryValidator(
             min_earth_alt=min_earth_alt,
@@ -142,13 +141,13 @@ class LunarTransfer:
             max_moon_alt=max_moon_alt
         )
         self.propagator = TrajectoryPropagator(self.celestial)
-    
+
     def generate_transfer(self,
                          epoch: float,
                          earth_orbit_alt: float,
                          moon_orbit_alt: float,
                          transfer_time: float,
-                         max_revolutions: int = 0) -> Tuple[Trajectory, float]:
+                         max_revolutions: int = 0) -> tuple[Trajectory, float]:
         """Generate lunar transfer trajectory.
         
         This method orchestrates the complete lunar transfer trajectory generation
@@ -161,39 +160,41 @@ class LunarTransfer:
             transfer_time: Transfer time [days]
             max_revolutions: Maximum number of revolutions for Lambert solver
             
-        Returns:
+        Returns
+        -------
             Tuple[Trajectory, float]: Trajectory object and total delta-v [m/s]
             
-        Raises:
+        Raises
+        ------
             ValueError: If input parameters are invalid or no trajectory is found
         """
         # Store departure epoch for use by propagator
         self.departure_epoch = epoch
-        
+
         # Step 1: Validate and prepare inputs
         transfer_params = self._validate_and_prepare_inputs(
             epoch, earth_orbit_alt, moon_orbit_alt, transfer_time
         )
-        
+
         # Step 2: Calculate celestial body states
         moon_states = self._calculate_moon_states(
-            transfer_params['mjd2000_epoch'], transfer_time, transfer_params['r_moon_orbit']
+            transfer_params["mjd2000_epoch"], transfer_time, transfer_params["r_moon_orbit"]
         )
-        
+
         # Step 3: Find optimal departure point
         departure_state = self._find_optimal_departure(
             transfer_params, moon_states, max_revolutions
         )
-        
+
         # Step 4: Calculate trajectory and maneuvers
         trajectory, total_dv = self._build_trajectory(
             epoch, transfer_time, departure_state, moon_states, transfer_params
         )
-        
+
         return trajectory, total_dv
-    
-    def _validate_and_prepare_inputs(self, epoch: float, earth_orbit_alt: float, 
-                                   moon_orbit_alt: float, transfer_time: float) -> Dict[str, float]:
+
+    def _validate_and_prepare_inputs(self, epoch: float, earth_orbit_alt: float,
+                                   moon_orbit_alt: float, transfer_time: float) -> dict[str, float]:
         """Validate inputs and prepare transfer parameters.
         
         Args:
@@ -202,32 +203,35 @@ class LunarTransfer:
             moon_orbit_alt: Final lunar orbit altitude [km]
             transfer_time: Transfer time [days]
             
-        Returns:
+        Returns
+        -------
             Dictionary containing prepared transfer parameters
             
-        Raises:
+        Raises
+        ------
             ValueError: If input validation fails
         """
         # Validate inputs
         self.validator.validate_inputs(earth_orbit_alt, moon_orbit_alt, transfer_time)
-        
+
         # Convert units and prepare parameters
         return {
-            'r_park': PC.EARTH_RADIUS + earth_orbit_alt * 1000,  # [m]
-            'r_moon_orbit': self.moon_radius + moon_orbit_alt * 1000,  # [m]
-            'tof': transfer_time * 86400,  # [s]
-            'mjd2000_epoch': epoch + 0.5  # Convert J2000 to MJD2000
+            "r_park": PC.EARTH_RADIUS + earth_orbit_alt * 1000,  # [m]
+            "r_moon_orbit": self.moon_radius + moon_orbit_alt * 1000,  # [m]
+            "tof": transfer_time * 86400,  # [s]
+            "mjd2000_epoch": epoch + 0.5  # Convert J2000 to MJD2000
         }
-    
-    def _calculate_moon_states(self, mjd2000_epoch: float, transfer_time: float, 
-                             r_moon_orbit: float = None) -> Dict[str, np.ndarray]:
+
+    def _calculate_moon_states(self, mjd2000_epoch: float, transfer_time: float,
+                             r_moon_orbit: float = None) -> dict[str, np.ndarray]:
         """Calculate Moon states at departure and arrival.
         
         Args:
             mjd2000_epoch: Epoch in MJD2000 format
             transfer_time: Transfer time [days]
             
-        Returns:
+        Returns
+        -------
             Dictionary containing Moon position and velocity states
         """
         # Get Moon states at departure and arrival
@@ -235,24 +239,24 @@ class LunarTransfer:
         moon_pos_f, moon_vel_f = self.celestial.get_moon_state_earth_centered(
             mjd2000_epoch + transfer_time
         )
-        
+
         # Calculate target state in lunar orbit
         target_pos, target_vel = calculate_target_state(
             moon_pos_f, moon_vel_f, r_moon_orbit or (self.moon_radius + 100000)
         )
-        
+
         return {
-            'moon_pos_initial': moon_pos_i,
-            'moon_vel_initial': moon_vel_i,
-            'moon_pos_final': moon_pos_f,
-            'moon_vel_final': moon_vel_f,
-            'target_pos': target_pos,
-            'target_vel': target_vel
+            "moon_pos_initial": moon_pos_i,
+            "moon_vel_initial": moon_vel_i,
+            "moon_pos_final": moon_pos_f,
+            "moon_vel_final": moon_vel_f,
+            "target_pos": target_pos,
+            "target_vel": target_vel
         }
-    
-    def _find_optimal_departure(self, transfer_params: Dict[str, float], 
-                              moon_states: Dict[str, np.ndarray], 
-                              max_revolutions: int) -> Dict[str, np.ndarray]:
+
+    def _find_optimal_departure(self, transfer_params: dict[str, float],
+                              moon_states: dict[str, np.ndarray],
+                              max_revolutions: int) -> dict[str, np.ndarray]:
         """Find optimal departure point and initial orbit conditions.
         
         Args:
@@ -260,44 +264,46 @@ class LunarTransfer:
             moon_states: Moon states from calculation step
             max_revolutions: Maximum revolutions for Lambert solver
             
-        Returns:
+        Returns
+        -------
             Dictionary containing departure state information
             
-        Raises:
+        Raises
+        ------
             ValueError: If optimal departure phase cannot be found
         """
         # Calculate moon orbital plane unit vector
-        moon_h = np.cross(moon_states['moon_pos_initial'], moon_states['moon_vel_initial'])
+        moon_h = np.cross(moon_states["moon_pos_initial"], moon_states["moon_vel_initial"])
         moon_h_unit = moon_h / np.linalg.norm(moon_h)
-        
+
         # Find optimal departure phase
         try:
             phase, r1 = find_optimal_phase(
-                r_park=transfer_params['r_park'],
-                moon_pos=moon_states['moon_pos_final'],
-                moon_vel=moon_states['moon_vel_final'],
-                transfer_time=transfer_params['tof'],
-                orbit_radius=transfer_params['r_moon_orbit'],
+                r_park=transfer_params["r_park"],
+                moon_pos=moon_states["moon_pos_final"],
+                moon_vel=moon_states["moon_vel_final"],
+                transfer_time=transfer_params["tof"],
+                orbit_radius=transfer_params["r_moon_orbit"],
                 max_revs=max_revolutions
             )
         except ValueError as e:
-            raise ValueError(f"Failed to find optimal departure phase: {str(e)}")
-        
+            raise ValueError(f"Failed to find optimal departure phase: {e!s}")
+
         # Calculate initial orbital velocity (circular)
-        v_init = np.sqrt(PC.EARTH_MU / transfer_params['r_park'])
+        v_init = np.sqrt(PC.EARTH_MU / transfer_params["r_park"])
         init_vel = v_init * np.cross(moon_h_unit, r1 / np.linalg.norm(r1))
-        
+
         return {
-            'position': r1,
-            'velocity': init_vel,
-            'phase': phase,
-            'moon_h_unit': moon_h_unit
+            "position": r1,
+            "velocity": init_vel,
+            "phase": phase,
+            "moon_h_unit": moon_h_unit
         }
-    
-    def _build_trajectory(self, epoch: float, transfer_time: float, 
-                        departure_state: Dict[str, np.ndarray],
-                        moon_states: Dict[str, np.ndarray],
-                        transfer_params: Dict[str, float]) -> Tuple[Trajectory, float]:
+
+    def _build_trajectory(self, epoch: float, transfer_time: float,
+                        departure_state: dict[str, np.ndarray],
+                        moon_states: dict[str, np.ndarray],
+                        transfer_params: dict[str, float]) -> tuple[Trajectory, float]:
         """Build complete trajectory with maneuvers.
         
         Args:
@@ -307,20 +313,21 @@ class LunarTransfer:
             moon_states: Moon states information
             transfer_params: Transfer parameters
             
-        Returns:
+        Returns
+        -------
             Tuple of trajectory object and total delta-v [m/s]
         """
-        r1 = departure_state['position']
-        init_vel = departure_state['velocity']
-        target_pos = moon_states['target_pos']
-        target_vel = moon_states['target_vel']
-        tof = transfer_params['tof']
-        
+        r1 = departure_state["position"]
+        init_vel = departure_state["velocity"]
+        target_pos = moon_states["target_pos"]
+        target_vel = moon_states["target_vel"]
+        tof = transfer_params["tof"]
+
         # Calculate maneuver delta-v values
         tli_dv, loi_dv, arrival_pos, arrival_vel = self._calculate_maneuvers(
             r1, init_vel, target_vel, tof
         )
-        
+
         # Create trajectory object
         trajectory = LunarTrajectory(
             departure_epoch=epoch,
@@ -330,16 +337,16 @@ class LunarTransfer:
             arrival_pos=tuple(arrival_pos / 1000.0),  # Convert to km
             arrival_vel=tuple(arrival_vel / 1000.0)  # Convert to km/s
         )
-        
+
         # Add maneuver objects to trajectory
         self._add_maneuvers_to_trajectory(trajectory, epoch, transfer_time, tli_dv, loi_dv)
-        
+
         # Calculate total delta-v
         total_dv = np.linalg.norm(tli_dv) + np.linalg.norm(loi_dv)
         return trajectory, total_dv
-    
-    def _calculate_maneuvers(self, r1: np.ndarray, init_vel: np.ndarray, 
-                           target_vel: np.ndarray, tof: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+
+    def _calculate_maneuvers(self, r1: np.ndarray, init_vel: np.ndarray,
+                           target_vel: np.ndarray, tof: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Calculate TLI and LOI maneuver delta-v values.
         
         Args:
@@ -348,29 +355,30 @@ class LunarTransfer:
             target_vel: Target velocity vector [m/s]
             tof: Time of flight [s]
             
-        Returns:
+        Returns
+        -------
             Tuple of (TLI delta-v, LOI delta-v, arrival position, arrival velocity)
         """
         # Calculate TLI delta-v
         tli_dv = init_vel - target_vel
-        
+
         # Propagate trajectory to calculate arrival state
         arrival_pos, arrival_vel = self.propagator.propagate_to_target(
             r1, init_vel + tli_dv, tof, self.departure_epoch
         )
-        
+
         # Calculate LOI delta-v
         loi_dv = target_vel - arrival_vel
-        
+
         # Validate delta-v magnitudes
         tli_dv_mag = np.linalg.norm(tli_dv)
         loi_dv_mag = np.linalg.norm(loi_dv)
         self.validator.validate_delta_v(tli_dv_mag, loi_dv_mag)
-        
+
         return tli_dv, loi_dv, arrival_pos, arrival_vel
-    
-    def _add_maneuvers_to_trajectory(self, trajectory: Trajectory, epoch: float, 
-                                   transfer_time: float, tli_dv: np.ndarray, 
+
+    def _add_maneuvers_to_trajectory(self, trajectory: Trajectory, epoch: float,
+                                   transfer_time: float, tli_dv: np.ndarray,
                                    loi_dv: np.ndarray) -> None:
         """Add TLI and LOI maneuvers to the trajectory.
         
@@ -382,19 +390,19 @@ class LunarTransfer:
             loi_dv: Lunar Orbit Insertion delta-v [m/s]
         """
         # Create maneuver objects (convert delta-v from m/s to km/s and epoch to datetime)
-        from datetime import datetime, timedelta, timezone
-        j2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-        
+        from datetime import datetime, timedelta
+        j2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
+
         tli = Maneuver(
             delta_v=tuple(tli_dv / 1000.0),  # Convert to km/s
             epoch=j2000 + timedelta(days=epoch)
         )
-        
+
         loi = Maneuver(
             delta_v=tuple(loi_dv / 1000.0),  # Convert to km/s
             epoch=j2000 + timedelta(days=epoch + transfer_time)
         )
-        
+
         # Add maneuvers to trajectory
         trajectory.add_maneuver(tli)
         trajectory.add_maneuver(loi)

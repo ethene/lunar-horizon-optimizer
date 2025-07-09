@@ -13,14 +13,13 @@ All models use consistent units:
 - Efficiencies: percentage (0-100)
 """
 
-from typing import Dict, Optional
 from pydantic import BaseModel, Field, validator
 
 from .enums import IsruResourceType
 
 class ResourceExtractionRate(BaseModel):
     """Defines the extraction rate and efficiency for a specific resource."""
-    
+
     resource_type: IsruResourceType = Field(
         ...,
         description="Type of resource being extracted"
@@ -44,7 +43,7 @@ class ResourceExtractionRate(BaseModel):
 
 class IsruCapabilities(BaseModel):
     """Defines the capabilities and parameters of an ISRU system."""
-    
+
     mass: float = Field(
         ...,
         gt=0,
@@ -55,7 +54,7 @@ class IsruCapabilities(BaseModel):
         ge=0,
         description="Base power consumption in kW (when idle)"
     )
-    extraction_rates: Dict[IsruResourceType, ResourceExtractionRate] = Field(
+    extraction_rates: dict[IsruResourceType, ResourceExtractionRate] = Field(
         ...,
         description="Extraction rates and efficiencies for each resource type"
     )
@@ -75,36 +74,37 @@ class IsruCapabilities(BaseModel):
         ge=0,
         description="Expected maintenance downtime in days per month"
     )
-    max_storage_capacity: Dict[IsruResourceType, float] = Field(
+    max_storage_capacity: dict[IsruResourceType, float] = Field(
         ...,
         description="Maximum storage capacity in kg for each resource type"
     )
-    
+
     @validator("extraction_rates")
     def validate_extraction_rates(cls, v):
         """Validate that extraction rates are provided for supported resource types."""
         if not v:
             raise ValueError("At least one resource extraction rate must be defined")
         return v
-    
-    def calculate_power_consumption(self, active_resources: Dict[IsruResourceType, float]) -> float:
+
+    def calculate_power_consumption(self, active_resources: dict[IsruResourceType, float]) -> float:
         """Calculate total power consumption based on active resource extraction rates.
         
         Args:
             active_resources: Dict mapping resource types to their current extraction rates (kg/day)
             
-        Returns:
+        Returns
+        -------
             Total power consumption in kW
         """
         power = self.base_power
-        
+
         for resource_type, rate in active_resources.items():
             if resource_type not in self.extraction_rates:
                 raise ValueError(f"No extraction rate defined for resource type: {resource_type}")
-                
+
             if rate > self.extraction_rates[resource_type].max_rate:
                 raise ValueError(f"Requested rate exceeds maximum for {resource_type}")
-                
+
             power += rate * self.extraction_rates[resource_type].power_per_kg
-            
-        return power 
+
+        return power

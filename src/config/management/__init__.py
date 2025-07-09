@@ -13,7 +13,7 @@ from .template_manager import TemplateManager
 from .file_operations import FileOperations
 
 __all__ = [
-    'ConfigManager',
-    'TemplateManager', 
-    'FileOperations'
+    "ConfigManager",
+    "FileOperations",
+    "TemplateManager"
 ]

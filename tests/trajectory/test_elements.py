@@ -10,7 +10,6 @@ All calculations use standard units (km, s, rad) unless otherwise specified.
 Results are validated against known orbital parameters of real bodies (ISS, Moon).
 """
 
-import pytest
 import numpy as np
 import logging
 from src.trajectory.elements import (
@@ -27,7 +26,7 @@ logger.setLevel(logging.DEBUG)
 
 class TestOrbitalPeriod:
     """Test suite for orbital period calculations."""
-    
+
     def test_leo_period(self):
         """Test orbital period calculation for Low Earth Orbit.
         
@@ -41,11 +40,11 @@ class TestOrbitalPeriod:
         """
         # ISS-like orbit at ~400km altitude
         period = orbital_period(6778.0)  # 6778 km = 6378 km (Earth radius) + 400 km
-        
+
         # ISS period is ~92.68 minutes
         expected_period = 92.68 * 60  # Convert to seconds
         assert np.isclose(period, expected_period, rtol=0.01)
-        
+
         logger.debug(f"Calculated ISS period: {period/60:.2f} minutes")
 
     def test_lunar_period(self):
@@ -60,16 +59,16 @@ class TestOrbitalPeriod:
         """
         # Approximate lunar orbit
         period = orbital_period(384400.0, mu=pk.MU_EARTH)
-        
+
         # Moon's sidereal period is ~27.32 days
         expected_period = 27.32 * 24 * 3600  # Convert to seconds
         assert np.isclose(period, expected_period, rtol=0.01)
-        
+
         logger.debug(f"Calculated lunar period: {period/(24*3600):.2f} days")
 
 class TestOrbitalVelocity:
     """Test suite for orbital velocity calculations."""
-    
+
     def test_circular_orbit_velocity(self):
         """Test velocity components in a circular orbit.
         
@@ -84,13 +83,13 @@ class TestOrbitalVelocity:
             eccentricity=0.0,
             true_anomaly=45.0,
         )
-        
+
         # In circular orbit, radial velocity should be 0
         assert np.isclose(v_r, 0.0, atol=1e-10)
-        
+
         # Tangential velocity should be ~7.67 km/s for this altitude
         assert np.isclose(v_t, 7.67, rtol=0.01)
-        
+
         logger.debug(f"Circular orbit velocities - radial: {v_r:.3f} km/s, tangential: {v_t:.3f} km/s")
 
     def test_elliptical_orbit_velocity(self):
@@ -111,13 +110,13 @@ class TestOrbitalVelocity:
             eccentricity=0.7306,      # Typical GTO
             true_anomaly=0.0,         # At perigee
         )
-        
+
         # At perigee of elliptical orbit:
         # - Radial velocity should be 0
         # - Tangential velocity should be maximum
         assert np.isclose(v_r, 0.0, atol=1e-10)
         assert v_t > 10.0  # Should be faster than LEO velocity
-        
+
         logger.debug(f"GTO perigee velocities - radial: {v_r:.3f} km/s, tangential: {v_t:.3f} km/s")
 
     def test_velocity_components_perpendicular(self):
@@ -133,24 +132,24 @@ class TestOrbitalVelocity:
         # Test orbit parameters
         a = 8000.0  # km
         e = 0.1
-        
+
         # Test at key points
         test_points = [0, 90, 180, 270]  # degrees
         for nu in test_points:
             v_r, v_t = velocity_at_point(a, e, nu)
             logger.debug(f"At {nu}°: v_r = {v_r:.3f} km/s, v_t = {v_t:.3f} km/s")
-            
+
             # At periapsis (0°) and apoapsis (180°), radial velocity should be 0
             if nu in [0, 180]:
                 assert np.isclose(v_r, 0.0, atol=1e-10)
-            
+
             # At 90° and 270°, radial velocity should be maximum/minimum
             if nu in [90, 270]:
                 assert abs(v_r) > 0.0
 
 class TestAnomalyConversion:
     """Test suite for anomaly conversion functions."""
-    
+
     def test_circular_mean_to_true(self):
         """Test mean to true anomaly conversion in circular orbit.
         
@@ -167,7 +166,7 @@ class TestAnomalyConversion:
             eccentricity=0.0,
         )
         assert np.isclose(true_anom, 45.0)
-        
+
         logger.debug(f"Circular orbit: M = 45° → ν = {true_anom:.2f}°")
 
     def test_elliptical_mean_to_true(self):
@@ -187,7 +186,7 @@ class TestAnomalyConversion:
         )
         # True anomaly should be larger than mean anomaly
         assert true_anom > 45.0
-        
+
         logger.debug(f"Elliptical orbit (e=0.1): M = 45° → ν = {true_anom:.2f}°")
 
     def test_circular_true_to_mean(self):
@@ -206,7 +205,7 @@ class TestAnomalyConversion:
             eccentricity=0.0,
         )
         assert np.isclose(mean_anom, 90.0)
-        
+
         logger.debug(f"Circular orbit: ν = 90° → M = {mean_anom:.2f}°")
 
     def test_elliptical_true_to_mean(self):
@@ -226,7 +225,7 @@ class TestAnomalyConversion:
         )
         # Mean anomaly should be smaller than true anomaly
         assert mean_anom < 90.0
-        
+
         logger.debug(f"Elliptical orbit (e=0.1): ν = 90° → M = {mean_anom:.2f}°")
 
     def test_anomaly_conversion_roundtrip(self):
@@ -242,11 +241,11 @@ class TestAnomalyConversion:
         """
         original_mean = 120.0
         eccentricity = 0.3
-        
+
         # Convert mean -> true -> mean
         true = mean_to_true_anomaly(original_mean, eccentricity)
         mean = true_to_mean_anomaly(true, eccentricity)
-        
+
         assert np.isclose(mean, original_mean, rtol=1e-6)
-        
-        logger.debug(f"Roundtrip test: {original_mean}° → {true:.2f}° → {mean:.2f}°") 
+
+        logger.debug(f"Roundtrip test: {original_mean}° → {true:.2f}° → {mean:.2f}°")

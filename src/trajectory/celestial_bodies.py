@@ -11,15 +11,9 @@ converted to PyKEP's native units (meters, m/s) before being returned.
 """
 
 import numpy as np
-from datetime import datetime
-from typing import Tuple, Optional, List
 from pathlib import Path
 import logging
-import os
 import spiceypy as spice
-import pykep as pk
-from trajectory.constants import PhysicalConstants as PC
-from utils.unit_conversions import datetime_to_j2000
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -36,11 +30,11 @@ DAYS_TO_SECONDS = 86400.0  # Convert J2000 days to seconds for SPICE
 try:
     if not KERNEL_PATH.exists():
         raise FileNotFoundError(f"SPICE kernel not found at {KERNEL_PATH}")
-    
+
     logger.info(f"Loading SPICE kernel from {KERNEL_PATH}")
     spice.furnsh(str(KERNEL_PATH))
     logger.info("SPICE kernel loaded successfully")
-    
+
 except Exception as e:
     logger.error(f"Failed to load SPICE kernel: {e}")
     raise
@@ -58,30 +52,30 @@ class CelestialBody:
     Note: SPICE returns positions in km and velocities in km/s, which are
     automatically converted to PyKEP's native units (meters and m/s) before return.
     """
-    
+
     def __init__(self):
         """Initialize a CelestialBody instance."""
-        pass
 
     @staticmethod
-    def get_earth_state(epoch: float) -> Tuple[list, list]:
+    def get_earth_state(epoch: float) -> tuple[list, list]:
         """Get Earth's heliocentric state vector at the specified epoch.
         
         Args:
             epoch: Time in days since J2000 epoch
             
-        Returns:
+        Returns
+        -------
             Tuple containing:
                 - position vector [x, y, z] in meters
                 - velocity vector [vx, vy, vz] in meters/second
         """
         if not isinstance(epoch, (int, float)):
             raise TypeError(f"Epoch must be a number, got {type(epoch)}")
-            
+
         try:
             # Convert epoch from days to seconds since J2000 for SPICE
             epoch_seconds = epoch * DAYS_TO_SECONDS
-            state = spice.spkezr('EARTH', epoch_seconds, 'J2000', 'NONE', 'SUN')[0]
+            state = spice.spkezr("EARTH", epoch_seconds, "J2000", "NONE", "SUN")[0]
             # Convert from SPICE units (km, km/s) to PyKEP units (m, m/s)
             pos = [x * KM_TO_M for x in state[:3]]
             vel = [v * KM_TO_M for v in state[3:]]
@@ -91,24 +85,25 @@ class CelestialBody:
             raise
 
     @staticmethod
-    def get_moon_state(epoch: float) -> Tuple[list, list]:
+    def get_moon_state(epoch: float) -> tuple[list, list]:
         """Get Moon's heliocentric state vector at the specified epoch.
         
         Args:
             epoch: Time in days since J2000 epoch
             
-        Returns:
+        Returns
+        -------
             Tuple containing:
                 - position vector [x, y, z] in meters
                 - velocity vector [vx, vy, vz] in meters/second
         """
         if not isinstance(epoch, (int, float)):
             raise TypeError(f"Epoch must be a number, got {type(epoch)}")
-            
+
         try:
             # Convert epoch from days to seconds since J2000 for SPICE
             epoch_seconds = epoch * DAYS_TO_SECONDS
-            state = spice.spkezr('MOON', epoch_seconds, 'J2000', 'NONE', 'SUN')[0]
+            state = spice.spkezr("MOON", epoch_seconds, "J2000", "NONE", "SUN")[0]
             # Convert from SPICE units (km, km/s) to PyKEP units (m, m/s)
             pos = [x * KM_TO_M for x in state[:3]]
             vel = [v * KM_TO_M for v in state[3:]]
@@ -118,24 +113,25 @@ class CelestialBody:
             raise
 
     @staticmethod
-    def get_moon_state_earth_centered(epoch: float) -> Tuple[list, list]:
+    def get_moon_state_earth_centered(epoch: float) -> tuple[list, list]:
         """Get Moon's state vector relative to Earth at the specified epoch.
         
         Args:
             epoch: Time in days since J2000 epoch
             
-        Returns:
+        Returns
+        -------
             Tuple containing:
                 - position vector [x, y, z] in meters
                 - velocity vector [vx, vy, vz] in meters/second
         """
         if not isinstance(epoch, (int, float)):
             raise TypeError(f"Epoch must be a number, got {type(epoch)}")
-            
+
         try:
             # Convert epoch from days to seconds since J2000 for SPICE
             epoch_seconds = epoch * DAYS_TO_SECONDS
-            state = spice.spkezr('MOON', epoch_seconds, 'J2000', 'NONE', 'EARTH')[0]
+            state = spice.spkezr("MOON", epoch_seconds, "J2000", "NONE", "EARTH")[0]
             # Convert from SPICE units (km, km/s) to PyKEP units (m, m/s)
             pos = [x * KM_TO_M for x in state[:3]]
             vel = [v * KM_TO_M for v in state[3:]]
@@ -145,14 +141,15 @@ class CelestialBody:
             raise
 
     @staticmethod
-    def create_local_frame(r: np.ndarray, v: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def create_local_frame(r: np.ndarray, v: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Create a local orbital reference frame.
         
         Args:
             r: Position vector defining primary direction (in meters)
             v: Optional velocity vector for secondary direction (in m/s)
             
-        Returns:
+        Returns
+        -------
             Tuple of unit vectors (x_hat, y_hat, z_hat) defining the frame
             where:
             - x_hat is along the position vector
@@ -160,7 +157,7 @@ class CelestialBody:
             - y_hat completes the right-handed system
         """
         r_unit = r / np.linalg.norm(r)
-        
+
         if v is not None:
             h = np.cross(r, v)
             z_unit = h / np.linalg.norm(h)
@@ -173,12 +170,12 @@ class CelestialBody:
                 # If r is along z-axis, use x-axis as reference
                 z_unit = np.array([1, 0, 0])
                 y_unit = np.cross(z_unit, r_unit)
-            
+
         y_unit = y_unit / np.linalg.norm(y_unit)
         z_unit = np.cross(r_unit, y_unit)
-        
+
         return r_unit, y_unit, z_unit
 
 # Initialize class instances for common bodies
 EARTH = CelestialBody()
-MOON = CelestialBody() 
+MOON = CelestialBody()

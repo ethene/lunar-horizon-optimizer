@@ -11,7 +11,6 @@ The module imports and re-exports classes from specialized modules:
 - enums.py: Configuration enumerations
 """
 
-from typing import Optional, List, Dict
 import numpy as np
 from pydantic import BaseModel, Field, model_validator
 
@@ -34,7 +33,8 @@ class MissionConfig(BaseModel):
     - Orbital parameters and constraints
     - Mission timeline and duration
     
-    Attributes:
+    Attributes
+    ----------
         name: Unique mission identifier
         description: Detailed mission description
         payload: Spacecraft and payload specifications
@@ -43,46 +43,46 @@ class MissionConfig(BaseModel):
         mission_duration_days: Total planned mission duration (days)
         target_orbit: Target lunar orbit parameters
     """
-    
+
     name: str = Field(
         ...,
         min_length=1,
         description="Unique mission identifier"
     )
-    
-    description: Optional[str] = Field(
+
+    description: str | None = Field(
         None,
         description="Detailed mission description"
     )
-    
+
     payload: PayloadSpecification = Field(
         ...,
         description="Spacecraft and payload specifications"
     )
-    
+
     cost_factors: CostFactors = Field(
         ...,
         description="Mission cost factors"
     )
-    
-    isru_targets: List[IsruCapabilities] = Field(
+
+    isru_targets: list[IsruCapabilities] = Field(
         default_factory=list,
         description="List of ISRU production targets"
     )
-    
+
     mission_duration_days: float = Field(
         ...,
         gt=0,
         description="Total planned mission duration (days)"
     )
-    
+
     target_orbit: OrbitParameters = Field(
         ...,
         description="Target lunar orbit parameters (km, degrees)"
     )
-    
-    @model_validator(mode='after')
-    def validate_mission_parameters(self) -> 'MissionConfig':
+
+    @model_validator(mode="after")
+    def validate_mission_parameters(self) -> "MissionConfig":
         """Validate overall mission parameters."""
         if self.mission_duration_days > 1095:  # 3 years
             raise ValueError(
@@ -90,9 +90,10 @@ class MissionConfig(BaseModel):
                 "3 years - please verify this is intended"
             )
         return self
-    
+
     class Config:
         """Pydantic model configuration."""
+
         validate_assignment = True
         json_encoders = {
             np.float64: float,
@@ -106,12 +107,12 @@ IsruTarget = IsruCapabilities
 
 # Re-export all configuration classes for easy access
 __all__ = [
-    'MissionConfig',
-    'PayloadSpecification', 
-    'CostFactors',
-    'IsruTarget',
-    'IsruCapabilities',
-    'ResourceExtractionRate',
-    'OrbitParameters',
-    'IsruResourceType'
+    "CostFactors",
+    "IsruCapabilities",
+    "IsruResourceType",
+    "IsruTarget",
+    "MissionConfig",
+    "OrbitParameters",
+    "PayloadSpecification",
+    "ResourceExtractionRate"
 ]

@@ -5,7 +5,7 @@ providing functionality to create configurations from predefined templates
 with custom overrides.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any
 
 from config.models import MissionConfig
 from config.registry import ConfigRegistry
@@ -19,8 +19,8 @@ class TemplateManager:
     retrieving templates, applying overrides, and creating new
     configurations from templates.
     """
-    
-    def __init__(self, registry: Optional[ConfigRegistry] = None):
+
+    def __init__(self, registry: ConfigRegistry | None = None):
         """Initialize template manager.
         
         Args:
@@ -28,7 +28,7 @@ class TemplateManager:
                      If not provided, creates a new registry with default templates.
         """
         self.registry = registry or ConfigRegistry()
-    
+
     def create_from_template(self, template_name: str, **overrides) -> MissionConfig:
         """Create a new configuration from a template.
         
@@ -40,54 +40,61 @@ class TemplateManager:
             template_name: Name of the template to use.
             **overrides: Values to override in the template.
             
-        Returns:
+        Returns
+        -------
             New configuration based on the template.
             
-        Raises:
+        Raises
+        ------
             KeyError: If template does not exist.
             ValidationError: If overrides are invalid.
         """
         template = self.registry.get_template(template_name)
-        
+
         # Apply overrides
         config_dict = template.model_dump()
         config_dict = self._apply_overrides(config_dict, overrides)
-        
+
         return MissionConfig.model_validate(config_dict)
-    
+
     def get_available_templates(self) -> list[str]:
         """Get list of available template names.
         
-        Returns:
+        Returns
+        -------
             List of available template names.
         """
         return self.registry.list_templates()
-    
+
     def get_template(self, template_name: str) -> MissionConfig:
         """Get a specific template by name.
         
         Args:
             template_name: Name of the template to retrieve.
             
-        Returns:
+        Returns
+        -------
             Template configuration.
             
-        Raises:
+        Raises
+        ------
             KeyError: If template does not exist.
         """
         return self.registry.get_template(template_name)
-    
-    def validate_template_overrides(self, template_name: str, overrides: Dict[str, Any]) -> bool:
+
+    def validate_template_overrides(self, template_name: str, overrides: dict[str, Any]) -> bool:
         """Validate that template overrides will produce a valid configuration.
         
         Args:
             template_name: Name of the template to use.
             overrides: Override values to validate.
             
-        Returns:
+        Returns
+        -------
             True if overrides are valid.
             
-        Raises:
+        Raises
+        ------
             KeyError: If template does not exist.
             ValidationError: If overrides are invalid.
         """
@@ -96,8 +103,8 @@ class TemplateManager:
             return True
         except ValidationError:
             return False
-    
-    def _apply_overrides(self, config_dict: Dict[str, Any], overrides: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _apply_overrides(self, config_dict: dict[str, Any], overrides: dict[str, Any]) -> dict[str, Any]:
         """Apply override values to a configuration dictionary.
         
         Performs deep update of nested dictionaries to preserve structure
@@ -107,7 +114,8 @@ class TemplateManager:
             config_dict: Base configuration dictionary.
             overrides: Override values to apply.
             
-        Returns:
+        Returns
+        -------
             Updated configuration dictionary.
         """
         # Deep update nested dictionaries
@@ -118,5 +126,5 @@ class TemplateManager:
                 else:
                     d[k] = v
             return d
-        
+
         return deep_update(config_dict.copy(), overrides)

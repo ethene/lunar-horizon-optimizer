@@ -30,8 +30,6 @@ Reference Frames:
 
 import pykep as pk
 import numpy as np
-from astropy import constants as const
-from astropy import units as u
 
 class Units:
     """Unit conversion constants from PyKEP.
@@ -43,19 +41,19 @@ class Units:
     - pk.SEC2DAY (1.1574e-5) for seconds to days
     - pk.DAY2YEAR (0.002738) for days to years
     """
-    
+
     # Angular conversions
     DEG2RAD = pk.DEG2RAD  # degrees to radians
     RAD2DEG = pk.RAD2DEG  # radians to degrees
-    
+
     # Distance conversions (SI to PyKEP)
     M2KM = 1e-3  # meters to kilometers
     KM2M = 1000.0  # kilometers to meters
-    
+
     # Velocity conversions
     MS2KMS = 1e-3  # m/s to km/s
     KMS2MS = KM2M  # km/s to m/s
-    
+
     # Time conversions
     DAYS2SEC = pk.DAY2SEC  # days to seconds
     SEC2DAYS = pk.SEC2DAY  # seconds to days
@@ -73,14 +71,14 @@ class PhysicalConstants:
     
     Moon constants are sourced from JPL DE440 ephemeris as they're not in PyKEP.
     """
-    
+
     # Earth constants (using PyKEP values for consistency with the library)
     MU_EARTH = pk.MU_EARTH  # m^3/s^2
     EARTH_MU = MU_EARTH  # Alias for backward compatibility
     EARTH_RADIUS = pk.EARTH_RADIUS  # m
     EARTH_ESCAPE_VELOCITY = np.sqrt(2 * MU_EARTH / EARTH_RADIUS)  # m/s
     EARTH_ORBITAL_PERIOD = 365.25 * 24 * 3600  # s
-    
+
     # Moon constants (from JPL DE440 ephemeris)
     MU_MOON = 4902.800118e9  # m^3/s^2 (4902.800118 km^3/s^2)
     MOON_MU = MU_MOON  # Alias for backward compatibility
@@ -90,11 +88,11 @@ class PhysicalConstants:
     MOON_ORBITAL_PERIOD = 27.32 * 24 * 3600  # s
     MOON_ESCAPE_VELOCITY = np.sqrt(2 * MU_MOON / MOON_RADIUS)  # m/s
     MOON_ORBITAL_VELOCITY = np.sqrt(MU_EARTH / MOON_ORBIT_RADIUS)  # m/s
-    
+
     # Moon's sphere of influence (SOI = a * (m/M)^(2/5))
     # where a is semi-major axis, m is Moon mass, M is Earth mass
     MOON_SOI = MOON_ORBIT_RADIUS * (MU_MOON / MU_EARTH)**(0.4)  # m (~66,000 km)
-    
+
     # Sun constants (using PyKEP values)
     MU_SUN = pk.MU_SUN  # m^3/s^2 (1.32712440018e20)
     SUN_MU = MU_SUN  # Alias for backward compatibility
@@ -111,7 +109,7 @@ class EphemerisLimits:
     - PyKEP epoch objects for time handling
     - JPL ephemerides via PyKEP for accurate positions
     """
-    
+
     MIN_YEAR = 2020
     MAX_YEAR = 2050
-    EPOCH_REF = "2000-01-01 00:00:00" 
+    EPOCH_REF = "2000-01-01 00:00:00"

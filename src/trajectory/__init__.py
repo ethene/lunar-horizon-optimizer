@@ -8,9 +8,9 @@ from trajectory.models import OrbitState, Maneuver, Trajectory
 from trajectory.elements import orbital_period, velocity_at_point
 
 __all__ = [
-    'OrbitState',
-    'Maneuver',
-    'Trajectory',
-    'orbital_period',
-    'velocity_at_point',
-] 
+    "Maneuver",
+    "OrbitState",
+    "Trajectory",
+    "orbital_period",
+    "velocity_at_point",
+]

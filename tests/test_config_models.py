@@ -41,7 +41,7 @@ def test_valid_mission_config():
             "inclination": 45.0
         }
     )
-    
+
     assert config.name == "Test Mission"
     assert config.payload.dry_mass == 1000.0
     assert len(config.isru_targets) == 1
@@ -116,7 +116,7 @@ def test_cost_factors_validation():
             operations_cost_per_day=50000.0,
             development_cost=1000000.0
         )
-    
+
     assert "greater than 0" in str(exc_info.value)
 
 def test_isru_target_validation():
@@ -128,7 +128,7 @@ def test_isru_target_validation():
             setup_time_days=30.0,
             market_value_per_kg=1000.0
         )
-    
+
     assert "greater than 0" in str(exc_info.value)
 
 def test_optional_description():
@@ -153,7 +153,7 @@ def test_optional_description():
             "inclination": 45.0
         }
     )
-    
+
     assert config.description is None
 
 def test_empty_isru_targets():
@@ -178,5 +178,5 @@ def test_empty_isru_targets():
             "inclination": 45.0
         }
     )
-    
-    assert len(config.isru_targets) == 0 
+
+    assert len(config.isru_targets) == 0

@@ -1,7 +1,7 @@
 import pytest
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from config.management.config_manager import ConfigManager
 
 @pytest.fixture
@@ -88,4 +88,4 @@ def missing_fields_config():
             "true_anomaly": 0.0
         }
         # Missing isru_target and payload_specification
-    } 
+    }

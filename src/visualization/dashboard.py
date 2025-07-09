@@ -8,23 +8,17 @@ Author: Lunar Horizon Optimizer Team
 Date: July 2025
 """
 
-import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
 from plotly.subplots import make_subplots
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any
 from dataclasses import dataclass
-import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from .trajectory_visualization import TrajectoryVisualizer, TrajectoryPlotConfig
-from .optimization_visualization import OptimizationVisualizer, ParetoPlotConfig
-from .economic_visualization import EconomicVisualizer, DashboardConfig
-from .mission_visualization import MissionVisualizer, TimelineConfig, MissionPhase, MissionMilestone
+from .trajectory_visualization import TrajectoryVisualizer
+from .optimization_visualization import OptimizationVisualizer
+from .economic_visualization import EconomicVisualizer
+from .mission_visualization import MissionVisualizer, MissionPhase, MissionMilestone
 
-from trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
-from optimization.global_optimizer import optimize_lunar_mission
-from optimization.pareto_analysis import OptimizationResult
 from economics.reporting import FinancialSummary
 from economics.cost_models import CostBreakdown
 
@@ -32,25 +26,25 @@ from economics.cost_models import CostBreakdown
 @dataclass
 class DashboardTheme:
     """Theme configuration for comprehensive dashboard."""
-    
+
     # Color scheme
     primary_color: str = "#1f77b4"
     secondary_color: str = "#ff7f0e"
     success_color: str = "#2ca02c"
     warning_color: str = "#d62728"
     info_color: str = "#9467bd"
-    
+
     # Layout
     background_color: str = "#ffffff"
     text_color: str = "#333333"
     grid_color: str = "#e5e5e5"
-    
+
     # Typography
     font_family: str = "Arial, sans-serif"
     title_size: int = 20
     subtitle_size: int = 16
     text_size: int = 12
-    
+
     # Professional styling
     plotly_theme: str = "plotly_white"
     show_grid: bool = True
@@ -60,28 +54,28 @@ class DashboardTheme:
 @dataclass
 class MissionAnalysisData:
     """Complete mission analysis data container."""
-    
+
     # Trajectory data
-    trajectory_data: Optional[Dict[str, Any]] = None
-    transfer_windows: Optional[List[Dict[str, Any]]] = None
-    
+    trajectory_data: dict[str, Any] | None = None
+    transfer_windows: list[dict[str, Any]] | None = None
+
     # Optimization results
-    optimization_results: Optional[Dict[str, Any]] = None
-    pareto_solutions: Optional[List[Dict[str, Any]]] = None
-    
+    optimization_results: dict[str, Any] | None = None
+    pareto_solutions: list[dict[str, Any]] | None = None
+
     # Economic analysis
-    financial_summary: Optional[FinancialSummary] = None
-    cost_breakdown: Optional[CostBreakdown] = None
-    sensitivity_results: Optional[Dict[str, Any]] = None
-    
+    financial_summary: FinancialSummary | None = None
+    cost_breakdown: CostBreakdown | None = None
+    sensitivity_results: dict[str, Any] | None = None
+
     # Mission planning
-    mission_phases: Optional[List[MissionPhase]] = None
-    milestones: Optional[List[MissionMilestone]] = None
-    
+    mission_phases: list[MissionPhase] | None = None
+    milestones: list[MissionMilestone] | None = None
+
     # Metadata
     mission_name: str = "Lunar Mission Analysis"
     analysis_date: datetime = None
-    
+
     def __post_init__(self):
         if self.analysis_date is None:
             self.analysis_date = datetime.now()
@@ -99,8 +93,8 @@ class ComprehensiveDashboard:
     - Mission timeline and risk assessment
     - Interactive comparison and decision support tools
     """
-    
-    def __init__(self, theme: Optional[DashboardTheme] = None):
+
+    def __init__(self, theme: DashboardTheme | None = None):
         """
         Initialize comprehensive dashboard.
         
@@ -108,13 +102,13 @@ class ComprehensiveDashboard:
             theme: Dashboard theme configuration
         """
         self.theme = theme or DashboardTheme()
-        
+
         # Initialize individual visualizers
         self.trajectory_viz = TrajectoryVisualizer()
         self.optimization_viz = OptimizationVisualizer()
         self.economic_viz = EconomicVisualizer()
         self.mission_viz = MissionVisualizer()
-        
+
     def create_executive_dashboard(
         self,
         mission_data: MissionAnalysisData
@@ -125,7 +119,8 @@ class ComprehensiveDashboard:
         Args:
             mission_data: Complete mission analysis data
             
-        Returns:
+        Returns
+        -------
             Plotly Figure with executive dashboard
         """
         # Create 3x3 grid layout
@@ -144,40 +139,40 @@ class ComprehensiveDashboard:
             vertical_spacing=0.08,
             horizontal_spacing=0.05
         )
-        
+
         # 1. Mission Overview Table
         self._add_mission_overview(fig, mission_data, row=1, col=1)
-        
+
         # 2. Key Financial Metrics
         if mission_data.financial_summary:
             self._add_financial_kpis(fig, mission_data.financial_summary, row=1, col=2)
-        
+
         # 3. Trajectory Summary
         if mission_data.trajectory_data:
             self._add_trajectory_summary(fig, mission_data.trajectory_data, row=1, col=3)
-        
+
         # 4. Optimization Results
         if mission_data.optimization_results:
             self._add_optimization_summary(fig, mission_data.optimization_results, row=2, col=1)
-        
+
         # 5. Cost Analysis
         if mission_data.cost_breakdown:
             self._add_cost_summary(fig, mission_data.cost_breakdown, row=2, col=2)
-        
+
         # 6. Timeline Status
         if mission_data.mission_phases:
             self._add_timeline_status(fig, mission_data.mission_phases, row=2, col=3)
-        
+
         # 7. Risk Assessment
         if mission_data.mission_phases:
             self._add_risk_summary(fig, mission_data.mission_phases, row=3, col=1)
-        
+
         # 8. Performance Indicators
         self._add_performance_indicators(fig, mission_data, row=3, col=2)
-        
+
         # 9. Decision Support
         self._add_decision_support(fig, mission_data, row=3, col=3)
-        
+
         # Update layout
         fig.update_layout(
             title=dict(
@@ -191,9 +186,9 @@ class ComprehensiveDashboard:
             showlegend=True,
             font=dict(family=self.theme.font_family, color=self.theme.text_color)
         )
-        
+
         return fig
-    
+
     def create_technical_dashboard(
         self,
         mission_data: MissionAnalysisData
@@ -204,7 +199,8 @@ class ComprehensiveDashboard:
         Args:
             mission_data: Complete mission analysis data
             
-        Returns:
+        Returns
+        -------
             Plotly Figure with technical dashboard
         """
         # Create 2x2 layout for detailed technical views
@@ -213,7 +209,7 @@ class ComprehensiveDashboard:
             subplot_titles=[
                 "3D Trajectory Analysis",
                 "Pareto Front Optimization",
-                "Economic Sensitivity Analysis", 
+                "Economic Sensitivity Analysis",
                 "Mission Critical Path"
             ],
             specs=[
@@ -221,23 +217,23 @@ class ComprehensiveDashboard:
                 [{"type": "scatter"}, {"type": "scatter"}]
             ]
         )
-        
+
         # 1. 3D Trajectory (placeholder - would need actual 3D implementation)
         if mission_data.trajectory_data:
             self._add_3d_trajectory_placeholder(fig, mission_data.trajectory_data, row=1, col=1)
-        
+
         # 2. Pareto Front
         if mission_data.optimization_results:
             self._add_pareto_front(fig, mission_data.optimization_results, row=1, col=2)
-        
+
         # 3. Economic Sensitivity
         if mission_data.sensitivity_results:
             self._add_sensitivity_analysis(fig, mission_data.sensitivity_results, row=2, col=1)
-        
+
         # 4. Critical Path
         if mission_data.mission_phases:
             self._add_critical_path(fig, mission_data.mission_phases, row=2, col=2)
-        
+
         # Update layout
         fig.update_layout(
             title=f"Technical Analysis Dashboard - {mission_data.mission_name}",
@@ -245,13 +241,13 @@ class ComprehensiveDashboard:
             height=1000,
             width=1600
         )
-        
+
         return fig
-    
+
     def create_comparison_dashboard(
         self,
-        scenarios: List[MissionAnalysisData],
-        scenario_names: Optional[List[str]] = None
+        scenarios: list[MissionAnalysisData],
+        scenario_names: list[str] | None = None
     ) -> go.Figure:
         """
         Create scenario comparison dashboard.
@@ -260,21 +256,22 @@ class ComprehensiveDashboard:
             scenarios: List of mission scenarios to compare
             scenario_names: Optional names for scenarios
             
-        Returns:
+        Returns
+        -------
             Plotly Figure with comparison dashboard
         """
         if not scenarios:
             return self._create_empty_plot("No scenarios provided for comparison")
-        
+
         if scenario_names is None:
             scenario_names = [f"Scenario {i+1}" for i in range(len(scenarios))]
-        
+
         # Create 2x3 comparison layout
         fig = make_subplots(
             rows=2, cols=3,
             subplot_titles=[
                 "Financial Comparison",
-                "Performance Comparison", 
+                "Performance Comparison",
                 "Risk Comparison",
                 "Cost Breakdown Comparison",
                 "Timeline Comparison",
@@ -285,28 +282,28 @@ class ComprehensiveDashboard:
                 [{"type": "bar"}, {"type": "bar"}, {"type": "scatter"}]
             ]
         )
-        
+
         # Extract comparison data
         comparison_data = self._extract_comparison_data(scenarios)
-        
+
         # 1. Financial Comparison
         self._add_financial_comparison(fig, comparison_data, scenario_names, row=1, col=1)
-        
+
         # 2. Performance Comparison
         self._add_performance_comparison(fig, comparison_data, scenario_names, row=1, col=2)
-        
+
         # 3. Risk Comparison
         self._add_risk_comparison(fig, comparison_data, scenario_names, row=1, col=3)
-        
+
         # 4. Cost Breakdown Comparison
         self._add_cost_comparison(fig, comparison_data, scenario_names, row=2, col=1)
-        
+
         # 5. Timeline Comparison
         self._add_timeline_comparison(fig, comparison_data, scenario_names, row=2, col=2)
-        
+
         # 6. Trade-off Analysis
         self._add_tradeoff_analysis(fig, comparison_data, scenario_names, row=2, col=3)
-        
+
         # Update layout
         fig.update_layout(
             title="Mission Scenario Comparison Dashboard",
@@ -314,9 +311,9 @@ class ComprehensiveDashboard:
             height=1000,
             width=1600
         )
-        
+
         return fig
-    
+
     def create_interactive_explorer(
         self,
         mission_data: MissionAnalysisData
@@ -327,7 +324,8 @@ class ComprehensiveDashboard:
         Args:
             mission_data: Complete mission analysis data
             
-        Returns:
+        Returns
+        -------
             Plotly Figure with interactive explorer
         """
         # Create flexible 2x2 layout for interactive exploration
@@ -340,13 +338,13 @@ class ComprehensiveDashboard:
                 "Sensitivity Explorer"
             ]
         )
-        
+
         # Add interactive exploration components
         self._add_parameter_explorer(fig, mission_data, row=1, col=1)
         self._add_interactive_timeline(fig, mission_data, row=1, col=2)
         self._add_cost_benefit_explorer(fig, mission_data, row=2, col=1)
         self._add_sensitivity_explorer(fig, mission_data, row=2, col=2)
-        
+
         # Update layout with enhanced interactivity
         fig.update_layout(
             title="Interactive Mission Explorer",
@@ -370,7 +368,7 @@ class ComprehensiveDashboard:
                         ),
                         dict(
                             args=[{"visible": [False, True, False, False]}],
-                            label="Timeline Only", 
+                            label="Timeline Only",
                             method="restyle"
                         ),
                         dict(
@@ -388,11 +386,11 @@ class ComprehensiveDashboard:
                 ),
             ]
         )
-        
+
         return fig
-    
+
     # Helper methods for dashboard components
-    
+
     def _add_mission_overview(
         self,
         fig: go.Figure,
@@ -403,31 +401,31 @@ class ComprehensiveDashboard:
         """Add mission overview table."""
         overview_data = [
             ["Mission Name", mission_data.mission_name],
-            ["Analysis Date", mission_data.analysis_date.strftime('%Y-%m-%d')],
+            ["Analysis Date", mission_data.analysis_date.strftime("%Y-%m-%d")],
             ["Status", "In Planning"],
             ["Duration", "8 years" if mission_data.mission_phases else "TBD"],
             ["Complexity", "High"],
             ["Technology Readiness", "TRL 6-7"]
         ]
-        
+
         fig.add_trace(
             go.Table(
                 header=dict(
                     values=["Parameter", "Value"],
                     fill_color=self.theme.primary_color,
-                    align='left',
-                    font=dict(color='white', size=12)
+                    align="left",
+                    font=dict(color="white", size=12)
                 ),
                 cells=dict(
-                    values=list(zip(*overview_data)),
-                    fill_color='lightblue',
-                    align='left',
+                    values=list(zip(*overview_data, strict=False)),
+                    fill_color="lightblue",
+                    align="left",
                     font=dict(size=11)
                 )
             ),
             row=row, col=col
         )
-    
+
     def _add_financial_kpis(
         self,
         fig: go.Figure,
@@ -448,7 +446,7 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-        
+
         # IRR Indicator
         fig.add_trace(
             go.Indicator(
@@ -468,7 +466,7 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-        
+
         # ROI Indicator
         fig.add_trace(
             go.Indicator(
@@ -480,7 +478,7 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-        
+
         # Payback Indicator
         fig.add_trace(
             go.Indicator(
@@ -492,11 +490,11 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-    
+
     def _add_trajectory_summary(
         self,
         fig: go.Figure,
-        trajectory_data: Dict[str, Any],
+        trajectory_data: dict[str, Any],
         row: int,
         col: int
     ) -> None:
@@ -505,52 +503,52 @@ class ComprehensiveDashboard:
         metrics = ["Delta-V", "Transfer Time", "C3 Energy", "Fuel Mass"]
         values = [3200, 4.5, 12.5, 2500]  # Sample values
         units = ["m/s", "days", "km²/s²", "kg"]
-        
+
         colors = [self.theme.primary_color, self.theme.secondary_color,
                  self.theme.info_color, self.theme.warning_color]
-        
+
         fig.add_trace(
             go.Bar(
                 x=metrics,
                 y=values,
                 marker=dict(color=colors),
-                text=[f"{v} {u}" for v, u in zip(values, units)],
-                textposition='auto',
+                text=[f"{v} {u}" for v, u in zip(values, units, strict=False)],
+                textposition="auto",
                 showlegend=False
             ),
             row=row, col=col
         )
-    
+
     def _add_optimization_summary(
         self,
         fig: go.Figure,
-        optimization_results: Dict[str, Any],
+        optimization_results: dict[str, Any],
         row: int,
         col: int
     ) -> None:
         """Add optimization results summary."""
         # Sample Pareto front visualization
-        if 'pareto_front' in optimization_results:
-            pareto_solutions = optimization_results['pareto_front'][:10]  # First 10 solutions
-            
+        if "pareto_front" in optimization_results:
+            pareto_solutions = optimization_results["pareto_front"][:10]  # First 10 solutions
+
             if pareto_solutions:
                 # Extract objectives (assuming first two objectives)
-                obj1 = [sol['objectives'][0] if isinstance(sol, dict) else sol[0][0] for sol in pareto_solutions]
-                obj2 = [sol['objectives'][1] if isinstance(sol, dict) else sol[0][1] for sol in pareto_solutions]
-                
+                obj1 = [sol["objectives"][0] if isinstance(sol, dict) else sol[0][0] for sol in pareto_solutions]
+                obj2 = [sol["objectives"][1] if isinstance(sol, dict) else sol[0][1] for sol in pareto_solutions]
+
                 fig.add_trace(
                     go.Scatter(
                         x=obj1,
                         y=obj2,
-                        mode='markers+lines',
-                        name='Pareto Front',
+                        mode="markers+lines",
+                        name="Pareto Front",
                         marker=dict(size=8, color=self.theme.primary_color),
                         line=dict(color=self.theme.primary_color, width=2),
                         showlegend=False
                     ),
                     row=row, col=col
                 )
-    
+
     def _add_cost_summary(
         self,
         fig: go.Figure,
@@ -559,7 +557,7 @@ class ComprehensiveDashboard:
         col: int
     ) -> None:
         """Add cost breakdown pie chart."""
-        categories = ['Development', 'Launch', 'Spacecraft', 'Operations', 'Ground', 'Contingency']
+        categories = ["Development", "Launch", "Spacecraft", "Operations", "Ground", "Contingency"]
         values = [
             cost_breakdown.development,
             cost_breakdown.launch,
@@ -568,30 +566,30 @@ class ComprehensiveDashboard:
             cost_breakdown.ground_systems,
             cost_breakdown.contingency
         ]
-        
+
         fig.add_trace(
             go.Pie(
                 labels=categories,
                 values=values,
-                textinfo='label+percent',
+                textinfo="label+percent",
                 showlegend=False
             ),
             row=row, col=col
         )
-    
+
     def _add_timeline_status(
         self,
         fig: go.Figure,
-        mission_phases: List[MissionPhase],
+        mission_phases: list[MissionPhase],
         row: int,
         col: int
     ) -> None:
         """Add timeline status chart."""
         current_date = datetime.now()
-        
+
         # Calculate phase status
         status_counts = {"Not Started": 0, "In Progress": 0, "Completed": 0}
-        
+
         for phase in mission_phases:
             if current_date < phase.start_date:
                 status_counts["Not Started"] += 1
@@ -599,55 +597,55 @@ class ComprehensiveDashboard:
                 status_counts["Completed"] += 1
             else:
                 status_counts["In Progress"] += 1
-        
+
         statuses = list(status_counts.keys())
         counts = list(status_counts.values())
         colors = [self.theme.warning_color, self.theme.info_color, self.theme.success_color]
-        
+
         fig.add_trace(
             go.Bar(
                 x=statuses,
                 y=counts,
                 marker=dict(color=colors),
                 text=counts,
-                textposition='auto',
+                textposition="auto",
                 showlegend=False
             ),
             row=row, col=col
         )
-    
+
     def _add_risk_summary(
         self,
         fig: go.Figure,
-        mission_phases: List[MissionPhase],
+        mission_phases: list[MissionPhase],
         row: int,
         col: int
     ) -> None:
         """Add risk assessment summary."""
         risk_counts = {"Low": 0, "Medium": 0, "High": 0, "Critical": 0}
-        
+
         for phase in mission_phases:
-            risk_level = getattr(phase, 'risk_level', 'Medium')
+            risk_level = getattr(phase, "risk_level", "Medium")
             if risk_level in risk_counts:
                 risk_counts[risk_level] += 1
-        
+
         risks = list(risk_counts.keys())
         counts = list(risk_counts.values())
-        colors = [self.theme.success_color, self.theme.warning_color, 
+        colors = [self.theme.success_color, self.theme.warning_color,
                  self.theme.secondary_color, "#8E44AD"]
-        
+
         fig.add_trace(
             go.Bar(
                 x=risks,
                 y=counts,
                 marker=dict(color=colors),
                 text=counts,
-                textposition='auto',
+                textposition="auto",
                 showlegend=False
             ),
             row=row, col=col
         )
-    
+
     def _add_performance_indicators(
         self,
         fig: go.Figure,
@@ -659,7 +657,7 @@ class ComprehensiveDashboard:
         # Sample performance metrics
         metrics = ["Mission Success Probability", "Technical Readiness", "Schedule Confidence"]
         values = [75, 85, 70]  # Percentages
-        
+
         fig.add_trace(
             go.Indicator(
                 mode="gauge+number",
@@ -678,7 +676,7 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-        
+
         fig.add_trace(
             go.Indicator(
                 mode="gauge+number",
@@ -692,7 +690,7 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-        
+
         fig.add_trace(
             go.Indicator(
                 mode="gauge+number",
@@ -706,7 +704,7 @@ class ComprehensiveDashboard:
             ),
             row=row, col=col
         )
-    
+
     def _add_decision_support(
         self,
         fig: go.Figure,
@@ -722,27 +720,27 @@ class ComprehensiveDashboard:
             ["Action Required", "Review design constraints"],
             ["On Track", "Continue current approach"]
         ]
-        
+
         fig.add_trace(
             go.Table(
                 header=dict(
                     values=["Priority", "Recommendation"],
                     fill_color=self.theme.primary_color,
-                    align='left',
-                    font=dict(color='white', size=11)
+                    align="left",
+                    font=dict(color="white", size=11)
                 ),
                 cells=dict(
-                    values=list(zip(*recommendations)),
-                    fill_color=['lightcoral', 'lightblue', 'lightgreen', 'lightyellow', 'lightgray'],
-                    align='left',
+                    values=list(zip(*recommendations, strict=False)),
+                    fill_color=["lightcoral", "lightblue", "lightgreen", "lightyellow", "lightgray"],
+                    align="left",
                     font=dict(size=10)
                 )
             ),
             row=row, col=col
         )
-    
+
     # Placeholder methods for complex components
-    
+
     def _add_3d_trajectory_placeholder(self, fig, trajectory_data, row, col):
         """Placeholder for 3D trajectory visualization."""
         fig.add_annotation(
@@ -753,7 +751,7 @@ class ComprehensiveDashboard:
             font=dict(size=14, color="gray"),
             row=row, col=col
         )
-    
+
     def _add_pareto_front(self, fig, optimization_results, row, col):
         """Add Pareto front visualization."""
         # Simplified implementation - would use OptimizationVisualizer
@@ -765,7 +763,7 @@ class ComprehensiveDashboard:
             font=dict(size=14, color="gray"),
             row=row, col=col
         )
-    
+
     def _add_sensitivity_analysis(self, fig, sensitivity_results, row, col):
         """Add sensitivity analysis visualization."""
         fig.add_annotation(
@@ -776,7 +774,7 @@ class ComprehensiveDashboard:
             font=dict(size=14, color="gray"),
             row=row, col=col
         )
-    
+
     def _add_critical_path(self, fig, mission_phases, row, col):
         """Add critical path visualization."""
         fig.add_annotation(
@@ -787,56 +785,46 @@ class ComprehensiveDashboard:
             font=dict(size=14, color="gray"),
             row=row, col=col
         )
-    
+
     def _extract_comparison_data(self, scenarios):
         """Extract data for scenario comparison."""
         # Placeholder implementation
         return {
-            'financial_metrics': [],
-            'performance_metrics': [],
-            'risk_metrics': []
+            "financial_metrics": [],
+            "performance_metrics": [],
+            "risk_metrics": []
         }
-    
+
     def _add_financial_comparison(self, fig, data, names, row, col):
         """Add financial comparison chart."""
-        pass
-    
+
     def _add_performance_comparison(self, fig, data, names, row, col):
         """Add performance comparison chart."""
-        pass
-    
+
     def _add_risk_comparison(self, fig, data, names, row, col):
         """Add risk comparison chart."""
-        pass
-    
+
     def _add_cost_comparison(self, fig, data, names, row, col):
         """Add cost comparison chart."""
-        pass
-    
+
     def _add_timeline_comparison(self, fig, data, names, row, col):
         """Add timeline comparison chart."""
-        pass
-    
+
     def _add_tradeoff_analysis(self, fig, data, names, row, col):
         """Add trade-off analysis chart."""
-        pass
-    
+
     def _add_parameter_explorer(self, fig, mission_data, row, col):
         """Add parameter explorer."""
-        pass
-    
+
     def _add_interactive_timeline(self, fig, mission_data, row, col):
         """Add interactive timeline."""
-        pass
-    
+
     def _add_cost_benefit_explorer(self, fig, mission_data, row, col):
         """Add cost-benefit explorer."""
-        pass
-    
+
     def _add_sensitivity_explorer(self, fig, mission_data, row, col):
         """Add sensitivity explorer."""
-        pass
-    
+
     def _create_empty_plot(self, message: str) -> go.Figure:
         """Create empty plot with message."""
         fig = go.Figure()
@@ -853,7 +841,8 @@ def create_sample_dashboard() -> go.Figure:
     """
     Create a sample comprehensive dashboard for demonstration.
     
-    Returns:
+    Returns
+    -------
         Plotly Figure with sample dashboard
     """
     # Create sample mission data
@@ -867,13 +856,13 @@ def create_sample_dashboard() -> go.Figure:
         mission_duration_years=8,
         probability_of_success=0.75
     )
-    
+
     sample_data = MissionAnalysisData(
         mission_name="Artemis Lunar Base Mission",
         financial_summary=sample_financial,
         analysis_date=datetime.now()
     )
-    
+
     # Create dashboard
     dashboard = ComprehensiveDashboard()
     return dashboard.create_executive_dashboard(sample_data)

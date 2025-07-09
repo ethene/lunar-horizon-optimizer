@@ -5,7 +5,6 @@ including position and velocity calculations relative to the Moon.
 """
 
 import numpy as np
-from typing import Tuple
 import logging
 
 from .constants import PhysicalConstants as PC
@@ -18,7 +17,7 @@ def calculate_target_state(
     moon_pos: np.ndarray,
     moon_vel: np.ndarray,
     orbit_radius: float
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Calculate target state for lunar orbit insertion.
 
     Args:
@@ -26,12 +25,14 @@ def calculate_target_state(
         moon_vel: Moon velocity vector [m/s]
         orbit_radius: Target orbit radius around Moon [m]
 
-    Returns:
+    Returns
+    -------
         Tuple containing:
             - Target position vector [m]
             - Target velocity vector [m/s]
 
-    Raises:
+    Raises
+    ------
         ValueError: If inputs are invalid
     """
     # Log input values with more detail
@@ -42,7 +43,7 @@ def calculate_target_state(
     # Convert inputs to numpy arrays and validate
     moon_pos = np.array(moon_pos, dtype=float)
     moon_vel = np.array(moon_vel, dtype=float)
-    
+
     # Validate vector shapes
     if moon_pos.shape != (3,) or moon_vel.shape != (3,):
         raise ValueError("Position and velocity vectors must be 3D")
@@ -52,7 +53,7 @@ def calculate_target_state(
     moon_vel_mag = np.linalg.norm(moon_vel)
     moon_pos_unit = moon_pos / moon_pos_mag
     moon_vel_unit = moon_vel / moon_vel_mag
-    
+
     logger.debug(f"Moon position magnitude [m]: {moon_pos_mag}")
     logger.debug(f"Moon velocity magnitude [m/s]: {moon_vel_mag}")
 
@@ -65,25 +66,25 @@ def calculate_target_state(
     lead_angle = np.radians(5)
     rotation_matrix = _rotation_matrix(orbit_normal, lead_angle)
     target_radial = rotation_matrix @ moon_pos_unit
-    
+
     # Position relative to Moon's center
     target_pos_rel_moon = target_radial * orbit_radius
     # Convert to Earth-centered position
     target_pos = moon_pos + target_pos_rel_moon
-    
+
     # Calculate circular orbit velocity around Moon
     v_circ = np.sqrt(PC.MOON_MU / orbit_radius)
-    
+
     # Calculate velocity direction for circular orbit around Moon
     target_vel_dir = np.cross(orbit_normal, target_radial)
     target_vel_dir = target_vel_dir / np.linalg.norm(target_vel_dir)
-    
+
     # Calculate velocity relative to Moon
     target_vel_rel_moon = target_vel_dir * v_circ
-    
+
     # Add small radial component for capture (2 m/s inward)
     target_vel_rel_moon -= target_radial * 2.0
-    
+
     # Convert to Earth-centered velocity by adding Moon's velocity
     target_vel = moon_vel + target_vel_rel_moon
 
@@ -92,11 +93,11 @@ def calculate_target_state(
     logger.debug(f"Target position Earth-centered [m]: {target_pos}")
     logger.debug(f"Target velocity relative to Moon [m/s]: {target_vel_rel_moon}")
     logger.debug(f"Target velocity Earth-centered [m/s]: {target_vel}")
-    
+
     # Verify target position is at correct distance from Moon
     target_moon_dist = np.linalg.norm(target_pos - moon_pos)
     logger.debug(f"Target-Moon distance [m]: {target_moon_dist}")
-    
+
     if not np.isclose(target_moon_dist, orbit_radius, rtol=1e-6):
         logger.error(f"Target position is not at requested orbit radius: {target_moon_dist/1000:.1f} km vs {orbit_radius/1000:.1f} km")
 
@@ -106,7 +107,7 @@ def calculate_target_state(
     vel_diff_radial = np.dot(vel_diff, target_radial)
     vel_diff_normal = np.dot(vel_diff, orbit_normal)
     vel_diff_tangential = np.dot(vel_diff, np.cross(orbit_normal, target_radial))
-    
+
     logger.debug(f"Velocity difference components [m/s]: radial={vel_diff_radial:.2f}, normal={vel_diff_normal:.2f}, tangential={vel_diff_tangential:.2f}")
     logger.debug(f"Total velocity difference [m/s]: {vel_diff_mag:.2f}")
 
@@ -124,16 +125,17 @@ def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
         axis: Unit vector of rotation axis
         angle: Rotation angle in radians
         
-    Returns:
+    Returns
+    -------
         3x3 rotation matrix
     """
     # Normalize axis
     axis = axis / np.linalg.norm(axis)
-    
+
     # Rodriguez rotation formula
     K = np.array([[0, -axis[2], axis[1]],
                   [axis[2], 0, -axis[0]],
                   [-axis[1], axis[0], 0]])
     I = np.eye(3)
     R = I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)
-    return R 
+    return R

@@ -1,7 +1,6 @@
 """Basic smoke tests to verify the Python environment and dependencies."""
 
 import pytest
-import numpy as np
 import scipy
 import pykep
 import pygmo
@@ -19,7 +18,7 @@ def test_jax_configuration():
     """Verify JAX is properly configured."""
     # Print JAX device info for debugging
     print(f"\nJAX is using device: {jax.devices()}")
-    
+
     # Simple JAX computation test
     x = jnp.array([1.0, 2.0, 3.0])
     y = jax.grad(lambda x: jnp.sum(x**2))(x)
@@ -28,8 +27,8 @@ def test_jax_configuration():
 def test_pykep_basic():
     """Verify PyKEP basic functionality."""
     # Create a simple planet object
-    earth = pykep.planet.jpl_lp('earth')
-    assert earth.name == 'earth', "PyKEP planet creation failed"
+    earth = pykep.planet.jpl_lp("earth")
+    assert earth.name == "earth", "PyKEP planet creation failed"
 
 def test_pygmo_basic():
     """Verify PyGMO basic functionality."""
@@ -45,12 +44,12 @@ def test_diffrax_basic():
     # Simple ODE: dy/dt = -y
     def f(t, y, args):
         return -y
-    
+
     term = diffrax.ODETerm(f)
     solver = diffrax.Euler()
     t0, t1 = 0.0, 1.0
     y0 = jnp.array([1.0])
-    
+
     solution = diffrax.diffeqsolve(
         term,
         solver,
@@ -74,4 +73,4 @@ def test_poliastro_basic():
     assert moon.name == "Moon", "Poliastro Moon object creation failed"
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"]) 
+    pytest.main([__file__, "-v"])
