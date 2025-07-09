@@ -1,5 +1,5 @@
 """
-Mission Timeline and Milestone Visualization Module
+Mission Timeline and Milestone Visualization Module.
 
 Provides comprehensive visualization for lunar mission timelines including
 project phases, milestones, critical path analysis, resource allocation,
@@ -62,13 +62,13 @@ class MissionPhase:
     start_date: datetime
     end_date: datetime
     category: str
-    dependencies: list[str] = None
-    resources: dict[str, float] = None
+    dependencies: list[str] | None = None
+    resources: dict[str, float] | None = None
     cost: float = 0.0
     risk_level: str = "Medium"
     critical_path: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.dependencies is None:
             self.dependencies = []
         if self.resources is None:
@@ -83,10 +83,10 @@ class MissionMilestone:
     date: datetime
     category: str
     description: str = ""
-    completion_criteria: list[str] = None
+    completion_criteria: list[str] | None = None
     risk_level: str = "Medium"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.completion_criteria is None:
             self.completion_criteria = []
 
@@ -94,7 +94,7 @@ class MissionMilestone:
 class MissionVisualizer:
     """
     Mission timeline and milestone visualization using Plotly.
-    
+
     Provides comprehensive visualization of lunar mission planning including:
     - Interactive Gantt charts with phases and dependencies
     - Milestone tracking and completion status
@@ -103,10 +103,10 @@ class MissionVisualizer:
     - Risk assessment timelines
     """
 
-    def __init__(self, config: TimelineConfig | None = None):
+    def __init__(self, config: TimelineConfig | None = None) -> None:
         """
         Initialize mission visualizer.
-        
+
         Args:
             config: Timeline visualization configuration
         """
@@ -120,12 +120,12 @@ class MissionVisualizer:
     ) -> go.Figure:
         """
         Create comprehensive mission timeline visualization.
-        
+
         Args:
             phases: List of mission phases
             milestones: List of mission milestones
             title: Optional timeline title
-            
+
         Returns
         -------
             Plotly Figure with mission timeline
@@ -158,11 +158,11 @@ class MissionVisualizer:
     ) -> go.Figure:
         """
         Create resource utilization visualization.
-        
+
         Args:
             phases: List of mission phases with resource data
             resource_types: List of resource types to track
-            
+
         Returns
         -------
             Plotly Figure with resource utilization
@@ -175,7 +175,7 @@ class MissionVisualizer:
             resource_types = set()
             for phase in phases:
                 resource_types.update(phase.resources.keys())
-            resource_types = sorted(list(resource_types))
+            resource_types = sorted(resource_types)
 
         if not resource_types:
             return self._create_empty_plot("No resource data available")
@@ -216,7 +216,7 @@ class MissionVisualizer:
                     mode="lines",
                     name=resource_type.title(),
                     fill="tonexty" if idx == 0 else "tonexty",
-                    line=dict(color=colors[idx % len(colors)], width=2),
+                    line={"color": colors[idx % len(colors)], "width": 2},
                     showlegend=True
                 ),
                 row=idx + 1, col=1
@@ -253,10 +253,10 @@ class MissionVisualizer:
     ) -> go.Figure:
         """
         Create critical path analysis visualization.
-        
+
         Args:
             phases: List of mission phases with dependencies
-            
+
         Returns
         -------
             Plotly Figure with critical path analysis
@@ -265,7 +265,7 @@ class MissionVisualizer:
             return self._create_empty_plot("No phase data provided")
 
         # Calculate critical path (simplified implementation)
-        critical_phases = self._calculate_critical_path(phases)
+        self._calculate_critical_path(phases)
 
         fig = go.Figure()
 
@@ -280,8 +280,8 @@ class MissionVisualizer:
                     y=[phase.name, phase.name],
                     mode="lines+markers",
                     name=phase.name,
-                    line=dict(color=color, width=width),
-                    marker=dict(size=8),
+                    line={"color": color, "width": width},
+                    marker={"size": 8},
                     hovertemplate=f"<b>{phase.name}</b><br>"
                                 f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
                                 f"Critical: {'Yes' if phase.critical_path else 'No'}<br>"
@@ -313,12 +313,12 @@ class MissionVisualizer:
     ) -> go.Figure:
         """
         Create comprehensive mission dashboard.
-        
+
         Args:
             phases: List of mission phases
-            milestones: List of mission milestones  
+            milestones: List of mission milestones
             current_date: Current date for progress tracking
-            
+
         Returns
         -------
             Plotly Figure with mission dashboard
@@ -369,11 +369,11 @@ class MissionVisualizer:
     ) -> go.Figure:
         """
         Create risk assessment timeline.
-        
+
         Args:
             phases: List of mission phases with risk levels
             risk_events: Optional list of specific risk events
-            
+
         Returns
         -------
             Plotly Figure with risk timeline
@@ -398,8 +398,8 @@ class MissionVisualizer:
                     y=[phase.name, phase.name],
                     mode="lines+markers",
                     name=f"{phase.name} ({phase.risk_level})",
-                    line=dict(color=color, width=6),
-                    marker=dict(size=10, color=color),
+                    line={"color": color, "width": 6},
+                    marker={"size": 10, "color": color},
                     hovertemplate=f"<b>{phase.name}</b><br>"
                                 f"Risk Level: {phase.risk_level}<br>"
                                 f"Duration: {(phase.end_date - phase.start_date).days} days<extra></extra>"
@@ -446,8 +446,8 @@ class MissionVisualizer:
                     y=[phase.name, phase.name],
                     mode="lines+markers",
                     name=phase.name,
-                    line=dict(color=color, width=8),
-                    marker=dict(size=10, color=color),
+                    line={"color": color, "width": 8},
+                    marker={"size": 10, "color": color},
                     hovertemplate=f"<b>{phase.name}</b><br>"
                                 f"Start: {phase.start_date.strftime('%Y-%m-%d')}<br>"
                                 f"End: {phase.end_date.strftime('%Y-%m-%d')}<br>"
@@ -460,7 +460,6 @@ class MissionVisualizer:
     def _add_milestones(self, fig: go.Figure, milestones: list[MissionMilestone]) -> None:
         """Add milestones to timeline."""
         milestone_y_positions = {}
-        y_offset = 0
 
         for milestone in milestones:
             # Create unique y-position for milestone
@@ -477,12 +476,12 @@ class MissionVisualizer:
                     name=milestone.name,
                     text=[milestone.name],
                     textposition="top center",
-                    marker=dict(
-                        size=self.config.milestone_size,
-                        color=self.config.milestone_color,
-                        symbol="diamond",
-                        line=dict(width=2, color="white")
-                    ),
+                    marker={
+                        "size": self.config.milestone_size,
+                        "color": self.config.milestone_color,
+                        "symbol": "diamond",
+                        "line": {"width": 2, "color": "white"}
+                    },
                     hovertemplate=f"<b>{milestone.name}</b><br>"
                                 f"Date: {milestone.date.strftime('%Y-%m-%d')}<br>"
                                 f"Category: {milestone.category}<br>"
@@ -544,7 +543,7 @@ class MissionVisualizer:
                     y=[i, i],
                     mode="lines",
                     name=phase.name,
-                    line=dict(color=color, width=6),
+                    line={"color": color, "width": 6},
                     showlegend=False
                 ),
                 row=row, col=col
@@ -578,7 +577,7 @@ class MissionVisualizer:
             go.Bar(
                 x=statuses,
                 y=counts,
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=counts,
                 textposition="auto",
                 showlegend=False
@@ -612,18 +611,18 @@ class MissionVisualizer:
 
             fig.add_trace(
                 go.Table(
-                    header=dict(
-                        values=["Milestone", "Date", "Days Until", "Category"],
-                        fill_color=self.config.development_color,
-                        align="left",
-                        font=dict(color="white", size=12)
-                    ),
-                    cells=dict(
-                        values=list(zip(*table_data, strict=False)),
-                        fill_color="lightblue",
-                        align="left",
-                        font=dict(size=11)
-                    )
+                    header={
+                        "values": ["Milestone", "Date", "Days Until", "Category"],
+                        "fill_color": self.config.development_color,
+                        "align": "left",
+                        "font": {"color": "white", "size": 12}
+                    },
+                    cells={
+                        "values": list(zip(*table_data, strict=False)),
+                        "fill_color": "lightblue",
+                        "align": "left",
+                        "font": {"size": 11}
+                    }
                 ),
                 row=row, col=col
             )
@@ -633,7 +632,7 @@ class MissionVisualizer:
                 text="No upcoming milestones",
                 xref=f"x{col}", yref=f"y{col}",
                 x=0.5, y=0.5, showarrow=False,
-                font=dict(size=14, color="gray"),
+                font={"size": 14, "color": "gray"},
                 row=row, col=col
             )
 
@@ -704,7 +703,7 @@ class MissionVisualizer:
             height=max(self.config.height, len(phases) * 50),
             width=self.config.width,
             showlegend=False,
-            font=dict(family=self.config.font_family),
+            font={"family": self.config.font_family},
             hovermode="closest"
         )
 
@@ -719,7 +718,7 @@ class MissionVisualizer:
             text=message,
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16, color="gray")
+            font={"size": 16, "color": "gray"}
         )
         return fig
 
@@ -727,7 +726,7 @@ class MissionVisualizer:
 def create_sample_mission_timeline() -> go.Figure:
     """
     Create a sample lunar mission timeline for demonstration.
-    
+
     Returns
     -------
         Plotly Figure with sample mission timeline

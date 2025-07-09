@@ -1,11 +1,11 @@
 """
-Optimization Results Visualization Module
+Optimization Results Visualization Module.
 
 Provides comprehensive visualization for multi-objective optimization results including
 Pareto front analysis, optimization convergence tracking, solution comparison,
 and interactive decision-making support tools.
 
-Author: Lunar Horizon Optimizer Team  
+Author: Lunar Horizon Optimizer Team
 Date: July 2025
 """
 
@@ -37,7 +37,7 @@ class ParetoPlotConfig:
 
     # Convergence tracking
     show_convergence: bool = True
-    generation_colors: list[str] = None
+    generation_colors: list[str] | None = None
 
     # Interactive features
     enable_hover: bool = True
@@ -50,7 +50,7 @@ class ParetoPlotConfig:
     text_color: str = "#333333"
     theme: str = "plotly_white"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.generation_colors is None:
             self.generation_colors = px.colors.qualitative.Set3
 
@@ -58,18 +58,18 @@ class ParetoPlotConfig:
 class OptimizationVisualizer:
     """
     Interactive optimization results visualization using Plotly.
-    
+
     Provides comprehensive visualization of multi-objective optimization including:
     - Pareto front analysis and ranking
-    - Optimization convergence tracking  
+    - Optimization convergence tracking
     - Solution comparison and selection tools
     - Interactive decision-making support
     """
 
-    def __init__(self, config: ParetoPlotConfig | None = None):
+    def __init__(self, config: ParetoPlotConfig | None = None) -> None:
         """
         Initialize optimization visualizer.
-        
+
         Args:
             config: Visualization configuration
         """
@@ -85,13 +85,13 @@ class OptimizationVisualizer:
     ) -> go.Figure:
         """
         Create comprehensive Pareto front visualization.
-        
+
         Args:
             optimization_result: Results from optimization run
             objective_names: Names for objectives (default: ["Objective 1", ...])
             show_dominated: Whether to show dominated solutions
             preference_weights: User preference weights for ranking
-            
+
         Returns
         -------
             Plotly Figure with Pareto front visualization
@@ -128,11 +128,11 @@ class OptimizationVisualizer:
     ) -> go.Figure:
         """
         Create optimization convergence visualization.
-        
+
         Args:
             optimization_result: Results from optimization run
             objective_names: Names for objectives
-            
+
         Returns
         -------
             Plotly Figure with convergence analysis
@@ -164,11 +164,11 @@ class OptimizationVisualizer:
 
         # Track best solutions per generation
         generations = list(range(n_generations))
-        best_objectives = [[] for _ in range(n_objectives)]
+        best_objectives: list[list[float]] = [[] for _ in range(n_objectives)]
         hypervolumes = []
         solution_counts = []
 
-        for gen, solutions in enumerate(generation_history):
+        for _gen, solutions in enumerate(generation_history):
             if solutions:
                 # Find best solution for each objective
                 for obj_idx in range(n_objectives):
@@ -199,8 +199,8 @@ class OptimizationVisualizer:
                     y=values,
                     mode="lines+markers",
                     name=f"Best {name}",
-                    line=dict(color=color, width=2),
-                    marker=dict(size=6)
+                    line={"color": color, "width": 2},
+                    marker={"size": 6}
                 ),
                 row=1, col=1
             )
@@ -212,8 +212,8 @@ class OptimizationVisualizer:
                 y=hypervolumes,
                 mode="lines+markers",
                 name="Hypervolume",
-                line=dict(color="purple", width=3),
-                marker=dict(size=6),
+                line={"color": "purple", "width": 3},
+                marker={"size": 6},
                 showlegend=False
             ),
             row=1, col=2
@@ -225,7 +225,7 @@ class OptimizationVisualizer:
                 x=generations,
                 y=solution_counts,
                 name="Solution Count",
-                marker=dict(color="lightblue"),
+                marker={"color": "lightblue"},
                 showlegend=False
             ),
             row=2, col=1
@@ -245,11 +245,11 @@ class OptimizationVisualizer:
                         y=obj2_vals,
                         mode="markers",
                         name="Final Generation",
-                        marker=dict(
-                            size=6,
-                            color="red",
-                            opacity=0.7
-                        ),
+                        marker={
+                            "size": 6,
+                            "color": "red",
+                            "opacity": 0.7
+                        },
                         showlegend=False
                     ),
                     row=2, col=2
@@ -288,13 +288,13 @@ class OptimizationVisualizer:
     ) -> go.Figure:
         """
         Create detailed solution comparison visualization.
-        
+
         Args:
             solutions: List of solutions to compare
             solution_labels: Labels for each solution
             objective_names: Names for objectives
             parameter_names: Names for parameters
-            
+
         Returns
         -------
             Plotly Figure with solution comparison
@@ -329,7 +329,7 @@ class OptimizationVisualizer:
         )
 
         # Plot 1: Objective Values Comparison
-        colors = px.colors.qualitative.Set1[:n_solutions]
+        px.colors.qualitative.Set1[:n_solutions]
 
         for obj_idx, obj_name in enumerate(objective_names):
             values = [sol["objectives"][obj_idx] for sol in solutions]
@@ -374,20 +374,20 @@ class OptimizationVisualizer:
 
         fig.add_trace(
             go.Table(
-                header=dict(
-                    values=["Solution", obj_names[0] if len(obj_names := objective_names) > 0 else "Obj1",
+                header={
+                    "values": ["Solution", obj_names[0] if len(obj_names := objective_names) > 0 else "Obj1",
                            obj_names[1] if len(obj_names) > 1 else "Obj2",
                            obj_names[2] if len(obj_names) > 2 else "Obj3", "Ranking"],
-                    fill_color="lightblue",
-                    align="center",
-                    font=dict(size=12)
-                ),
-                cells=dict(
-                    values=list(zip(*ranking_data, strict=False)),
-                    fill_color="white",
-                    align="center",
-                    font=dict(size=11)
-                )
+                    "fill_color": "lightblue",
+                    "align": "center",
+                    "font": {"size": 12}
+                },
+                cells={
+                    "values": list(zip(*ranking_data, strict=False)),
+                    "fill_color": "white",
+                    "align": "center",
+                    "font": {"size": 11}
+                }
             ),
             row=2, col=1
         )
@@ -404,13 +404,13 @@ class OptimizationVisualizer:
                     mode="markers+text",
                     text=solution_labels,
                     textposition="top center",
-                    marker=dict(
-                        size=12,
-                        color=list(range(n_solutions)),
-                        colorscale="Viridis",
-                        showscale=True,
-                        colorbar=dict(title="Solution Index", x=1.0)
-                    ),
+                    marker={
+                        "size": 12,
+                        "color": list(range(n_solutions)),
+                        "colorscale": "Viridis",
+                        "showscale": True,
+                        "colorbar": {"title": "Solution Index", "x": 1.0}
+                    },
                     name="Solutions",
                     showlegend=False
                 ),
@@ -436,12 +436,12 @@ class OptimizationVisualizer:
     ) -> go.Figure:
         """
         Create preference-based solution ranking visualization.
-        
+
         Args:
             pareto_solutions: List of Pareto-optimal solutions
             preference_weights: User preference weights for objectives
             objective_names: Names for objectives
-            
+
         Returns
         -------
             Plotly Figure with preference analysis
@@ -480,12 +480,12 @@ class OptimizationVisualizer:
                 x=solution_indices,
                 y=scores,
                 name="Preference Score",
-                marker=dict(
-                    color=scores,
-                    colorscale="RdYlGn",
-                    showscale=True,
-                    colorbar=dict(title="Preference Score", x=0.48)
-                ),
+                marker={
+                    "color": scores,
+                    "colorscale": "RdYlGn",
+                    "showscale": True,
+                    "colorbar": {"title": "Preference Score", "x": 0.48}
+                },
                 text=[f"{s:.3f}" for s in scores],
                 textposition="auto"
             ),
@@ -508,8 +508,8 @@ class OptimizationVisualizer:
                     y=weighted_values,
                     mode="lines+markers",
                     name=f"{obj_name} (w={weight:.2f})",
-                    line=dict(color=color, width=2),
-                    marker=dict(size=6)
+                    line={"color": color, "width": 2},
+                    marker={"size": 6}
                 ),
                 row=1, col=2
             )
@@ -531,7 +531,7 @@ class OptimizationVisualizer:
                 colorscale="RdBu",
                 name="Ranking Sensitivity",
                 showscale=True,
-                colorbar=dict(title="Rank Change", x=1.0)
+                colorbar={"title": "Rank Change", "x": 1.0}
             ),
             row=2, col=1
         )
@@ -589,11 +589,11 @@ class OptimizationVisualizer:
                         y=obj2_dom,
                         mode="markers",
                         name="Dominated Solutions",
-                        marker=dict(
-                            size=self.config.dominated_size,
-                            color=self.config.dominated_color,
-                            opacity=self.config.dominated_opacity
-                        )
+                        marker={
+                            "size": self.config.dominated_size,
+                            "color": self.config.dominated_color,
+                            "opacity": self.config.dominated_opacity
+                        }
                     )
                 )
 
@@ -606,7 +606,7 @@ class OptimizationVisualizer:
             ranked_solutions = self.pareto_analyzer.rank_solutions_by_preference(
                 pareto_solutions, preference_weights
             )
-            scores = [score for score, _ in ranked_solutions]
+            [score for score, _ in ranked_solutions]
             # Map back to original order
             score_map = {id(sol): score for score, sol in ranked_solutions}
             colors = [score_map.get(id(sol), 0) for sol in pareto_solutions]
@@ -617,14 +617,14 @@ class OptimizationVisualizer:
                     y=obj2_pareto,
                     mode="markers+lines",
                     name="Pareto Front",
-                    marker=dict(
-                        size=self.config.pareto_size,
-                        color=colors,
-                        colorscale="Viridis",
-                        showscale=True,
-                        colorbar=dict(title="Preference Score")
-                    ),
-                    line=dict(color=self.config.pareto_color, width=2)
+                    marker={
+                        "size": self.config.pareto_size,
+                        "color": colors,
+                        "colorscale": "Viridis",
+                        "showscale": True,
+                        "colorbar": {"title": "Preference Score"}
+                    },
+                    line={"color": self.config.pareto_color, "width": 2}
                 )
             )
         else:
@@ -634,11 +634,11 @@ class OptimizationVisualizer:
                     y=obj2_pareto,
                     mode="markers+lines",
                     name="Pareto Front",
-                    marker=dict(
-                        size=self.config.pareto_size,
-                        color=self.config.pareto_color
-                    ),
-                    line=dict(color=self.config.pareto_color, width=2)
+                    marker={
+                        "size": self.config.pareto_size,
+                        "color": self.config.pareto_color
+                    },
+                    line={"color": self.config.pareto_color, "width": 2}
                 )
             )
 
@@ -680,11 +680,11 @@ class OptimizationVisualizer:
                         z=obj3_dom,
                         mode="markers",
                         name="Dominated Solutions",
-                        marker=dict(
-                            size=self.config.dominated_size,
-                            color=self.config.dominated_color,
-                            opacity=self.config.dominated_opacity
-                        )
+                        marker={
+                            "size": self.config.dominated_size,
+                            "color": self.config.dominated_color,
+                            "opacity": self.config.dominated_opacity
+                        }
                     )
                 )
 
@@ -700,20 +700,20 @@ class OptimizationVisualizer:
                 z=obj3_pareto,
                 mode="markers",
                 name="Pareto Front",
-                marker=dict(
-                    size=self.config.pareto_size,
-                    color=self.config.pareto_color
-                )
+                marker={
+                    "size": self.config.pareto_size,
+                    "color": self.config.pareto_color
+                }
             )
         )
 
         fig.update_layout(
             title=self.config.title,
-            scene=dict(
-                xaxis_title=objective_names[0],
-                yaxis_title=objective_names[1],
-                zaxis_title=objective_names[2]
-            ),
+            scene={
+                "xaxis_title": objective_names[0],
+                "yaxis_title": objective_names[1],
+                "zaxis_title": objective_names[2]
+            },
             template=self.config.theme,
             width=self.config.width,
             height=self.config.height
@@ -742,20 +742,20 @@ class OptimizationVisualizer:
         dimensions = []
         for i, name in enumerate(objective_names):
             dimensions.append(
-                dict(
-                    range=[obj_array[:, i].min(), obj_array[:, i].max()],
-                    label=name,
-                    values=obj_array[:, i]
-                )
+                {
+                    "range": [obj_array[:, i].min(), obj_array[:, i].max()],
+                    "label": name,
+                    "values": obj_array[:, i]
+                }
             )
 
         fig.add_trace(
             go.Parcoords(
-                line=dict(
-                    color=list(range(len(pareto_solutions))),
-                    colorscale="Viridis",
-                    showscale=True
-                ),
+                line={
+                    "color": list(range(len(pareto_solutions))),
+                    "colorscale": "Viridis",
+                    "showscale": True
+                },
                 dimensions=dimensions
             )
         )
@@ -776,7 +776,7 @@ class OptimizationVisualizer:
             text=message,
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16, color=self.config.text_color)
+            font={"size": 16, "color": self.config.text_color}
         )
         return fig
 
@@ -861,11 +861,11 @@ def create_quick_pareto_plot(
 ) -> go.Figure:
     """
     Quick function to create a simple Pareto front plot.
-    
+
     Args:
         optimization_result: Results from optimization run
         objective_names: Names for objectives
-        
+
     Returns
     -------
         Plotly Figure with Pareto front visualization
@@ -888,8 +888,8 @@ def create_quick_pareto_plot(
                 else:
                     # Assume it's a list [objectives, parameters]
                     pareto_solutions.append({
-                        "objectives": sol[0] if isinstance(sol, (list, tuple)) else sol,
-                        "parameters": sol[1] if isinstance(sol, (list, tuple)) and len(sol) > 1 else []
+                        "objectives": sol[0] if isinstance(sol, list | tuple) else sol,
+                        "parameters": sol[1] if isinstance(sol, list | tuple) and len(sol) > 1 else []
                     })
 
             opt_result = OptimizationResult(
@@ -913,6 +913,6 @@ def create_quick_pareto_plot(
             text=f"Visualization failed: {e!s}",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16, color="red")
+            font={"size": 16, "color": "red"}
         )
         return fig

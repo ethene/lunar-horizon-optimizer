@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Lunar Horizon Optimizer - Main Integration Module
+Lunar Horizon Optimizer - Main Integration Module.
 =================================================
 
 This is the main entry point for the Lunar Horizon Optimizer system, providing
-a unified interface that integrates trajectory generation, multi-objective 
+a unified interface that integrates trajectory generation, multi-objective
 optimization, economic analysis, and interactive visualization.
 
 Author: Lunar Horizon Optimizer Development Team
@@ -82,7 +82,7 @@ class AnalysisResults:
 class LunarHorizonOptimizer:
     """
     Main integration class for the Lunar Horizon Optimizer system.
-    
+
     This class provides a unified interface for complete lunar mission analysis,
     integrating trajectory generation, multi-objective optimization, economic
     analysis, and interactive visualization.
@@ -91,10 +91,10 @@ class LunarHorizonOptimizer:
     def __init__(self,
                  mission_config: MissionConfig | None = None,
                  cost_factors: CostFactors | None = None,
-                 spacecraft_config: SpacecraftConfig | None = None):
+                 spacecraft_config: SpacecraftConfig | None = None) -> None:
         """
         Initialize the Lunar Horizon Optimizer.
-        
+
         Args:
             mission_config: Mission configuration parameters
             cost_factors: Economic cost factors
@@ -109,11 +109,11 @@ class LunarHorizonOptimizer:
         self._initialize_components()
 
         # Analysis cache
-        self._analysis_cache = {}
+        self._analysis_cache: dict[str, Any] = {}
 
         logger.info("Lunar Horizon Optimizer initialized successfully")
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> None:
         """Initialize all core analysis components."""
         # Task 3: Trajectory components
         self.lunar_transfer = LunarTransfer()
@@ -149,14 +149,14 @@ class LunarHorizonOptimizer:
                        verbose: bool = True) -> AnalysisResults:
         """
         Perform comprehensive lunar mission analysis.
-        
+
         Args:
             mission_name: Name for the mission analysis
             optimization_config: Optimization parameters
             include_sensitivity: Whether to include sensitivity analysis
             include_isru: Whether to include ISRU economic analysis
             verbose: Enable detailed progress logging
-            
+
         Returns
         -------
             Complete analysis results including all modules
@@ -389,7 +389,7 @@ class LunarHorizonOptimizer:
     def _analyze_solution_economics(self, solution: dict[str, Any], label: str) -> dict[str, Any]:
         """Analyze economics for a single optimization solution."""
         params = solution.get("parameters", {})
-        objectives = solution.get("objectives", {})
+        solution.get("objectives", {})
 
         # Create cash flow model
         financial_params = FinancialParameters(
@@ -545,7 +545,7 @@ class LunarHorizonOptimizer:
             ]
         }
 
-    def _print_analysis_summary(self, results: AnalysisResults):
+    def _print_analysis_summary(self, results: AnalysisResults) -> None:
         """Print a summary of analysis results."""
         print("\n" + "="*60)
         print(f"LUNAR MISSION ANALYSIS SUMMARY: {results.mission_name}")
@@ -587,7 +587,7 @@ class LunarHorizonOptimizer:
         print("Analysis completed successfully! 🚀")
         print("="*60)
 
-    def export_results(self, results: AnalysisResults, output_dir: str = "output"):
+    def export_results(self, results: AnalysisResults, output_dir: str = "output") -> None:
         """Export analysis results to files."""
         import os
         os.makedirs(output_dir, exist_ok=True)
@@ -651,10 +651,8 @@ class LunarHorizonOptimizer:
         )
 
 
-def main():
-    """
-    Main function demonstrating the integrated Lunar Horizon Optimizer.
-    """
+def main() -> AnalysisResults:
+    """Main function demonstrating the integrated Lunar Horizon Optimizer."""
     print("🚀 Lunar Horizon Optimizer - Integrated Mission Analysis")
     print("="*60)
 

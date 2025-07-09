@@ -54,7 +54,7 @@ class FinancialSummary:
     analyst: str = ""
     confidence_level: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set default analysis date if not provided."""
         if not self.analysis_date:
             self.analysis_date = datetime.now().isoformat()
@@ -62,14 +62,14 @@ class FinancialSummary:
 
 class EconomicReporter:
     """Comprehensive economic reporting for lunar mission analysis.
-    
+
     This class generates various types of reports including executive summaries,
     detailed financial analysis, and comparative studies.
     """
 
-    def __init__(self, output_directory: str = "economic_reports"):
+    def __init__(self, output_directory: str = "economic_reports") -> None:
         """Initialize economic reporter.
-        
+
         Args:
             output_directory: Directory for report output
         """
@@ -85,13 +85,13 @@ class EconomicReporter:
 
     def generate_executive_summary(self,
                                  financial_summary: FinancialSummary,
-                                 analysis_results: dict[str, Any] = None) -> str:
+                                 analysis_results: dict[str, Any] | None = None) -> str:
         """Generate executive summary report.
-        
+
         Args:
             financial_summary: Financial summary data
             analysis_results: Additional analysis results
-            
+
         Returns
         -------
             Executive summary as formatted string
@@ -102,7 +102,7 @@ class EconomicReporter:
         viability = self._assess_project_viability(financial_summary)
 
         # Generate summary text
-        summary = f"""
+        return f"""
 LUNAR MISSION ECONOMIC ANALYSIS - EXECUTIVE SUMMARY
 ===================================================
 
@@ -152,19 +152,18 @@ Key Justification: {viability['justification']}
 {self._generate_key_insights(financial_summary, analysis_results)}
 """
 
-        return summary
 
     def generate_detailed_financial_report(self,
                                          analysis_results: dict[str, Any],
                                          include_sensitivity: bool = True,
                                          include_scenarios: bool = True) -> str:
         """Generate detailed financial analysis report.
-        
+
         Args:
             analysis_results: Complete analysis results
             include_sensitivity: Include sensitivity analysis
             include_scenarios: Include scenario analysis
-            
+
         Returns
         -------
             Detailed report as formatted string
@@ -207,13 +206,13 @@ Analysis Timestamp: {datetime.now().isoformat()}
 
     def generate_comparison_report(self,
                                  alternatives: dict[str, FinancialSummary],
-                                 criteria_weights: dict[str, float] = None) -> str:
+                                 criteria_weights: dict[str, float] | None = None) -> str:
         """Generate comparative analysis report for multiple alternatives.
-        
+
         Args:
             alternatives: Dictionary of alternative analyses
             criteria_weights: Weights for decision criteria
-            
+
         Returns
         -------
             Comparison report as formatted string
@@ -275,11 +274,11 @@ ALTERNATIVE OVERVIEW
                      data: FinancialSummary | dict[str, Any] | list[dict[str, Any]],
                      filename: str) -> Path:
         """Export data to CSV format.
-        
+
         Args:
             data: Data to export
             filename: Output filename
-            
+
         Returns
         -------
             Path to exported file
@@ -334,12 +333,12 @@ ALTERNATIVE OVERVIEW
                       filename: str,
                       pretty_print: bool = True) -> Path:
         """Export data to JSON format.
-        
+
         Args:
             data: Data to export
             filename: Output filename
             pretty_print: Format JSON for readability
-            
+
         Returns
         -------
             Path to exported file
@@ -349,10 +348,7 @@ ALTERNATIVE OVERVIEW
         logger.info(f"Exporting data to JSON: {filepath}")
 
         # Convert dataclass to dict if necessary
-        if isinstance(data, FinancialSummary):
-            export_data = asdict(data)
-        else:
-            export_data = data
+        export_data = asdict(data) if isinstance(data, FinancialSummary) else data
 
         with open(filepath, "w") as jsonfile:
             if pretty_print:
@@ -365,13 +361,13 @@ ALTERNATIVE OVERVIEW
 
     def generate_dashboard_data(self,
                               financial_summary: FinancialSummary,
-                              analysis_results: dict[str, Any] = None) -> dict[str, Any]:
+                              analysis_results: dict[str, Any] | None = None) -> dict[str, Any]:
         """Generate data structure for economic dashboard visualization.
-        
+
         Args:
             financial_summary: Financial summary
             analysis_results: Additional analysis results
-            
+
         Returns
         -------
             Dashboard data structure
@@ -457,7 +453,7 @@ ALTERNATIVE OVERVIEW
 
     def _generate_key_insights(self,
                              summary: FinancialSummary,
-                             analysis_results: dict[str, Any] = None) -> str:
+                             analysis_results: dict[str, Any] | None = None) -> str:
         """Generate key insights section."""
         insights = ["KEY INSIGHTS", "="*12, ""]
 
@@ -627,10 +623,10 @@ ALTERNATIVE OVERVIEW
 
 def create_financial_summary_from_analysis(analysis_results: dict[str, Any]) -> FinancialSummary:
     """Create FinancialSummary from analysis results.
-    
+
     Args:
         analysis_results: Complete analysis results dictionary
-        
+
     Returns
     -------
         FinancialSummary object
