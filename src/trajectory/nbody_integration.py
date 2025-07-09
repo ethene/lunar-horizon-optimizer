@@ -9,7 +9,7 @@ from typing import Any
 from collections.abc import Callable
 from scipy.integrate import solve_ivp
 import json
-import pickle
+import pickle  # nosec B403 - Used for trajectory serialization in controlled environment
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class NumericalIntegrator:
     """Numerical integration methods for trajectory propagation.
-    
+
     This class provides various integration schemes for orbital mechanics
     calculations, including Runge-Kutta and specialized orbital integrators.
     """
@@ -32,9 +32,9 @@ class NumericalIntegrator:
     def __init__(self,
                  method: str = "DOP853",
                  rtol: float = 1e-12,
-                 atol: float = 1e-15):
+                 atol: float = 1e-15) -> None:
         """Initialize numerical integrator.
-        
+
         Args:
             method: Integration method ('RK45', 'DOP853', 'Radau', 'RK4')
             rtol: Relative tolerance
@@ -58,14 +58,14 @@ class NumericalIntegrator:
                            num_points: int = 1000,
                            **kwargs) -> tuple[np.ndarray, np.ndarray]:
         """Integrate trajectory using specified method.
-        
+
         Args:
             dynamics_function: Function computing state derivatives
             initial_state: Initial state vector [position, velocity]
             time_span: (t_start, t_end) integration interval [s]
             num_points: Number of output points
             **kwargs: Additional arguments for dynamics function
-            
+
         Returns
         -------
             Tuple of (time_array, state_history)
@@ -83,7 +83,8 @@ class NumericalIntegrator:
             return self._integrate_custom(
                 dynamics_function, initial_state, time_span, num_points, **kwargs
             )
-        raise ValueError(f"Unknown integration method: {self.method}")
+        msg = f"Unknown integration method: {self.method}"
+        raise ValueError(msg)
 
     def _integrate_scipy(self,
                         dynamics_function: Callable,
@@ -104,7 +105,8 @@ class NumericalIntegrator:
         )
 
         if not solution.success:
-            raise RuntimeError(f"Integration failed: {solution.message}")
+            msg = f"Integration failed: {solution.message}"
+            raise RuntimeError(msg)
 
         return solution.t, solution.y
 
@@ -123,7 +125,8 @@ class NumericalIntegrator:
             return self._integrate_verlet(
                 dynamics_function, initial_state, time_span, num_points, **kwargs
             )
-        raise NotImplementedError(f"Custom method {self.method} not implemented")
+        msg = f"Custom method {self.method} not implemented"
+        raise NotImplementedError(msg)
 
     def _integrate_rk4(self,
                       dynamics_function: Callable,
@@ -210,7 +213,7 @@ class NumericalIntegrator:
 
 class EarthMoonNBodyPropagator:
     """Complete Earth-Moon n-body propagator with multiple body effects.
-    
+
     This class extends the basic n-body propagator with specific Earth-Moon
     system dynamics, including perturbations from Sun and other effects.
     """
@@ -218,9 +221,9 @@ class EarthMoonNBodyPropagator:
     def __init__(self,
                  include_sun: bool = True,
                  include_perturbations: bool = False,
-                 integrator_method: str = "DOP853"):
+                 integrator_method: str = "DOP853") -> None:
         """Initialize Earth-Moon n-body propagator.
-        
+
         Args:
             include_sun: Include solar gravitational effects
             include_perturbations: Include additional perturbations
@@ -248,14 +251,14 @@ class EarthMoonNBodyPropagator:
                            propagation_time: float,
                            num_points: int = 1000) -> dict[str, np.ndarray]:
         """Propagate spacecraft trajectory in Earth-Moon system.
-        
+
         Args:
             initial_position: Initial position in Earth-centered frame [m]
             initial_velocity: Initial velocity in Earth-centered frame [m/s]
             reference_epoch: Reference epoch [days since J2000]
             propagation_time: Propagation time [s]
             num_points: Number of output points
-            
+
         Returns
         -------
             Dictionary with propagation results
@@ -308,12 +311,12 @@ class EarthMoonNBodyPropagator:
 
     def _nbody_dynamics(self, t: float, state: np.ndarray, reference_epoch: float) -> np.ndarray:
         """Compute n-body dynamics for Earth-Moon-Sun system.
-        
+
         Args:
             t: Current time [s]
             state: Current state [position, velocity] [m, m/s]
             reference_epoch: Reference epoch [days since J2000]
-            
+
         Returns
         -------
             State derivatives [velocity, acceleration]
@@ -377,12 +380,12 @@ class EarthMoonNBodyPropagator:
 
     def _calculate_perturbations(self, position: np.ndarray, velocity: np.ndarray, epoch: float) -> np.ndarray:
         """Calculate additional perturbations (simplified).
-        
+
         Args:
             position: Spacecraft position [m]
             velocity: Spacecraft velocity [m/s]
             epoch: Current epoch [days since J2000]
-            
+
         Returns
         -------
             Perturbation acceleration [m/s²]
@@ -404,12 +407,12 @@ class EarthMoonNBodyPropagator:
                            initial_velocity: np.ndarray,
                            propagation_time: float) -> dict[str, Any]:
         """Compare n-body propagation with two-body propagation.
-        
+
         Args:
             initial_position: Initial position [m]
             initial_velocity: Initial velocity [m/s]
             propagation_time: Propagation time [s]
-            
+
         Returns
         -------
             Comparison results
@@ -479,14 +482,14 @@ class EarthMoonNBodyPropagator:
 
 class TrajectoryIO:
     """Trajectory serialization and I/O utilities.
-    
+
     This class provides methods to save, load, and manage trajectory data
     in various formats including JSON, pickle, and custom binary formats.
     """
 
-    def __init__(self, base_directory: str = "trajectories"):
+    def __init__(self, base_directory: str = "trajectories") -> None:
         """Initialize trajectory I/O manager.
-        
+
         Args:
             base_directory: Base directory for trajectory storage
         """
@@ -502,21 +505,22 @@ class TrajectoryIO:
                        trajectory: Trajectory,
                        filename: str,
                        format: str = "json",
-                       metadata: dict[str, Any] = None) -> Path:
+                       metadata: dict[str, Any] | None = None) -> Path:
         """Save trajectory to file.
-        
+
         Args:
             trajectory: Trajectory object to save
             filename: Output filename (without extension)
             format: File format ('json', 'pickle', 'npz')
             metadata: Additional metadata to save
-            
+
         Returns
         -------
             Path to saved file
         """
         if format not in self.formats:
-            raise ValueError(f"Unsupported format: {format}")
+            msg = f"Unsupported format: {format}"
+            raise ValueError(msg)
 
         # Create full filepath
         filepath = self.base_directory / f"{filename}.{format}"
@@ -542,16 +546,17 @@ class TrajectoryIO:
 
     def load_trajectory(self, filepath: Path) -> tuple[Trajectory, dict[str, Any]]:
         """Load trajectory from file.
-        
+
         Args:
             filepath: Path to trajectory file
-            
+
         Returns
         -------
             Tuple of (trajectory, metadata)
         """
         if not filepath.exists():
-            raise FileNotFoundError(f"Trajectory file not found: {filepath}")
+            msg = f"Trajectory file not found: {filepath}"
+            raise FileNotFoundError(msg)
 
         logger.info(f"Loading trajectory from {filepath}")
 
@@ -566,7 +571,8 @@ class TrajectoryIO:
         elif format == "npz":
             data = self._load_npz(filepath)
         else:
-            raise ValueError(f"Unsupported file format: {format}")
+            msg = f"Unsupported file format: {format}"
+            raise ValueError(msg)
 
         # Convert back to trajectory object
         trajectory = self._dict_to_trajectory(data)
@@ -580,12 +586,12 @@ class TrajectoryIO:
                               filename: str,
                               format: str = "npz") -> Path:
         """Save propagation result to file.
-        
+
         Args:
             result: Propagation result dictionary
             filename: Output filename
             format: File format ('npz', 'pickle')
-            
+
         Returns
         -------
             Path to saved file
@@ -601,37 +607,40 @@ class TrajectoryIO:
             with open(filepath, "wb") as f:
                 pickle.dump(result, f)
         else:
-            raise ValueError(f"Unsupported format for propagation result: {format}")
+            msg = f"Unsupported format for propagation result: {format}"
+            raise ValueError(msg)
 
         return filepath
 
     def load_propagation_result(self, filepath: Path) -> dict[str, np.ndarray]:
         """Load propagation result from file.
-        
+
         Args:
             filepath: Path to result file
-            
+
         Returns
         -------
             Propagation result dictionary
         """
         if not filepath.exists():
-            raise FileNotFoundError(f"Result file not found: {filepath}")
+            msg = f"Result file not found: {filepath}"
+            raise FileNotFoundError(msg)
 
         format = filepath.suffix[1:]
 
         if format == "npz":
             with np.load(filepath) as data:
-                return {key: data[key] for key in data.keys()}
+                return {key: data[key] for key in data}
         elif format == "pickle":
             with open(filepath, "rb") as f:
-                return pickle.load(f)
+                return pickle.load(f)  # nosec B301 - Loading from trusted file
         else:
-            raise ValueError(f"Unsupported format: {format}")
+            msg = f"Unsupported format: {format}"
+            raise ValueError(msg)
 
     def list_trajectories(self) -> list[dict[str, Any]]:
         """List all saved trajectories.
-        
+
         Returns
         -------
             List of trajectory information
@@ -717,16 +726,16 @@ class TrajectoryIO:
     def _load_pickle(self, filepath: Path) -> dict[str, Any]:
         """Load data from pickle file."""
         with open(filepath, "rb") as f:
-            return pickle.load(f)
+            return pickle.load(f)  # nosec B301 - Loading from trusted file
 
     def _save_npz(self, data: dict[str, Any], filepath: Path) -> None:
         """Save numerical data to NPZ file."""
         # Convert to numpy arrays where possible
         numpy_data = {}
         for key, value in data.items():
-            if isinstance(value, (list, tuple)) and len(value) > 0:
+            if isinstance(value, list | tuple) and len(value) > 0:
                 numpy_data[key] = np.array(value)
-            elif isinstance(value, (int, float)):
+            elif isinstance(value, int | float):
                 numpy_data[key] = np.array([value])
             else:
                 numpy_data[key] = str(value)  # Convert to string
@@ -737,7 +746,7 @@ class TrajectoryIO:
         """Load data from NPZ file."""
         with np.load(filepath, allow_pickle=True) as npz_data:
             data = {}
-            for key in npz_data.keys():
+            for key in npz_data:
                 value = npz_data[key]
                 if value.ndim == 0:  # Scalar
                     data[key] = value.item()
@@ -748,12 +757,12 @@ class TrajectoryIO:
 
 class TrajectoryComparison:
     """Utility class for comparing and analyzing trajectories.
-    
+
     This class provides methods to compare different trajectory solutions,
     analyze accuracy, and generate comparative reports.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize trajectory comparison utility."""
         logger.info("Initialized TrajectoryComparison")
 
@@ -763,13 +772,13 @@ class TrajectoryComparison:
                            label1: str = "Trajectory 1",
                            label2: str = "Trajectory 2") -> dict[str, Any]:
         """Compare two trajectory solutions.
-        
+
         Args:
             trajectory1: First trajectory
             trajectory2: Second trajectory
             label1: Label for first trajectory
             label2: Label for second trajectory
-            
+
         Returns
         -------
             Comparison analysis
@@ -822,11 +831,11 @@ class TrajectoryComparison:
                         computed_trajectory: dict[str, np.ndarray],
                         reference_trajectory: dict[str, np.ndarray]) -> dict[str, float]:
         """Analyze accuracy of computed trajectory vs reference.
-        
+
         Args:
             computed_trajectory: Computed trajectory data
             reference_trajectory: Reference trajectory data
-            
+
         Returns
         -------
             Accuracy metrics
@@ -843,7 +852,7 @@ class TrajectoryComparison:
             axis=0
         )
 
-        metrics = {
+        return {
             "max_position_error": np.max(pos_errors),
             "rms_position_error": np.sqrt(np.mean(pos_errors**2)),
             "final_position_error": pos_errors[-1],
@@ -854,18 +863,17 @@ class TrajectoryComparison:
             "mean_velocity_error": np.mean(vel_errors)
         }
 
-        return metrics
 
 
 # Convenience functions
 def create_nbody_propagator(include_sun: bool = True,
                           include_perturbations: bool = False) -> EarthMoonNBodyPropagator:
     """Create Earth-Moon n-body propagator.
-    
+
     Args:
         include_sun: Include solar effects
         include_perturbations: Include additional perturbations
-        
+
     Returns
     -------
         Configured n-body propagator
@@ -875,10 +883,10 @@ def create_nbody_propagator(include_sun: bool = True,
 
 def create_trajectory_io(base_directory: str = "trajectories") -> TrajectoryIO:
     """Create trajectory I/O manager.
-    
+
     Args:
         base_directory: Base directory for storage
-        
+
     Returns
     -------
         Configured trajectory I/O manager

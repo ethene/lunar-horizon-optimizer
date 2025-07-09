@@ -16,12 +16,12 @@ import sys
 import json
 import logging
 from typing import Any
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 from src.lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig
-from src.config.mission_config import MissionConfig
+from src.config.models import MissionConfig
 from src.config.costs import CostFactors
-from src.config.spacecraft import SpacecraftConfig
+from src.config.spacecraft import PayloadSpecification
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -50,12 +50,28 @@ def load_config_from_file(config_path: str) -> dict[str, Any]:
 def create_mission_config_from_dict(config_dict: dict[str, Any]) -> MissionConfig:
     """Create MissionConfig from dictionary."""
     mission_params = config_dict.get("mission", {})
+    
+    # Create payload specification
+    payload = create_spacecraft_config_from_dict(config_dict)
+    
+    # Create cost factors
+    cost_factors = create_cost_factors_from_dict(config_dict)
+    
+    # Create orbit parameters
+    from src.config.orbit import OrbitParameters
+    target_orbit = OrbitParameters(
+        altitude=mission_params.get("moon_orbit_alt", 100.0),
+        inclination=mission_params.get("inclination", 0.0),
+        eccentricity=mission_params.get("eccentricity", 0.0)
+    )
+    
     return MissionConfig(
         name=mission_params.get("name", "CLI Mission"),
-        earth_orbit_alt=mission_params.get("earth_orbit_alt", 400.0),
-        moon_orbit_alt=mission_params.get("moon_orbit_alt", 100.0),
-        transfer_time=mission_params.get("transfer_time", 4.5),
-        departure_epoch=mission_params.get("departure_epoch", 10000.0)
+        description=mission_params.get("description", "Mission created via CLI"),
+        payload=payload,
+        cost_factors=cost_factors,
+        mission_duration_days=mission_params.get("transfer_time", 4.5),
+        target_orbit=target_orbit
     )
 
 
@@ -70,16 +86,16 @@ def create_cost_factors_from_dict(config_dict: dict[str, Any]) -> CostFactors:
     )
 
 
-def create_spacecraft_config_from_dict(config_dict: dict[str, Any]) -> SpacecraftConfig:
+def create_spacecraft_config_from_dict(config_dict: dict[str, Any]) -> PayloadSpecification:
     """Create SpacecraftConfig from dictionary."""
     spacecraft_params = config_dict.get("spacecraft", {})
-    return SpacecraftConfig(
-        name=spacecraft_params.get("name", "CLI Spacecraft"),
+    return PayloadSpecification(
+        # name=spacecraft_params.get("name", "CLI Spacecraft"),  # Not supported by PayloadSpecification
         dry_mass=spacecraft_params.get("dry_mass", 5000.0),
-        propellant_mass=spacecraft_params.get("propellant_mass", 3000.0),
+        max_propellant_mass=spacecraft_params.get("propellant_mass", 3000.0),
         payload_mass=spacecraft_params.get("payload_mass", 1000.0),
-        power_system_mass=spacecraft_params.get("power_system_mass", 500.0),
-        propulsion_isp=spacecraft_params.get("propulsion_isp", 320.0)
+        # power_system_mass=spacecraft_params.get("power_system_mass", 500.0),  # Not supported by PayloadSpecification
+        specific_impulse=spacecraft_params.get("propulsion_isp", 320.0)
     )
 
 
@@ -145,7 +161,7 @@ def analyze_command(args):
     )
 
     # Export results
-    output_dir = args.output or f"analysis_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+    output_dir = args.output or f"analysis_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
     optimizer.export_results(results, output_dir)
     print(f"📁 Results exported to: {output_dir}")
 
@@ -162,7 +178,7 @@ def analyze_command(args):
     return results
 
 
-def config_command(args):
+def config_command(args) -> None:
     """Handle the config command to generate sample configuration."""
     sample_config = {
         "mission": {
@@ -208,7 +224,7 @@ def config_command(args):
     print("Edit this file and use it with: lunar-optimizer analyze --config sample_config.json")
 
 
-def validate_command(args):
+def validate_command(args) -> None:
     """Handle the validate command to check environment and dependencies."""
     print("🔍 Validating Lunar Horizon Optimizer Environment")
     print("=" * 50)
@@ -246,7 +262,7 @@ def validate_command(args):
     # Try to initialize optimizer
     print("\n🚀 Testing optimizer initialization:")
     try:
-        optimizer = LunarHorizonOptimizer()
+        LunarHorizonOptimizer()
         print("✅ Optimizer initialization successful")
     except Exception as e:
         print(f"❌ Optimizer initialization failed: {e}")
@@ -328,10 +344,10 @@ def main():
                               help="Output configuration file")
 
     # Validate command
-    validate_parser = subparsers.add_parser("validate", help="Validate environment")
+    subparsers.add_parser("validate", help="Validate environment")
 
     # Sample command
-    sample_parser = subparsers.add_parser("sample", help="Run quick sample analysis")
+    subparsers.add_parser("sample", help="Run quick sample analysis")
 
     args = parser.parse_args()
 

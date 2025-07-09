@@ -9,9 +9,9 @@ import pygmo as pg
 import logging
 import hashlib
 
-from trajectory.lunar_transfer import LunarTransfer
-from config.costs import CostFactors
-from optimization.cost_integration import CostCalculator
+from src.trajectory.lunar_transfer import LunarTransfer
+from src.config.costs import CostFactors
+from src.optimization.cost_integration import CostCalculator
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class LunarMissionProblem:
     """PyGMO problem implementation for lunar mission optimization.
-    
+
     This class defines the multi-objective optimization problem for lunar
     transfers, implementing the PyGMO problem interface with objectives
     for delta-v, time, and cost.
@@ -33,14 +33,14 @@ class LunarMissionProblem:
                  max_moon_alt: float = 500,     # km
                  min_transfer_time: float = 3.0,  # days
                  max_transfer_time: float = 10.0, # days
-                 reference_epoch: float = 10000.0):  # days since J2000
+                 reference_epoch: float = 10000.0) -> None:  # days since J2000
         """Initialize the lunar mission optimization problem.
-        
+
         Args:
             cost_factors: Economic cost parameters
             min_earth_alt: Minimum Earth orbit altitude [km]
             max_earth_alt: Maximum Earth orbit altitude [km]
-            min_moon_alt: Minimum lunar orbit altitude [km] 
+            min_moon_alt: Minimum lunar orbit altitude [km]
             max_moon_alt: Maximum lunar orbit altitude [km]
             min_transfer_time: Minimum transfer time [days]
             max_transfer_time: Maximum transfer time [days]
@@ -78,10 +78,10 @@ class LunarMissionProblem:
 
     def fitness(self, x: list[float]) -> list[float]:
         """Evaluate fitness for multi-objective optimization.
-        
+
         Args:
-            x: Decision vector [earth_alt, moon_alt, transfer_time] 
-            
+            x: Decision vector [earth_alt, moon_alt, transfer_time]
+
         Returns
         -------
             List of objective values [delta_v, time, cost]
@@ -132,7 +132,7 @@ class LunarMissionProblem:
 
     def get_bounds(self) -> tuple[list[float], list[float]]:
         """Get optimization bounds for decision variables.
-        
+
         Returns
         -------
             Tuple of (lower_bounds, upper_bounds)
@@ -143,7 +143,7 @@ class LunarMissionProblem:
 
     def get_nobj(self) -> int:
         """Get number of objectives.
-        
+
         Returns
         -------
             Number of objectives (3: delta_v, time, cost)
@@ -152,7 +152,7 @@ class LunarMissionProblem:
 
     def get_name(self) -> str:
         """Get problem name.
-        
+
         Returns
         -------
             Problem identifier string
@@ -161,7 +161,7 @@ class LunarMissionProblem:
 
     def get_cache_stats(self) -> dict[str, int]:
         """Get trajectory cache statistics.
-        
+
         Returns
         -------
             Dictionary with cache hit/miss statistics
@@ -186,12 +186,12 @@ class LunarMissionProblem:
 
     def _create_cache_key(self, earth_alt: float, moon_alt: float, transfer_time: float) -> str:
         """Create cache key for parameter combination.
-        
+
         Args:
             earth_alt: Earth orbit altitude [km]
-            moon_alt: Moon orbit altitude [km] 
+            moon_alt: Moon orbit altitude [km]
             transfer_time: Transfer time [days]
-            
+
         Returns
         -------
             Cache key string
@@ -203,7 +203,7 @@ class LunarMissionProblem:
 
 class GlobalOptimizer:
     """PyGMO-based global optimizer for lunar mission design.
-    
+
     This class implements multi-objective optimization using NSGA-II to
     generate Pareto fronts for lunar transfer trajectories.
     """
@@ -212,9 +212,9 @@ class GlobalOptimizer:
                  problem: LunarMissionProblem = None,
                  population_size: int = 100,
                  num_generations: int = 100,
-                 seed: int = 42):
+                 seed: int = 42) -> None:
         """Initialize the global optimizer.
-        
+
         Args:
             problem: Optimization problem instance
             population_size: NSGA-II population size
@@ -242,10 +242,10 @@ class GlobalOptimizer:
 
     def optimize(self, verbose: bool = True) -> dict[str, Any]:
         """Run multi-objective optimization.
-        
+
         Args:
             verbose: Enable detailed logging
-            
+
         Returns
         -------
             Dictionary with optimization results
@@ -321,19 +321,20 @@ class GlobalOptimizer:
 
     def get_best_solutions(self,
                           num_solutions: int = 10,
-                          preference_weights: list[float] = None) -> list[dict[str, Any]]:
+                          preference_weights: list[float] | None = None) -> list[dict[str, Any]]:
         """Get best solutions from Pareto front based on preferences.
-        
+
         Args:
             num_solutions: Number of solutions to return
             preference_weights: Weights for [delta_v, time, cost] objectives
-            
+
         Returns
         -------
             List of best solutions with parameters and objectives
         """
         if self.population is None:
-            raise ValueError("No optimization results available. Run optimize() first.")
+            msg = "No optimization results available. Run optimize() first."
+            raise ValueError(msg)
 
         if preference_weights is None:
             preference_weights = [1.0, 1.0, 1.0]  # Equal weighting
@@ -370,10 +371,10 @@ class GlobalOptimizer:
 
     def _extract_pareto_front(self, population: pg.population) -> list[list[float]]:
         """Extract Pareto front from population.
-        
+
         Args:
             population: PyGMO population
-            
+
         Returns
         -------
             List of Pareto-optimal objective vectors
@@ -394,10 +395,10 @@ class GlobalOptimizer:
 
     def _extract_pareto_solutions(self, population: pg.population) -> list[dict[str, Any]]:
         """Extract complete Pareto solutions with parameters and objectives.
-        
+
         Args:
             population: PyGMO population
-            
+
         Returns
         -------
             List of Pareto solutions with parameters and objectives
@@ -448,11 +449,11 @@ class GlobalOptimizer:
                             objective_vectors: list[list[float]],
                             all_solutions: list[dict[str, Any]]) -> list[list[float]]:
         """Normalize objectives for weighted ranking.
-        
+
         Args:
             objective_vectors: Objective vectors to normalize
             all_solutions: All solutions for finding min/max ranges
-            
+
         Returns
         -------
             Normalized objective vectors
@@ -478,7 +479,7 @@ class GlobalOptimizer:
         normalized = []
         for objectives in objective_vectors:
             norm_obj = []
-            for i, (obj, min_val, max_val) in enumerate(zip(objectives, min_vals, max_vals, strict=False)):
+            for _i, (obj, min_val, max_val) in enumerate(zip(objectives, min_vals, max_vals, strict=False)):
                 if max_val > min_val:
                     norm_obj.append((obj - min_val) / (max_val - min_val))
                 else:
@@ -489,7 +490,7 @@ class GlobalOptimizer:
 
     def _log_population_stats(self, population: pg.population, label: str) -> None:
         """Log population statistics.
-        
+
         Args:
             population: PyGMO population
             label: Label for logging context
@@ -506,13 +507,13 @@ class GlobalOptimizer:
 
 
 def optimize_lunar_mission(cost_factors: CostFactors = None,
-                          optimization_config: dict[str, Any] = None) -> dict[str, Any]:
+                          optimization_config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Convenience function for lunar mission optimization.
-    
+
     Args:
         cost_factors: Economic cost parameters
         optimization_config: Configuration for optimization parameters
-        
+
     Returns
     -------
         Optimization results
