@@ -9,13 +9,14 @@ from datetime import datetime
 
 import numpy as np
 
-from .constants import PhysicalConstants as PC, TransferDefaults as TD
+from .constants import PhysicalConstants as PC
+from .defaults import TransferDefaults as TD
 from .orbit_state import OrbitState
 
 @dataclass
 class TransferParameters:
     """Parameters for generating transfer trajectories.
-    
+
     Attributes
     ----------
         departure_time: UTC departure time
@@ -38,42 +39,48 @@ class TransferParameters:
     def __post_init__(self):
         """Validate parameters after initialization."""
         if not self.departure_time.tzinfo:
-            raise ValueError("departure_time must be timezone-aware")
+            msg = "departure_time must be timezone-aware"
+            raise ValueError(msg)
         self.validate()
 
-    def validate(self):
+    def validate(self) -> None:
         """Validate all parameters."""
         # Time of flight validation
         if not TD.MIN_TOF <= self.tof_days <= TD.MAX_TOF:
+            msg = f"Time of flight must be between {TD.MIN_TOF} and {TD.MAX_TOF} days"
             raise ValueError(
-                f"Time of flight must be between {TD.MIN_TOF} and {TD.MAX_TOF} days"
+                msg
             )
 
         # Initial orbit validation
         if self.initial_orbit < PC.MIN_PERIGEE:
+            msg = f"Initial orbit altitude must be at least {PC.MIN_PERIGEE} km"
             raise ValueError(
-                f"Initial orbit altitude must be at least {PC.MIN_PERIGEE} km"
+                msg
             )
 
         # Final orbit validation
         if self.final_orbit > PC.MAX_APOGEE:
+            msg = f"Final orbit radius cannot exceed {PC.MAX_APOGEE} km"
             raise ValueError(
-                f"Final orbit radius cannot exceed {PC.MAX_APOGEE} km"
+                msg
             )
 
         # Delta-v constraints validation
         if not 0 < self.min_tli_dv <= self.max_tli_dv:
+            msg = "min_tli_dv must be positive and not greater than max_tli_dv"
             raise ValueError(
-                "min_tli_dv must be positive and not greater than max_tli_dv"
+                msg
             )
 
         # Revolutions validation
         if self.max_revs < 0:
-            raise ValueError("max_revs cannot be negative")
+            msg = "max_revs cannot be negative"
+            raise ValueError(msg)
 
     def get_initial_state(self) -> OrbitState:
         """Convert initial orbit specification to OrbitState.
-        
+
         Returns
         -------
             OrbitState object representing the initial parking orbit

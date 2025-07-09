@@ -8,6 +8,7 @@ import numpy as np
 from typing import Any
 from collections.abc import Callable
 import logging
+from scipy import stats
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -15,14 +16,14 @@ logger = logging.getLogger(__name__)
 
 class EconomicSensitivityAnalyzer:
     """Economic sensitivity and scenario analysis for lunar missions.
-    
+
     This class provides comprehensive sensitivity analysis including one-way
     sensitivity, scenario analysis, and Monte Carlo simulation.
     """
 
-    def __init__(self, base_model_function: Callable = None):
+    def __init__(self, base_model_function: Callable | None = None) -> None:
         """Initialize economic sensitivity analyzer.
-        
+
         Args:
             base_model_function: Function that calculates economic metrics given parameters
         """
@@ -36,12 +37,12 @@ class EconomicSensitivityAnalyzer:
                            variable_ranges: dict[str, tuple[float, float]],
                            num_points: int = 20) -> dict[str, Any]:
         """Perform one-way sensitivity analysis.
-        
+
         Args:
             base_parameters: Base case parameter values
             variable_ranges: Dictionary of {parameter: (min_value, max_value)}
             num_points: Number of points to evaluate for each variable
-            
+
         Returns
         -------
             One-way sensitivity analysis results
@@ -49,7 +50,8 @@ class EconomicSensitivityAnalyzer:
         logger.info(f"Performing one-way sensitivity analysis for {len(variable_ranges)} variables")
 
         if not self.base_model_function:
-            raise ValueError("Model function not provided")
+            msg = "Model function not provided"
+            raise ValueError(msg)
 
         # Calculate base case
         base_result = self.base_model_function(base_parameters)
@@ -114,11 +116,11 @@ class EconomicSensitivityAnalyzer:
                             base_parameters: dict[str, float],
                             variable_ranges: dict[str, tuple[float, float]]) -> dict[str, Any]:
         """Generate data for tornado diagram visualization.
-        
+
         Args:
             base_parameters: Base case parameters
             variable_ranges: Variable ranges for analysis
-            
+
         Returns
         -------
             Tornado diagram data
@@ -126,7 +128,8 @@ class EconomicSensitivityAnalyzer:
         logger.info("Generating tornado diagram data")
 
         if not self.base_model_function:
-            raise ValueError("Model function not provided")
+            msg = "Model function not provided"
+            raise ValueError(msg)
 
         base_result = self.base_model_function(base_parameters)
         base_npv = base_result.get("npv", 0) if isinstance(base_result, dict) else base_result
@@ -179,11 +182,11 @@ class EconomicSensitivityAnalyzer:
                          scenarios: dict[str, dict[str, float]],
                          base_parameters: dict[str, float]) -> dict[str, Any]:
         """Perform scenario analysis with multiple defined scenarios.
-        
+
         Args:
             scenarios: Dictionary of scenario definitions
             base_parameters: Base case parameters
-            
+
         Returns
         -------
             Scenario analysis results
@@ -191,7 +194,8 @@ class EconomicSensitivityAnalyzer:
         logger.info(f"Performing scenario analysis for {len(scenarios)} scenarios")
 
         if not self.base_model_function:
-            raise ValueError("Model function not provided")
+            msg = "Model function not provided"
+            raise ValueError(msg)
 
         # Calculate base case
         base_result = self.base_model_function(base_parameters)
@@ -246,15 +250,15 @@ class EconomicSensitivityAnalyzer:
                               base_parameters: dict[str, float],
                               variable_distributions: dict[str, dict[str, Any]],
                               num_simulations: int = 10000,
-                              confidence_levels: list[float] = None) -> dict[str, Any]:
+                              confidence_levels: list[float] | None = None) -> dict[str, Any]:
         """Perform Monte Carlo simulation for risk analysis.
-        
+
         Args:
             base_parameters: Base case parameters
             variable_distributions: Parameter distributions {'param': {'type': 'normal', 'mean': x, 'std': y}}
             num_simulations: Number of Monte Carlo simulations
             confidence_levels: Confidence levels for analysis (default: [0.05, 0.1, 0.5, 0.9, 0.95])
-            
+
         Returns
         -------
             Monte Carlo simulation results
@@ -265,7 +269,8 @@ class EconomicSensitivityAnalyzer:
         logger.info(f"Performing Monte Carlo simulation with {num_simulations} iterations")
 
         if not self.base_model_function:
-            raise ValueError("Model function not provided")
+            msg = "Model function not provided"
+            raise ValueError(msg)
 
         # Generate random samples
         samples = self._generate_monte_carlo_samples(
@@ -378,15 +383,18 @@ class EconomicSensitivityAnalyzer:
                     dist_spec["min"], dist_spec["max"], num_samples
                 )
             elif dist_type == "triang":
-                samples[param_name] = np.random.triang(
-                    dist_spec["min"], dist_spec["mode"], dist_spec["max"], num_samples
+                # Use scipy.stats.triang for triangular distribution
+                c = (dist_spec["mode"] - dist_spec["min"]) / (dist_spec["max"] - dist_spec["min"])
+                samples[param_name] = stats.triang.rvs(
+                    c=c, loc=dist_spec["min"], scale=dist_spec["max"] - dist_spec["min"], size=num_samples
                 )
             elif dist_type == "lognormal":
                 samples[param_name] = np.random.lognormal(
                     dist_spec["mean"], dist_spec["sigma"], num_samples
                 )
             else:
-                raise ValueError(f"Unsupported distribution type: {dist_type}")
+                msg = f"Unsupported distribution type: {dist_type}"
+                raise ValueError(msg)
 
         return samples
 
@@ -433,16 +441,16 @@ class EconomicSensitivityAnalyzer:
     def comprehensive_sensitivity_report(self,
                                        base_parameters: dict[str, float],
                                        variable_ranges: dict[str, tuple[float, float]],
-                                       scenarios: dict[str, dict[str, float]] = None,
-                                       distributions: dict[str, dict[str, Any]] = None) -> dict[str, Any]:
+                                       scenarios: dict[str, dict[str, float]] | None = None,
+                                       distributions: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
         """Generate comprehensive sensitivity analysis report.
-        
+
         Args:
             base_parameters: Base case parameters
             variable_ranges: Parameter ranges for sensitivity analysis
             scenarios: Predefined scenarios (optional)
             distributions: Parameter distributions for Monte Carlo (optional)
-            
+
         Returns
         -------
             Comprehensive sensitivity analysis report
@@ -531,12 +539,12 @@ class EconomicSensitivityAnalyzer:
 
 def create_lunar_mission_scenarios() -> dict[str, dict[str, float]]:
     """Create predefined scenarios for lunar mission analysis.
-    
+
     Returns
     -------
         Dictionary of scenario definitions
     """
-    scenarios = {
+    return {
         "optimistic": {
             "development_cost_multiplier": 0.8,
             "launch_cost_multiplier": 0.7,
@@ -563,17 +571,16 @@ def create_lunar_mission_scenarios() -> dict[str, dict[str, float]]:
         }
     }
 
-    return scenarios
 
 
 def create_parameter_distributions() -> dict[str, dict[str, Any]]:
     """Create parameter distributions for Monte Carlo analysis.
-    
+
     Returns
     -------
         Dictionary of parameter distribution specifications
     """
-    distributions = {
+    return {
         "development_cost_multiplier": {
             "type": "triang",
             "min": 0.8,
@@ -604,4 +611,3 @@ def create_parameter_distributions() -> dict[str, dict[str, Any]]:
         }
     }
 
-    return distributions

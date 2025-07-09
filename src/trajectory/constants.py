@@ -33,7 +33,7 @@ import numpy as np
 
 class Units:
     """Unit conversion constants from PyKEP.
-    
+
     Note: Prefer using PyKEP's built-in conversions where available:
     - pk.DEG2RAD (0.017453) for degrees to radians
     - pk.RAD2DEG (57.29578) for radians to degrees
@@ -60,7 +60,7 @@ class Units:
 
 class PhysicalConstants:
     """Physical constants in PyKEP native units.
-    
+
     Available constants from PyKEP:
     - pk.MU_EARTH (3.986004418e14 m³/s²): Earth gravitational parameter
     - pk.EARTH_RADIUS (6378137 m): Earth equatorial radius
@@ -68,9 +68,13 @@ class PhysicalConstants:
     - pk.MU_SUN (1.32712440018e20 m³/s²): Solar gravitational parameter
     - pk.AU (149597870691 m): Astronomical Unit
     - pk.G0 (9.80665 m/s²): Standard gravity
-    
+
     Moon constants are sourced from JPL DE440 ephemeris as they're not in PyKEP.
     """
+    
+    # Common trajectory limits
+    MIN_PERIGEE = 200e3  # m (minimum perigee altitude)
+    MAX_APOGEE = 1000e3  # m (maximum apogee altitude)
 
     # Earth constants (using PyKEP values for consistency with the library)
     MU_EARTH = pk.MU_EARTH  # m^3/s^2
@@ -101,10 +105,10 @@ class PhysicalConstants:
 
 class EphemerisLimits:
     """Time limits for ephemeris calculations.
-    
+
     These limits define the valid time range for trajectory calculations.
     The reference epoch is J2000 (2000-01-01 00:00:00 UTC).
-    
+
     Note: For ephemeris calculations, prefer using:
     - PyKEP epoch objects for time handling
     - JPL ephemerides via PyKEP for accurate positions

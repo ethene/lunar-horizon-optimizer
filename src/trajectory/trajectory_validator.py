@@ -15,14 +15,14 @@ Example:
         min_moon_alt=50,
         max_moon_alt=500
     )
-    
+
     # Validate trajectory parameters
     validator.validate_inputs(
         earth_orbit_alt=300,
         moon_orbit_alt=100,
         transfer_time=3.5
     )
-    
+
     # Function-based validation (for simple checks)
     validate_epoch(datetime.now(timezone.utc))
     validate_orbit_altitude(300.0)
@@ -44,7 +44,8 @@ except ImportError:
 
 # Import constants (handle potential import issues gracefully)
 try:
-    from .constants import TransferDefaults as TD, EphemerisLimits
+    from .defaults import TransferDefaults as TD
+    from .constants import EphemerisLimits
 except ImportError:
     # Fallback constants if import fails
     class TransferDefaults:
@@ -66,20 +67,20 @@ try:
 except ImportError:
     # Create minimal OrbitState interface if import fails
     class OrbitState:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args, **kwargs) -> None:
             self.radius = kwargs.get("radius", 0)
             self.velocity = kwargs.get("velocity", 0)
 
 
 class TrajectoryValidator:
     """Validates trajectory parameters and constraints.
-    
+
     This class handles validation of all trajectory-related parameters including:
     - Orbit altitudes (Earth and Moon)
     - Transfer time
     - Delta-v magnitudes
     - Epoch validation
-    
+
     Attributes
     ----------
         min_earth_alt (float): Minimum Earth parking orbit altitude [m]
@@ -96,9 +97,9 @@ class TrajectoryValidator:
                 min_moon_alt: float = 50,
                 max_moon_alt: float = 500,
                 min_transfer_time: float = 2.0,
-                max_transfer_time: float = 7.0):
+                max_transfer_time: float = 7.0) -> None:
         """Initialize validator with constraints.
-        
+
         Args:
             min_earth_alt: Minimum Earth parking orbit altitude [km]
             max_earth_alt: Maximum Earth parking orbit altitude [km]
@@ -106,7 +107,7 @@ class TrajectoryValidator:
             max_moon_alt: Maximum lunar orbit altitude [km]
             min_transfer_time: Minimum transfer time [days]
             max_transfer_time: Maximum transfer time [days]
-            
+
         Note:
             All altitude inputs are in kilometers but stored internally in meters
         """
@@ -122,77 +123,89 @@ class TrajectoryValidator:
                       moon_orbit_alt: float,
                       transfer_time: float) -> None:
         """Validate input parameters for trajectory generation.
-        
+
         Performs comprehensive validation of all input parameters including:
         - Earth orbit altitude within allowed range
         - Moon orbit altitude within allowed range
         - Transfer time within allowed range
-        
+
         Args:
             earth_orbit_alt: Initial parking orbit altitude [km]
             moon_orbit_alt: Final lunar orbit altitude [km]
             transfer_time: Transfer time [days]
-            
+
         Raises
         ------
             ValueError: If any parameter is outside its allowed range
-            
+
         Note:
             All altitude inputs should be in kilometers
         """
         if transfer_time <= 0:
-            raise ValueError("Transfer time must be positive")
+            msg = "Transfer time must be positive"
+            raise ValueError(msg)
 
         if not (self.min_moon_alt/1000 <= moon_orbit_alt <= self.max_moon_alt/1000):
-            raise ValueError(
+            msg = (
                 f"Moon orbit altitude must be between {self.min_moon_alt/1000:.1f} "
                 f"and {self.max_moon_alt/1000:.1f} km"
             )
+            raise ValueError(
+                msg
+            )
 
         if not (self.min_earth_alt/1000 <= earth_orbit_alt <= self.max_earth_alt/1000):
-            raise ValueError(
+            msg = (
                 f"Earth orbit altitude must be between {self.min_earth_alt/1000:.1f} "
                 f"and {self.max_earth_alt/1000:.1f} km"
             )
+            raise ValueError(
+                msg
+            )
 
         if not (self.min_transfer_time <= transfer_time <= self.max_transfer_time):
-            raise ValueError(
+            msg = (
                 f"Transfer time must be between {self.min_transfer_time} "
                 f"and {self.max_transfer_time} days"
+            )
+            raise ValueError(
+                msg
             )
 
     def validate_delta_v(self, tli_dv: float, loi_dv: float) -> None:
         """Validate delta-v values against typical mission constraints.
-        
+
         Checks if the Trans-Lunar Injection (TLI) and Lunar Orbit Insertion (LOI)
         delta-v values are within typical mission constraints. These constraints
         are based on historical lunar missions and practical engineering limits.
-        
+
         Args:
             tli_dv: Trans-lunar injection delta-v [m/s]
             loi_dv: Lunar orbit insertion delta-v [m/s]
-            
+
         Raises
         ------
             ValueError: If either delta-v exceeds its typical limit
-            
+
         Note:
             Typical limits are:
             - TLI: 3500 m/s
             - LOI: 1200 m/s
         """
         if tli_dv > 15000:  # Relaxed TLI delta-v limit for testing
-            raise ValueError(f"TLI delta-v {tli_dv:.1f} m/s exceeds limit of 15000 m/s")
+            msg = f"TLI delta-v {tli_dv:.1f} m/s exceeds limit of 15000 m/s"
+            raise ValueError(msg)
         if loi_dv > 20000:  # Relaxed LOI delta-v limit for testing
-            raise ValueError(f"LOI delta-v {loi_dv:.1f} m/s exceeds limit of 20000 m/s")
+            msg = f"LOI delta-v {loi_dv:.1f} m/s exceeds limit of 20000 m/s"
+            raise ValueError(msg)
 
     def validate_epoch(self, dt: datetime, allow_none: bool = False) -> None:
         """Validate epoch is within supported range.
-        
+
         Args:
             dt: Datetime to validate
             allow_none: Whether None is acceptable
-            
+
         Raises
         ------
             ValueError: If datetime is outside supported range
@@ -200,14 +213,14 @@ class TrajectoryValidator:
         """
         validate_epoch(dt, allow_none)
 
-    def validate_orbit_altitude(self, altitude: float, min_alt: float = None, max_alt: float = None) -> None:
+    def validate_orbit_altitude(self, altitude: float, min_alt: float | None = None, max_alt: float | None = None) -> None:
         """Validate orbit altitude is within reasonable range.
-        
+
         Args:
             altitude: Orbit altitude in kilometers
             min_alt: Minimum allowed altitude in kilometers (uses instance defaults if None)
             max_alt: Maximum allowed altitude in kilometers (uses instance defaults if None)
-            
+
         Raises
         ------
             ValueError: If altitude is outside allowed range
@@ -222,11 +235,11 @@ class TrajectoryValidator:
 # Standalone validation functions for simple use cases
 def validate_epoch(dt: datetime, allow_none: bool = False) -> None:
     """Validate epoch is within supported range.
-    
+
     Args:
         dt: Datetime to validate
         allow_none: Whether None is acceptable
-        
+
     Raises
     ------
         ValueError: If datetime is outside supported range
@@ -235,16 +248,21 @@ def validate_epoch(dt: datetime, allow_none: bool = False) -> None:
     if dt is None:
         if allow_none:
             return
-        raise TypeError("Epoch cannot be None")
+        msg = "Epoch cannot be None"
+        raise TypeError(msg)
 
     if not isinstance(dt, datetime):
-        raise TypeError("Epoch must be a datetime object")
+        msg = "Epoch must be a datetime object"
+        raise TypeError(msg)
 
     year = dt.year
     if year < EphemerisLimits.MIN_YEAR or year > EphemerisLimits.MAX_YEAR:
-        raise ValueError(
+        msg = (
             f"Epoch must be between years {EphemerisLimits.MIN_YEAR} "
             f"and {EphemerisLimits.MAX_YEAR}"
+        )
+        raise ValueError(
+            msg
         )
 
 
@@ -254,23 +272,25 @@ def validate_orbit_altitude(
     max_alt: float = 400000.0  # Maximum practical apogee altitude
 ) -> None:
     """Validate orbit altitude is within reasonable range.
-    
+
     Args:
         altitude: Orbit altitude in kilometers
         min_alt: Minimum allowed altitude in kilometers
         max_alt: Maximum allowed altitude in kilometers
-        
+
     Raises
     ------
         ValueError: If altitude is outside allowed range
         TypeError: If altitude is not a number
     """
-    if not isinstance(altitude, (int, float)):
-        raise TypeError("Altitude must be a number")
+    if not isinstance(altitude, int | float):
+        msg = "Altitude must be a number"
+        raise TypeError(msg)
 
     if altitude < min_alt or altitude > max_alt:
+        msg = f"Orbit altitude must be between {min_alt} and {max_alt} km"
         raise ValueError(
-            f"Orbit altitude must be between {min_alt} and {max_alt} km"
+            msg
         )
 
 
@@ -281,63 +301,75 @@ def validate_transfer_parameters(
     max_dv: float = TD.MAX_TLI_DV
 ) -> None:
     """Validate transfer trajectory parameters.
-    
+
     Args:
         tof_days: Time of flight in days
         max_revs: Maximum number of revolutions
         min_dv: Minimum allowed delta-v in km/s
         max_dv: Maximum allowed delta-v in km/s
-        
+
     Raises
     ------
         ValueError: If any parameter is outside valid range
         TypeError: If parameters are not of correct type
     """
-    if not isinstance(tof_days, (int, float)):
-        raise TypeError("Time of flight must be a number")
+    if not isinstance(tof_days, int | float):
+        msg = "Time of flight must be a number"
+        raise TypeError(msg)
     if not isinstance(max_revs, int):
-        raise TypeError("Maximum revolutions must be an integer")
+        msg = "Maximum revolutions must be an integer"
+        raise TypeError(msg)
 
     if tof_days <= TD.MIN_TOF or tof_days > TD.MAX_TOF:
-        raise ValueError(
+        msg = (
             f"Time of flight must be between {TD.MIN_TOF} "
             f"and {TD.MAX_TOF} days"
         )
+        raise ValueError(
+            msg
+        )
 
     if max_revs < 0 or max_revs > TD.MAX_REVOLUTIONS:
+        msg = f"Maximum revolutions must be between 0 and {TD.MAX_REVOLUTIONS}"
         raise ValueError(
-            f"Maximum revolutions must be between 0 and {TD.MAX_REVOLUTIONS}"
+            msg
         )
 
     if min_dv < 0 or max_dv < min_dv:
-        raise ValueError(
+        msg = (
             f"Delta-v range must be positive and max ({max_dv:.1f} km/s) must be "
             f"greater than min ({min_dv:.1f} km/s)"
+        )
+        raise ValueError(
+            msg
         )
 
 
 def validate_initial_orbit(orbit: float | OrbitState) -> None:
     """Validate initial orbit specification.
-    
+
     Args:
         orbit: Either altitude in km or OrbitState object
-        
+
     Raises
     ------
         ValueError: If orbit parameters are invalid
         TypeError: If orbit is not float or OrbitState
     """
-    if isinstance(orbit, (int, float)):
+    if isinstance(orbit, int | float):
         validate_orbit_altitude(orbit)
     elif isinstance(orbit, OrbitState):
         earth_radius = pk.EARTH_RADIUS / 1000.0  # Convert to km
         if orbit.radius <= earth_radius:
-            raise ValueError(f"Orbit radius must be greater than Earth radius ({earth_radius:.1f} km)")
+            msg = f"Orbit radius must be greater than Earth radius ({earth_radius:.1f} km)"
+            raise ValueError(msg)
         if orbit.velocity <= 0:
-            raise ValueError("Orbit velocity must be positive")
+            msg = "Orbit velocity must be positive"
+            raise ValueError(msg)
     else:
+        msg = "Initial orbit must be a float (altitude in km) or OrbitState object"
         raise TypeError(
-            "Initial orbit must be a float (altitude in km) or OrbitState object"
+            msg
         )
 
 
@@ -346,23 +378,27 @@ def validate_final_orbit(
     initial_radius: float
 ) -> None:
     """Validate final orbit radius.
-    
+
     Args:
         final_radius: Final orbit radius in kilometers
         initial_radius: Initial orbit radius in kilometers
-        
+
     Raises
     ------
         ValueError: If final radius is invalid
         TypeError: If inputs are not numbers
     """
-    if not isinstance(final_radius, (int, float)):
-        raise TypeError("Final orbit radius must be a number")
+    if not isinstance(final_radius, int | float):
+        msg = "Final orbit radius must be a number"
+        raise TypeError(msg)
 
     if final_radius <= initial_radius:
-        raise ValueError(
+        msg = (
             f"Final orbit radius ({final_radius:.1f} km) must be greater than "
             f"initial orbit radius ({initial_radius:.1f} km)"
+        )
+        raise ValueError(
+            msg
         )
 
 
