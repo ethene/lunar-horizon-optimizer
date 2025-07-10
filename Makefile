@@ -171,14 +171,14 @@ coverage: ## Run tests with coverage reporting
 	@echo "$(BLUE)📊 HTML coverage report generated in htmlcov/$(NC)"
 	@echo ""
 
-test-all: ## Run complete test suite (445+ tests - comprehensive)
+test-all: ## Run complete test suite (415 tests - includes trajectory/optimization failures)
 	@echo "$(BOLD)$(BLUE)🧪 Running Complete Test Suite$(NC)"
 	@echo "===================================="
 	@echo "$(YELLOW)Activating conda py312 environment and running ALL tests...$(NC)"
-	@echo "$(RED)⚠️  This may take several minutes and includes experimental tests$(NC)"
+	@echo "$(RED)⚠️  This may take ~60s and includes known failures in trajectory/optimization$(NC)"
 	@conda run -n py312 python -m pytest tests/ -x --tb=short --disable-warnings --maxfail=5 || { \
 		echo "$(RED)❌ Complete test suite failed$(NC)"; \
-		echo "$(YELLOW)Note: Some failures expected in experimental/incomplete modules$(NC)"; \
+		echo "$(YELLOW)Note: Some failures expected in trajectory/optimization modules (Task 3 incomplete)$(NC)"; \
 		exit 1; \
 	}
 	@echo "$(GREEN)✅ Complete test suite completed$(NC)"
