@@ -3,11 +3,12 @@ import pytest
 from src.trajectory.target_state import calculate_target_state
 from src.trajectory.constants import PhysicalConstants as PC
 
+
 def test_target_state_basic():
     """Test basic target state calculation."""
     moon_pos = np.array([384400e3, 0, 0])  # Moon at +x axis
-    moon_vel = np.array([0, 1023, 0])      # Moving in +y direction
-    orbit_radius = 100e3                    # 100 km orbit
+    moon_vel = np.array([0, 1023, 0])  # Moving in +y direction
+    orbit_radius = 100e3  # 100 km orbit
 
     target_pos, target_vel = calculate_target_state(moon_pos, moon_vel, orbit_radius)
 
@@ -19,7 +20,10 @@ def test_target_state_basic():
     v_circ = np.sqrt(PC.MOON_MU / orbit_radius)
     vel_diff = target_vel - moon_vel
     vel_diff_mag = np.linalg.norm(vel_diff)
-    assert np.isclose(vel_diff_mag, v_circ, rtol=0.1)  # Allow 10% tolerance for capture component
+    assert np.isclose(
+        vel_diff_mag, v_circ, rtol=0.1
+    )  # Allow 10% tolerance for capture component
+
 
 def test_target_state_velocity_matching():
     """Test that target state properly matches Moon's velocity."""
@@ -49,6 +53,7 @@ def test_target_state_velocity_matching():
     vel_diff_mag = np.linalg.norm(vel_diff)
     assert np.isclose(vel_diff_mag, v_circ, rtol=0.1)
 
+
 def test_target_state_invalid_inputs():
     """Test error handling for invalid inputs."""
     with pytest.raises(ValueError):
@@ -56,6 +61,7 @@ def test_target_state_invalid_inputs():
 
     with pytest.raises(ValueError):
         calculate_target_state([1, 2, 3], [1, 2], 100e3)  # Wrong velocity shape
+
 
 def test_physical_constants():
     """Verify physical constants are in correct ranges and relationships."""
@@ -68,7 +74,10 @@ def test_physical_constants():
 
     # Escape velocity should be sqrt(2) times circular orbit velocity at surface
     moon_surface_v_circ = np.sqrt(PC.MOON_MU / PC.MOON_RADIUS)
-    assert np.isclose(PC.MOON_ESCAPE_VELOCITY, moon_surface_v_circ * np.sqrt(2), rtol=1e-6)
+    assert np.isclose(
+        PC.MOON_ESCAPE_VELOCITY, moon_surface_v_circ * np.sqrt(2), rtol=1e-6
+    )
+
 
 def test_circular_orbit_velocities():
     """Test circular orbit velocity calculations at different altitudes."""
@@ -82,9 +91,10 @@ def test_circular_orbit_velocities():
         assert np.isclose(period, expected_period, rtol=1e-6)
 
         # Energy should be -μ/2a for circular orbit
-        specific_energy = v_circ**2/2 - PC.MOON_MU/radius
-        expected_energy = -PC.MOON_MU/(2*radius)
+        specific_energy = v_circ**2 / 2 - PC.MOON_MU / radius
+        expected_energy = -PC.MOON_MU / (2 * radius)
         assert np.isclose(specific_energy, expected_energy, rtol=1e-6)
+
 
 def test_target_state_edge_cases():
     """Test target state calculation with edge cases."""
@@ -93,19 +103,26 @@ def test_target_state_edge_cases():
 
     # Test very low orbit (20 km)
     low_orbit = 20e3
-    target_pos_low, target_vel_low = calculate_target_state(moon_pos, moon_vel, low_orbit)
+    target_pos_low, target_vel_low = calculate_target_state(
+        moon_pos, moon_vel, low_orbit
+    )
     assert np.isclose(np.linalg.norm(target_pos_low - moon_pos), low_orbit, rtol=1e-6)
 
     # Test high orbit (1000 km)
     high_orbit = 1000e3
-    target_pos_high, target_vel_high = calculate_target_state(moon_pos, moon_vel, high_orbit)
+    target_pos_high, target_vel_high = calculate_target_state(
+        moon_pos, moon_vel, high_orbit
+    )
     assert np.isclose(np.linalg.norm(target_pos_high - moon_pos), high_orbit, rtol=1e-6)
 
     # Verify higher orbit has lower velocity (v ∝ 1/√r)
     v_diff_low = np.linalg.norm(target_vel_low - moon_vel)
     v_diff_high = np.linalg.norm(target_vel_high - moon_vel)
     assert v_diff_low > v_diff_high
-    assert np.isclose(v_diff_low/v_diff_high, np.sqrt(high_orbit/low_orbit), rtol=0.1)
+    assert np.isclose(
+        v_diff_low / v_diff_high, np.sqrt(high_orbit / low_orbit), rtol=0.1
+    )
+
 
 def test_target_state_energy():
     """Test energy of the resulting orbit relative to the Moon."""
@@ -122,12 +139,13 @@ def test_target_state_energy():
     # Calculate specific orbital energy
     v_mag_squared = np.dot(rel_vel, rel_vel)
     r_mag = np.linalg.norm(rel_pos)
-    energy = v_mag_squared/2 - PC.MOON_MU/r_mag
+    energy = v_mag_squared / 2 - PC.MOON_MU / r_mag
 
     # Energy should be negative (bound orbit) and close to circular orbit energy
-    expected_energy = -PC.MOON_MU/(2*orbit_radius)
+    expected_energy = -PC.MOON_MU / (2 * orbit_radius)
     assert energy < 0, "Orbit should be bound (negative energy)"
     assert np.isclose(energy, expected_energy, rtol=0.1)
+
 
 def test_target_state_angular_momentum():
     """Test conservation of angular momentum in target orbit."""
@@ -144,5 +162,5 @@ def test_target_state_angular_momentum():
     h_mag = np.linalg.norm(h_vec)
 
     # For circular orbit, h = r * v_circ
-    expected_h = orbit_radius * np.sqrt(PC.MOON_MU/orbit_radius)
+    expected_h = orbit_radius * np.sqrt(PC.MOON_MU / orbit_radius)
     assert np.isclose(h_mag, expected_h, rtol=0.1)

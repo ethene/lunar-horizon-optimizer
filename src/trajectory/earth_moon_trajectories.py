@@ -6,6 +6,7 @@ Lambert solvers, patched conics approximation, and optimal timing calculations.
 
 import logging
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import numpy as np
 import pykep as pk
@@ -38,12 +39,14 @@ class LambertSolver:
 
         logger.info(f"Initialized Lambert solver with μ = {self.mu:.3e} m³/s²")
 
-    def solve_lambert(self,
-                     r1: np.ndarray,
-                     r2: np.ndarray,
-                     time_of_flight: float,
-                     direction: int = 0,
-                     max_revolutions: int = 0) -> tuple[np.ndarray, np.ndarray]:
+    def solve_lambert(
+        self,
+        r1: np.ndarray,
+        r2: np.ndarray,
+        time_of_flight: float,
+        direction: int = 0,
+        max_revolutions: int = 0,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Solve Lambert problem for given position vectors and time.
 
         Args:
@@ -64,8 +67,12 @@ class LambertSolver:
         try:
             # Use PyKEP's Lambert solver
             lambert = pk.lambert_problem(
-                r1.tolist(), r2.tolist(), time_of_flight, self.mu,
-                cw=direction > 0, max_revs=max_revolutions,
+                r1.tolist(),
+                r2.tolist(),
+                time_of_flight,
+                self.mu,
+                cw=direction > 0,
+                max_revs=max_revolutions,
             )
 
             if not lambert.get_v1():
@@ -75,8 +82,10 @@ class LambertSolver:
             v1 = np.array(lambert.get_v1()[0])  # Initial velocity
             v2 = np.array(lambert.get_v2()[0])  # Final velocity
 
-            logger.debug(f"Lambert solution: v1 = {np.linalg.norm(v1):.1f} m/s, "
-                        f"v2 = {np.linalg.norm(v2):.1f} m/s")
+            logger.debug(
+                f"Lambert solution: v1 = {np.linalg.norm(v1):.1f} m/s, "
+                f"v2 = {np.linalg.norm(v2):.1f} m/s"
+            )
 
             return v1, v2
 
@@ -84,11 +93,9 @@ class LambertSolver:
             msg = f"Lambert problem solution failed: {e!s}"
             raise ValueError(msg) from e
 
-    def solve_multiple_revolution(self,
-                                r1: np.ndarray,
-                                r2: np.ndarray,
-                                time_of_flight: float,
-                                max_revs: int = 2) -> list[tuple[np.ndarray, np.ndarray]]:
+    def solve_multiple_revolution(
+        self, r1: np.ndarray, r2: np.ndarray, time_of_flight: float, max_revs: int = 2
+    ) -> list[tuple[np.ndarray, np.ndarray]]:
         """Solve Lambert problem for multiple revolution cases.
 
         Args:
@@ -105,8 +112,9 @@ class LambertSolver:
 
         for revs in range(max_revs + 1):
             try:
-                v1, v2 = self.solve_lambert(r1, r2, time_of_flight,
-                                          max_revolutions=revs)
+                v1, v2 = self.solve_lambert(
+                    r1, r2, time_of_flight, max_revolutions=revs
+                )
                 solutions.append((v1, v2))
                 logger.debug(f"Found solution for {revs} revolutions")
             except ValueError:
@@ -115,12 +123,14 @@ class LambertSolver:
 
         return solutions
 
-    def calculate_transfer_deltav(self,
-                                r1: np.ndarray,
-                                v1_current: np.ndarray,
-                                r2: np.ndarray,
-                                v2_target: np.ndarray,
-                                time_of_flight: float) -> tuple[float, np.ndarray, np.ndarray]:
+    def calculate_transfer_deltav(
+        self,
+        r1: np.ndarray,
+        v1_current: np.ndarray,
+        r2: np.ndarray,
+        v2_target: np.ndarray,
+        time_of_flight: float,
+    ) -> tuple[float, np.ndarray, np.ndarray]:
         """Calculate delta-v required for Lambert transfer.
 
         Args:
@@ -139,7 +149,7 @@ class LambertSolver:
 
         # Calculate required delta-v maneuvers
         deltav1 = v1_transfer - v1_current  # Departure maneuver
-        deltav2 = v2_target - v2_transfer   # Arrival maneuver
+        deltav2 = v2_target - v2_transfer  # Arrival maneuver
 
         total_deltav = np.linalg.norm(deltav1) + np.linalg.norm(deltav2)
 
@@ -162,10 +172,12 @@ class PatchedConicsApproximation:
 
         logger.info("Initialized patched conics approximation")
 
-    def calculate_trajectory(self,
-                           earth_departure: OrbitState,
-                           moon_arrival: OrbitState,
-                           transfer_time: float) -> dict[str, any]:
+    def calculate_trajectory(
+        self,
+        earth_departure: OrbitState,
+        moon_arrival: OrbitState,
+        transfer_time: float,
+    ) -> dict[str, Any]:
         """Calculate trajectory using patched conics approximation.
 
         Args:
@@ -177,14 +189,18 @@ class PatchedConicsApproximation:
         -------
             Dictionary with trajectory components and characteristics
         """
-        logger.info(f"Calculating patched conics trajectory for {transfer_time/86400:.1f} days")
+        logger.info(
+            f"Calculating patched conics trajectory for {transfer_time/86400:.1f} days"
+        )
 
         # Phase 1: Earth escape trajectory
         earth_escape = self._calculate_earth_escape(earth_departure)
 
         # Phase 2: Heliocentric transfer (simplified to Earth-Moon system)
         transfer_trajectory = self._calculate_earth_moon_transfer(
-            earth_escape, moon_arrival, transfer_time,
+            earth_escape,
+            moon_arrival,
+            transfer_time,
         )
 
         # Phase 3: Moon capture trajectory
@@ -195,19 +211,23 @@ class PatchedConicsApproximation:
             "earth_escape": earth_escape,
             "transfer": transfer_trajectory,
             "moon_capture": moon_capture,
-            "total_deltav": (earth_escape["deltav"] +
-                           transfer_trajectory["deltav"] +
-                           moon_capture["deltav"]),
+            "total_deltav": (
+                earth_escape["deltav"]
+                + transfer_trajectory["deltav"]
+                + moon_capture["deltav"]
+            ),
             "transfer_time": transfer_time,
             "method": "patched_conics",
         }
 
-        logger.info(f"Patched conics trajectory complete: "
-                   f"Total ΔV = {trajectory_data['total_deltav']:.1f} m/s")
+        logger.info(
+            f"Patched conics trajectory complete: "
+            f"Total ΔV = {trajectory_data['total_deltav']:.1f} m/s"
+        )
 
         return trajectory_data
 
-    def _calculate_earth_escape(self, departure_state: OrbitState) -> dict[str, any]:
+    def _calculate_earth_escape(self, departure_state: OrbitState) -> dict[str, Any]:
         """Calculate Earth escape phase.
 
         Args:
@@ -237,10 +257,12 @@ class PatchedConicsApproximation:
             "phase": "earth_escape",
         }
 
-    def _calculate_earth_moon_transfer(self,
-                                     earth_escape: dict[str, any],
-                                     moon_arrival: OrbitState,
-                                     transfer_time: float) -> dict[str, any]:
+    def _calculate_earth_moon_transfer(
+        self,
+        earth_escape: dict[str, Any],
+        moon_arrival: OrbitState,
+        transfer_time: float,
+    ) -> dict[str, Any]:
         """Calculate Earth-Moon transfer phase.
 
         Args:
@@ -272,9 +294,9 @@ class PatchedConicsApproximation:
             "phase": "earth_moon_transfer",
         }
 
-    def _calculate_moon_capture(self,
-                              arrival_state: OrbitState,
-                              transfer_data: dict[str, any]) -> dict[str, any]:
+    def _calculate_moon_capture(
+        self, arrival_state: OrbitState, transfer_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate Moon capture phase.
 
         Args:
@@ -318,11 +340,13 @@ class OptimalTimingCalculator:
 
         logger.info("Initialized optimal timing calculator")
 
-    def find_optimal_departure_time(self,
-                                   start_epoch: float,
-                                   search_days: int = 30,
-                                   earth_orbit_alt: float = 300.0,
-                                   moon_orbit_alt: float = 100.0) -> dict[str, any]:
+    def find_optimal_departure_time(
+        self,
+        start_epoch: float,
+        search_days: int = 30,
+        earth_orbit_alt: float = 300.0,
+        moon_orbit_alt: float = 100.0,
+    ) -> dict[str, Any]:
         """Find optimal departure time within search period.
 
         Args:
@@ -379,16 +403,17 @@ class OptimalTimingCalculator:
             "moon_orbit_alt": moon_orbit_alt,
         }
 
-        logger.info(f"Optimal departure: {optimal_date.strftime('%Y-%m-%d')}, "
-                   f"Transfer time: {best_transfer_time:.1f} days, "
-                   f"ΔV: {best_deltav:.0f} m/s")
+        logger.info(
+            f"Optimal departure: {optimal_date.strftime('%Y-%m-%d')}, "
+            f"Transfer time: {best_transfer_time:.1f} days, "
+            f"ΔV: {best_deltav:.0f} m/s"
+        )
 
         return result
 
-    def calculate_launch_windows(self,
-                               year: int = 2025,
-                               month: int = 6,
-                               num_windows: int = 5) -> list[dict[str, any]]:
+    def calculate_launch_windows(
+        self, year: int = 2025, month: int = 6, num_windows: int = 5
+    ) -> list[dict[str, Any]]:
         """Calculate multiple launch windows for a given month.
 
         Args:
@@ -433,9 +458,9 @@ class OptimalTimingCalculator:
         logger.info(f"Found {len(windows)} launch windows")
         return windows
 
-    def analyze_timing_sensitivity(self,
-                                 optimal_epoch: float,
-                                 time_variations: list[float] | None = None) -> dict[str, any]:
+    def analyze_timing_sensitivity(
+        self, optimal_epoch: float, time_variations: list[float] | None = None
+    ) -> dict[str, Any]:
         """Analyze sensitivity to timing variations.
 
         Args:
@@ -482,22 +507,31 @@ class OptimalTimingCalculator:
                 sensitivity_data["deltav_variations"].append(float("inf"))
 
         # Calculate sensitivity slope (deltav change per day)
-        valid_points = [(t, dv) for t, dv in zip(time_variations, sensitivity_data["deltav_variations"], strict=False)
-                       if dv != float("inf")]
+        valid_points = [
+            (t, dv)
+            for t, dv in zip(
+                time_variations, sensitivity_data["deltav_variations"], strict=False
+            )
+            if dv != float("inf")
+        ]
 
         if len(valid_points) > 1:
             times, dv_changes = zip(*valid_points, strict=False)
             sensitivity_data["sensitivity_slope"] = np.polyfit(times, dv_changes, 1)[0]
 
-        logger.info(f"Timing sensitivity: {sensitivity_data['sensitivity_slope']:.1f} m/s per day")
+        logger.info(
+            f"Timing sensitivity: {sensitivity_data['sensitivity_slope']:.1f} m/s per day"
+        )
         return sensitivity_data
 
 
-def generate_earth_moon_trajectory(departure_epoch: float,
-                                 earth_orbit_alt: float = 300.0,
-                                 moon_orbit_alt: float = 100.0,
-                                 transfer_time: float = 4.0,
-                                 method: str = "lambert") -> tuple[Trajectory, float]:
+def generate_earth_moon_trajectory(
+    departure_epoch: float,
+    earth_orbit_alt: float = 300.0,
+    moon_orbit_alt: float = 100.0,
+    transfer_time: float = 4.0,
+    method: str = "lambert",
+) -> tuple[Trajectory, float]:
     """Convenience function for Earth-Moon trajectory generation.
 
     Args:
@@ -523,20 +557,38 @@ def generate_earth_moon_trajectory(departure_epoch: float,
     if method == "patched_conics":
         # Create orbit states from position and velocity vectors
         from datetime import datetime, timedelta
+
         j2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
         departure_time = j2000 + timedelta(days=departure_epoch)
         arrival_time = j2000 + timedelta(days=departure_epoch + transfer_time)
 
         earth_state = OrbitState.from_state_vectors(
-            position=((PC.EARTH_RADIUS + earth_orbit_alt * 1000) / 1000, 0, 0),  # Convert to km
-            velocity=(0, np.sqrt(PC.EARTH_MU / (PC.EARTH_RADIUS + earth_orbit_alt * 1000)) / 1000, 0),  # Convert to km/s
+            position=(
+                (PC.EARTH_RADIUS + earth_orbit_alt * 1000) / 1000,
+                0,
+                0,
+            ),  # Convert to km
+            velocity=(
+                0,
+                np.sqrt(PC.EARTH_MU / (PC.EARTH_RADIUS + earth_orbit_alt * 1000))
+                / 1000,
+                0,
+            ),  # Convert to km/s
             epoch=departure_time,
             mu=PC.EARTH_MU,
         )
 
         moon_state = OrbitState.from_state_vectors(
-            position=((PC.MOON_RADIUS + moon_orbit_alt * 1000) / 1000, 0, 0),  # Convert to km
-            velocity=(0, np.sqrt(PC.MOON_MU / (PC.MOON_RADIUS + moon_orbit_alt * 1000)) / 1000, 0),  # Convert to km/s
+            position=(
+                (PC.MOON_RADIUS + moon_orbit_alt * 1000) / 1000,
+                0,
+                0,
+            ),  # Convert to km
+            velocity=(
+                0,
+                np.sqrt(PC.MOON_MU / (PC.MOON_RADIUS + moon_orbit_alt * 1000)) / 1000,
+                0,
+            ),  # Convert to km/s
             epoch=arrival_time,
             mu=PC.MOON_MU,
         )
@@ -544,11 +596,14 @@ def generate_earth_moon_trajectory(departure_epoch: float,
         # Use patched conics
         patched_conics = PatchedConicsApproximation()
         trajectory_data = patched_conics.calculate_trajectory(
-            earth_state, moon_state, transfer_time * 86400,
+            earth_state,
+            moon_state,
+            transfer_time * 86400,
         )
 
         # Create trajectory object (simplified)
         from .lunar_transfer import LunarTrajectory
+
         trajectory = LunarTrajectory(
             departure_epoch=departure_epoch,
             arrival_epoch=departure_epoch + transfer_time,
@@ -563,10 +618,12 @@ def generate_earth_moon_trajectory(departure_epoch: float,
     raise ValueError(msg)
 
 
-def find_optimal_launch_window(target_date: datetime,
-                             window_days: int = 30,
-                             earth_orbit_alt: float = 300.0,
-                             moon_orbit_alt: float = 100.0) -> dict[str, any]:
+def find_optimal_launch_window(
+    target_date: datetime,
+    window_days: int = 30,
+    earth_orbit_alt: float = 300.0,
+    moon_orbit_alt: float = 100.0,
+) -> dict[str, Any]:
     """Find optimal launch window around target date.
 
     Args:

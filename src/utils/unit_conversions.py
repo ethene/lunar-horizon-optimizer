@@ -37,7 +37,13 @@ from typing import Union
 import numpy as np
 
 # Type alias for numeric types
-NumericType = Union[float, list[float], tuple[float, ...], np.ndarray[tuple[int, ...], np.dtype[np.float64]]]
+NumericType = Union[
+    float,
+    list[float],
+    tuple[float, ...],
+    np.ndarray[tuple[int, ...], np.dtype[np.float64]],
+]
+
 
 def ensure_array(x: NumericType) -> np.ndarray[tuple[int, ...], np.dtype[np.float64]]:
     """Convert input to numpy array if it isn't already.
@@ -51,7 +57,10 @@ def ensure_array(x: NumericType) -> np.ndarray[tuple[int, ...], np.dtype[np.floa
     """
     return np.array(x) if not isinstance(x, np.ndarray) else x
 
-def restore_type(x: NumericType, arr: np.ndarray[tuple[int, ...], np.dtype[np.float64]]) -> NumericType:
+
+def restore_type(
+    x: NumericType, arr: np.ndarray[tuple[int, ...], np.dtype[np.float64]]
+) -> NumericType:
     """Restore original type of input after array operations.
 
     Args:
@@ -65,6 +74,7 @@ def restore_type(x: NumericType, arr: np.ndarray[tuple[int, ...], np.dtype[np.fl
     if isinstance(x, list | tuple):
         return type(x)(arr.tolist())
     return arr if isinstance(x, np.ndarray) else float(arr)
+
 
 def datetime_to_mjd2000(dt: datetime) -> float:
     """Convert datetime to Modified Julian Date 2000 (MJD2000).
@@ -98,6 +108,7 @@ def datetime_to_mjd2000(dt: datetime) -> float:
     delta = dt_utc - mjd2000_epoch
     return delta.total_seconds() / (24.0 * 3600.0)
 
+
 def datetime_to_j2000(dt: datetime) -> float:
     """Convert datetime to days since J2000 epoch.
 
@@ -119,6 +130,7 @@ def datetime_to_j2000(dt: datetime) -> float:
     # Convert to MJD2000 and adjust for J2000 offset
     return datetime_to_mjd2000(dt) - 0.5
 
+
 def datetime_to_pykep_epoch(dt: datetime) -> float:
     """Convert datetime to PyKEP epoch (MJD2000).
 
@@ -136,6 +148,7 @@ def datetime_to_pykep_epoch(dt: datetime) -> float:
     """
     return datetime_to_mjd2000(dt)
 
+
 def km_to_m(km: NumericType) -> NumericType:
     """Convert kilometers to meters.
 
@@ -151,6 +164,7 @@ def km_to_m(km: NumericType) -> NumericType:
     if isinstance(km, np.ndarray):
         return km * 1000.0
     return km * 1000.0
+
 
 def m_to_km(m: NumericType) -> NumericType:
     """Convert meters to kilometers.
@@ -168,6 +182,7 @@ def m_to_km(m: NumericType) -> NumericType:
         return m / 1000.0
     return m / 1000.0
 
+
 def kmps_to_mps(kmps: NumericType) -> NumericType:
     """Convert kilometers per second to meters per second.
 
@@ -184,6 +199,7 @@ def kmps_to_mps(kmps: NumericType) -> NumericType:
         return kmps * 1000.0
     return kmps * 1000.0
 
+
 def mps_to_kmps(mps: NumericType) -> NumericType:
     """Convert meters per second to kilometers per second.
 
@@ -196,6 +212,7 @@ def mps_to_kmps(mps: NumericType) -> NumericType:
     """
     arr = ensure_array(mps)
     return restore_type(mps, arr / 1000.0)
+
 
 def deg_to_rad(deg: NumericType) -> NumericType:
     """Convert degrees to radians.
@@ -210,6 +227,7 @@ def deg_to_rad(deg: NumericType) -> NumericType:
     arr = ensure_array(deg)
     return restore_type(deg, np.radians(arr))
 
+
 def rad_to_deg(rad: NumericType) -> NumericType:
     """Convert radians to degrees.
 
@@ -223,6 +241,7 @@ def rad_to_deg(rad: NumericType) -> NumericType:
     arr = ensure_array(rad)
     return restore_type(rad, np.degrees(arr))
 
+
 def km3s2_to_m3s2(mu: float) -> float:
     """Convert gravitational parameter from km³/s² to m³/s².
 
@@ -234,6 +253,7 @@ def km3s2_to_m3s2(mu: float) -> float:
         float: Gravitational parameter in m³/s²
     """
     return mu * 1e9
+
 
 def m3s2_to_km3s2(mu: float) -> float:
     """Convert gravitational parameter from m³/s² to km³/s².
@@ -247,6 +267,7 @@ def m3s2_to_km3s2(mu: float) -> float:
     """
     return mu * 1e-9
 
+
 def days_to_seconds(days: float) -> float:
     """Convert days to seconds.
 
@@ -259,6 +280,7 @@ def days_to_seconds(days: float) -> float:
     """
     return days * 86400.0
 
+
 def seconds_to_days(seconds: float) -> float:
     """Convert seconds to days.
 
@@ -270,6 +292,7 @@ def seconds_to_days(seconds: float) -> float:
         float: Time duration in days
     """
     return seconds / 86400.0
+
 
 def pykep_epoch_to_datetime(epoch: float) -> datetime:
     """Convert PyKEP epoch (MJD2000) to datetime.

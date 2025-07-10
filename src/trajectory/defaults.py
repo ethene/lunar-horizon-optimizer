@@ -21,19 +21,19 @@ class TransferDefaults:
 
     # Default orbit altitudes (km)
     DEFAULT_EARTH_ORBIT = 300.0  # km
-    DEFAULT_MOON_ORBIT = 100.0   # km
+    DEFAULT_MOON_ORBIT = 100.0  # km
 
     # Orbit altitude limits (km)
     MIN_EARTH_ORBIT = 200.0  # km
     MAX_EARTH_ORBIT = 1000.0  # km
-    MIN_MOON_ORBIT = 50.0    # km
-    MAX_MOON_ORBIT = 500.0   # km
+    MIN_MOON_ORBIT = 50.0  # km
+    MAX_MOON_ORBIT = 500.0  # km
 
     # Transfer time limits (days)
-    MIN_TOF = 2.0   # days minimum time of flight
-    MAX_TOF = 7.0   # days maximum time of flight
-    MIN_TRANSFER_TIME = 2.0   # days (legacy)
-    MAX_TRANSFER_TIME = 7.0   # days (legacy)
+    MIN_TOF = 2.0  # days minimum time of flight
+    MAX_TOF = 7.0  # days maximum time of flight
+    MIN_TRANSFER_TIME = 2.0  # days (legacy)
+    MAX_TRANSFER_TIME = 7.0  # days (legacy)
     DEFAULT_TRANSFER_TIME = 4.0  # days
 
     # Delta-v limits (m/s)

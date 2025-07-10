@@ -22,7 +22,11 @@ import json
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig, AnalysisResults
+from lunar_horizon_optimizer import (
+    LunarHorizonOptimizer,
+    OptimizationConfig,
+    AnalysisResults,
+)
 from config.mission_config import MissionConfig
 from config.costs import CostFactors
 from config.spacecraft import SpacecraftConfig
@@ -50,14 +54,14 @@ class TestLunarHorizonOptimizerInitialization:
             earth_orbit_alt=500.0,
             moon_orbit_alt=150.0,
             transfer_time=5.0,
-            departure_epoch=12000.0
+            departure_epoch=12000.0,
         )
 
         cost_factors = CostFactors(
             launch_cost_per_kg=15000.0,
             operations_cost_per_day=150000.0,
             development_cost=1.5e9,
-            contingency_percentage=25.0
+            contingency_percentage=25.0,
         )
 
         spacecraft_config = SpacecraftConfig(
@@ -66,13 +70,13 @@ class TestLunarHorizonOptimizerInitialization:
             propellant_mass=4000.0,
             payload_mass=1500.0,
             power_system_mass=600.0,
-            propulsion_isp=350.0
+            propulsion_isp=350.0,
         )
 
         optimizer = LunarHorizonOptimizer(
             mission_config=mission_config,
             cost_factors=cost_factors,
-            spacecraft_config=spacecraft_config
+            spacecraft_config=spacecraft_config,
         )
 
         assert optimizer.mission_config.name == "Test Mission"
@@ -94,13 +98,15 @@ class TestIntegratedAnalysisWorkflow:
         """Create optimization configuration for testing."""
         return OptimizationConfig(
             population_size=10,  # Small for testing
-            num_generations=5,   # Small for testing
-            seed=42
+            num_generations=5,  # Small for testing
+            seed=42,
         )
 
     def test_trajectory_analysis_component(self, optimizer):
         """Test trajectory analysis component."""
-        with patch("trajectory.earth_moon_trajectories.generate_earth_moon_trajectory") as mock_generate:
+        with patch(
+            "trajectory.earth_moon_trajectories.generate_earth_moon_trajectory"
+        ) as mock_generate:
             # Mock trajectory generation
             mock_trajectory = Mock()
             mock_trajectory.departure_epoch = 10000.0
@@ -108,12 +114,14 @@ class TestIntegratedAnalysisWorkflow:
             mock_trajectory.trajectory_data = {
                 "positions": np.random.rand(3, 100),
                 "velocities": np.random.rand(3, 100),
-                "times": np.linspace(0, 86400*4.5, 100)
+                "times": np.linspace(0, 86400 * 4.5, 100),
             }
 
             mock_generate.return_value = (mock_trajectory, 3200.0)
 
-            with patch.object(optimizer.window_analyzer, "find_transfer_windows") as mock_windows:
+            with patch.object(
+                optimizer.window_analyzer, "find_transfer_windows"
+            ) as mock_windows:
                 mock_window = Mock()
                 mock_window.departure_date = datetime(2025, 6, 15)
                 mock_window.arrival_date = datetime(2025, 6, 19, 12)
@@ -132,29 +140,43 @@ class TestIntegratedAnalysisWorkflow:
     def test_optimization_component(self, optimizer):
         """Test optimization component."""
         with patch("optimization.global_optimizer.LunarMissionProblem"):
-            with patch("optimization.global_optimizer.GlobalOptimizer") as mock_optimizer_class:
+            with patch(
+                "optimization.global_optimizer.GlobalOptimizer"
+            ) as mock_optimizer_class:
                 # Mock optimization results
                 mock_optimization_results = {
                     "pareto_solutions": [
                         {
-                            "parameters": {"earth_alt": 400, "moon_alt": 100, "transfer_time": 4.5},
-                            "objectives": {"delta_v": 3200, "time": 4.5, "cost": 500e6}
+                            "parameters": {
+                                "earth_alt": 400,
+                                "moon_alt": 100,
+                                "transfer_time": 4.5,
+                            },
+                            "objectives": {"delta_v": 3200, "time": 4.5, "cost": 500e6},
                         }
                     ],
-                    "cache_stats": {"hit_rate": 0.15}
+                    "cache_stats": {"hit_rate": 0.15},
                 }
 
                 mock_optimizer = Mock()
                 mock_optimizer.optimize.return_value = mock_optimization_results
-                mock_optimizer.get_best_solutions.return_value = [mock_optimization_results["pareto_solutions"][0]]
+                mock_optimizer.get_best_solutions.return_value = [
+                    mock_optimization_results["pareto_solutions"][0]
+                ]
                 mock_optimizer_class.return_value = mock_optimizer
 
-                with patch.object(optimizer.pareto_analyzer, "analyze_pareto_front") as mock_analyze:
+                with patch.object(
+                    optimizer.pareto_analyzer, "analyze_pareto_front"
+                ) as mock_analyze:
                     mock_analyzed = Mock()
-                    mock_analyzed.pareto_solutions = mock_optimization_results["pareto_solutions"]
+                    mock_analyzed.pareto_solutions = mock_optimization_results[
+                        "pareto_solutions"
+                    ]
                     mock_analyze.return_value = mock_analyzed
 
-                    opt_config = OptimizationConfig(population_size=10, num_generations=5)
+                    opt_config = OptimizationConfig(
+                        population_size=10, num_generations=5
+                    )
                     results = optimizer._perform_optimization(opt_config, verbose=False)
 
                     assert "raw_results" in results
@@ -169,14 +191,20 @@ class TestIntegratedAnalysisWorkflow:
             "raw_results": {
                 "pareto_solutions": [
                     {
-                        "parameters": {"earth_alt": 400, "moon_alt": 100, "transfer_time": 4.5},
-                        "objectives": {"delta_v": 3200, "time": 4.5, "cost": 500e6}
+                        "parameters": {
+                            "earth_alt": 400,
+                            "moon_alt": 100,
+                            "transfer_time": 4.5,
+                        },
+                        "objectives": {"delta_v": 3200, "time": 4.5, "cost": 500e6},
                     }
                 ]
             }
         }
 
-        with patch.object(optimizer, "_analyze_solution_economics") as mock_analyze_solution:
+        with patch.object(
+            optimizer, "_analyze_solution_economics"
+        ) as mock_analyze_solution:
             mock_financial_summary = Mock()
             mock_financial_summary.net_present_value = 125e6
             mock_financial_summary.internal_rate_of_return = 0.18
@@ -184,26 +212,30 @@ class TestIntegratedAnalysisWorkflow:
             mock_solution_analysis = {
                 "label": "Solution_1",
                 "financial_summary": mock_financial_summary,
-                "cost_breakdown": Mock()
+                "cost_breakdown": Mock(),
             }
             mock_analyze_solution.return_value = mock_solution_analysis
 
-            with patch.object(optimizer.isru_analyzer, "analyze_isru_economics") as mock_isru:
+            with patch.object(
+                optimizer.isru_analyzer, "analyze_isru_economics"
+            ) as mock_isru:
                 mock_isru.return_value = {
                     "financial_metrics": {"npv": 50e6, "roi": 0.15}
                 }
 
-                with patch.object(optimizer.sensitivity_analyzer, "monte_carlo_simulation") as mock_mc:
+                with patch.object(
+                    optimizer.sensitivity_analyzer, "monte_carlo_simulation"
+                ) as mock_mc:
                     mock_mc.return_value = {
                         "statistics": {"mean": 100e6},
-                        "risk_metrics": {"probability_positive_npv": 0.75}
+                        "risk_metrics": {"probability_positive_npv": 0.75},
                     }
 
                     results = optimizer._analyze_economics(
                         mock_optimization_results,
                         include_sensitivity=True,
                         include_isru=True,
-                        verbose=False
+                        verbose=False,
                     )
 
                     assert "solution_analyses" in results
@@ -215,27 +247,24 @@ class TestIntegratedAnalysisWorkflow:
         """Test visualization component."""
         # Mock input data
         trajectory_results = {
-            "baseline": {
-                "trajectory": Mock(),
-                "total_dv": 3200,
-                "transfer_time": 4.5
-            }
+            "baseline": {"trajectory": Mock(), "total_dv": 3200, "transfer_time": 4.5}
         }
 
-        optimization_results = {
-            "analyzed_results": Mock()
-        }
+        optimization_results = {"analyzed_results": Mock()}
 
         economic_results = {
-            "solution_analyses": [{
-                "financial_summary": Mock(),
-                "cost_breakdown": Mock()
-            }]
+            "solution_analyses": [
+                {"financial_summary": Mock(), "cost_breakdown": Mock()}
+            ]
         }
 
         # Mock visualization creation
-        with patch.object(optimizer.dashboard, "create_executive_dashboard") as mock_exec:
-            with patch.object(optimizer.dashboard, "create_technical_dashboard") as mock_tech:
+        with patch.object(
+            optimizer.dashboard, "create_executive_dashboard"
+        ) as mock_exec:
+            with patch.object(
+                optimizer.dashboard, "create_technical_dashboard"
+            ) as mock_tech:
                 mock_exec.return_value = Mock()
                 mock_tech.return_value = Mock()
 
@@ -243,7 +272,7 @@ class TestIntegratedAnalysisWorkflow:
                     trajectory_results,
                     optimization_results,
                     economic_results,
-                    "Test Mission"
+                    "Test Mission",
                 )
 
                 assert "executive_dashboard" in results
@@ -251,35 +280,52 @@ class TestIntegratedAnalysisWorkflow:
 
     def test_end_to_end_analysis(self, optimizer, optimization_config):
         """Test complete end-to-end analysis workflow."""
-        with patch("trajectory.earth_moon_trajectories.generate_earth_moon_trajectory") as mock_traj:
+        with patch(
+            "trajectory.earth_moon_trajectories.generate_earth_moon_trajectory"
+        ) as mock_traj:
             mock_trajectory = Mock()
             mock_trajectory.departure_epoch = 10000.0
             mock_trajectory.arrival_epoch = 10004.5
             mock_traj.return_value = (mock_trajectory, 3200.0)
 
-            with patch.object(optimizer.window_analyzer, "find_transfer_windows") as mock_windows:
+            with patch.object(
+                optimizer.window_analyzer, "find_transfer_windows"
+            ) as mock_windows:
                 mock_windows.return_value = []
 
                 with patch("optimization.global_optimizer.LunarMissionProblem"):
-                    with patch("optimization.global_optimizer.GlobalOptimizer") as mock_opt_class:
+                    with patch(
+                        "optimization.global_optimizer.GlobalOptimizer"
+                    ) as mock_opt_class:
                         mock_optimizer = Mock()
                         mock_optimizer.optimize.return_value = {
                             "pareto_solutions": [],
-                            "cache_stats": {"hit_rate": 0.0}
+                            "cache_stats": {"hit_rate": 0.0},
                         }
                         mock_optimizer.get_best_solutions.return_value = []
                         mock_opt_class.return_value = mock_optimizer
 
-                        with patch.object(optimizer.pareto_analyzer, "analyze_pareto_front") as mock_analyze:
+                        with patch.object(
+                            optimizer.pareto_analyzer, "analyze_pareto_front"
+                        ) as mock_analyze:
                             mock_analyze.return_value = Mock()
 
-                            with patch.object(optimizer.isru_analyzer, "analyze_isru_economics") as mock_isru:
-                                mock_isru.return_value = {"financial_metrics": {"npv": 50e6}}
+                            with patch.object(
+                                optimizer.isru_analyzer, "analyze_isru_economics"
+                            ) as mock_isru:
+                                mock_isru.return_value = {
+                                    "financial_metrics": {"npv": 50e6}
+                                }
 
-                                with patch.object(optimizer.sensitivity_analyzer, "monte_carlo_simulation") as mock_mc:
+                                with patch.object(
+                                    optimizer.sensitivity_analyzer,
+                                    "monte_carlo_simulation",
+                                ) as mock_mc:
                                     mock_mc.return_value = {
                                         "statistics": {"mean": 100e6},
-                                        "risk_metrics": {"probability_positive_npv": 0.75}
+                                        "risk_metrics": {
+                                            "probability_positive_npv": 0.75
+                                        },
                                     }
 
                                     # Run analysis
@@ -288,7 +334,7 @@ class TestIntegratedAnalysisWorkflow:
                                         optimization_config=optimization_config,
                                         include_sensitivity=True,
                                         include_isru=True,
-                                        verbose=False
+                                        verbose=False,
                                     )
 
                                     # Verify results structure
@@ -320,11 +366,7 @@ class TestConfigurationManagement:
 
     def test_optimization_configuration(self):
         """Test optimization configuration validation."""
-        config = OptimizationConfig(
-            population_size=50,
-            num_generations=25,
-            seed=123
-        )
+        config = OptimizationConfig(population_size=50, num_generations=25, seed=123)
 
         assert config.population_size == 50
         assert config.num_generations == 25
@@ -348,7 +390,7 @@ class TestDataExportAndResults:
             optimization_results={"pareto_front_size": 10},
             economic_analysis={"solution_analyses": []},
             visualization_assets={"executive_dashboard": None},
-            analysis_metadata={"analysis_date": datetime.now().isoformat()}
+            analysis_metadata={"analysis_date": datetime.now().isoformat()},
         )
 
     def test_analysis_results_structure(self, sample_results):
@@ -394,7 +436,7 @@ class TestErrorHandlingAndRobustness:
                 earth_orbit_alt=-100,  # Invalid negative altitude
                 moon_orbit_alt=50,
                 transfer_time=4.5,
-                departure_epoch=10000.0
+                departure_epoch=10000.0,
             )
 
     def test_optimization_failure_handling(self):
@@ -433,7 +475,9 @@ class TestPerformanceAndScalability:
         memory_increase = final_memory - initial_memory
 
         # Memory increase should be reasonable (less than 500MB for initialization)
-        assert memory_increase < 500, f"Memory usage increased by {memory_increase:.1f}MB"
+        assert (
+            memory_increase < 500
+        ), f"Memory usage increased by {memory_increase:.1f}MB"
 
     def test_small_problem_performance(self):
         """Test performance on small optimization problems."""
@@ -446,9 +490,16 @@ class TestPerformanceAndScalability:
             with patch.object(optimizer.window_analyzer, "find_transfer_windows"):
                 with patch("optimization.global_optimizer.LunarMissionProblem"):
                     with patch("optimization.global_optimizer.GlobalOptimizer"):
-                        with patch.object(optimizer.pareto_analyzer, "analyze_pareto_front"):
-                            with patch.object(optimizer.isru_analyzer, "analyze_isru_economics"):
-                                with patch.object(optimizer.sensitivity_analyzer, "monte_carlo_simulation"):
+                        with patch.object(
+                            optimizer.pareto_analyzer, "analyze_pareto_front"
+                        ):
+                            with patch.object(
+                                optimizer.isru_analyzer, "analyze_isru_economics"
+                            ):
+                                with patch.object(
+                                    optimizer.sensitivity_analyzer,
+                                    "monte_carlo_simulation",
+                                ):
 
                                     start_time = time.time()
 
@@ -458,13 +509,15 @@ class TestPerformanceAndScalability:
                                         optimization_config=opt_config,
                                         include_sensitivity=False,
                                         include_isru=False,
-                                        verbose=False
+                                        verbose=False,
                                     )
 
                                     elapsed_time = time.time() - start_time
 
                                     # Should complete within reasonable time (5 seconds with mocking)
-                                    assert elapsed_time < 5.0, f"Analysis took {elapsed_time:.2f} seconds"
+                                    assert (
+                                        elapsed_time < 5.0
+                                    ), f"Analysis took {elapsed_time:.2f} seconds"
                                     assert results is not None
 
 
@@ -479,14 +532,14 @@ class TestSystemIntegration:
             earth_orbit_alt=400.0,
             moon_orbit_alt=100.0,
             transfer_time=4.5,
-            departure_epoch=10000.0
+            departure_epoch=10000.0,
         )
 
         cost_factors = CostFactors(
             launch_cost_per_kg=12000.0,
             operations_cost_per_day=120000.0,
             development_cost=1.2e9,
-            contingency_percentage=25.0
+            contingency_percentage=25.0,
         )
 
         spacecraft_config = SpacecraftConfig(
@@ -495,13 +548,13 @@ class TestSystemIntegration:
             propellant_mass=2800.0,
             payload_mass=1200.0,
             power_system_mass=450.0,
-            propulsion_isp=330.0
+            propulsion_isp=330.0,
         )
 
         optimizer = LunarHorizonOptimizer(
             mission_config=mission_config,
             cost_factors=cost_factors,
-            spacecraft_config=spacecraft_config
+            spacecraft_config=spacecraft_config,
         )
 
         assert optimizer.mission_config.name == "Artemis Gateway Supply"
@@ -525,18 +578,18 @@ class TestSystemIntegration:
 # Integration Test Suite Summary
 def test_integration_summary():
     """Comprehensive integration test summary."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TASK 7: MVP INTEGRATION - TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
     print("✅ Optimizer initialization and configuration")
     print("✅ End-to-end workflow integration")
     print("✅ Component interaction and data flow")
     print("✅ Error handling and robustness")
     print("✅ Performance and scalability")
     print("✅ System integration scenarios")
-    print("="*60)
+    print("=" * 60)
     print("🎉 All integration tests designed and ready!")
-    print("="*60)
+    print("=" * 60)
 
 
 if __name__ == "__main__":
@@ -558,4 +611,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Integration test failed: {e}")
         import traceback
+
         traceback.print_exc()

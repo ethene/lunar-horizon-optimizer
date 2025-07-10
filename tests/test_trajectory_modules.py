@@ -24,15 +24,23 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 try:
     # Trajectory module imports
     from trajectory.earth_moon_trajectories import (
-        LambertSolver, PatchedConicsApproximation, OptimalTimingCalculator,
-        generate_earth_moon_trajectory
+        LambertSolver,
+        PatchedConicsApproximation,
+        OptimalTimingCalculator,
+        generate_earth_moon_trajectory,
     )
     from trajectory.nbody_integration import (
-        NumericalIntegrator, EarthMoonNBodyPropagator, TrajectoryIO
+        NumericalIntegrator,
+        EarthMoonNBodyPropagator,
+        TrajectoryIO,
     )
-    from trajectory.nbody_dynamics import enhanced_trajectory_propagation, NBodyPropagator
+    from trajectory.nbody_dynamics import (
+        enhanced_trajectory_propagation,
+        NBodyPropagator,
+    )
     from trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
     from trajectory.trajectory_optimization import TrajectoryOptimizer
+
     TRAJECTORY_AVAILABLE = True
 except ImportError as e:
     TRAJECTORY_AVAILABLE = False
@@ -89,10 +97,12 @@ class TestLambertSolver:
             v1_mag = np.linalg.norm(v1)
             v2_mag = np.linalg.norm(v2)
 
-            assert REALISTIC_VELOCITY_RANGE[0] <= v1_mag <= REALISTIC_VELOCITY_RANGE[1], \
-                f"Initial velocity unrealistic: {v1_mag:.0f} m/s"
-            assert REALISTIC_VELOCITY_RANGE[0] <= v2_mag <= REALISTIC_VELOCITY_RANGE[1], \
-                f"Final velocity unrealistic: {v2_mag:.0f} m/s"
+            assert (
+                REALISTIC_VELOCITY_RANGE[0] <= v1_mag <= REALISTIC_VELOCITY_RANGE[1]
+            ), f"Initial velocity unrealistic: {v1_mag:.0f} m/s"
+            assert (
+                REALISTIC_VELOCITY_RANGE[0] <= v2_mag <= REALISTIC_VELOCITY_RANGE[1]
+            ), f"Final velocity unrealistic: {v2_mag:.0f} m/s"
 
             # Calculate delta-v for LEO-GEO transfer
             v_circular_leo = math.sqrt(EARTH_MU / np.linalg.norm(r1))
@@ -103,7 +113,9 @@ class TestLambertSolver:
             total_dv = dv1 + dv2
 
             # LEO-GEO Hohmann transfer should be ~3.9 km/s
-            assert 3500 <= total_dv <= 4300, f"LEO-GEO delta-v unrealistic: {total_dv:.0f} m/s"
+            assert (
+                3500 <= total_dv <= 4300
+            ), f"LEO-GEO delta-v unrealistic: {total_dv:.0f} m/s"
 
         except Exception as e:
             pytest.fail(f"Lambert problem Earth orbit test failed: {e}")
@@ -132,7 +144,9 @@ class TestLambertSolver:
         assert v2_mag > 0, "Final velocity must be positive"
 
         # For high-energy transfer, initial velocity should be substantial
-        assert v1_mag >= 7000, f"Initial velocity too low for trans-lunar injection: {v1_mag:.0f} m/s"
+        assert (
+            v1_mag >= 7000
+        ), f"Initial velocity too low for trans-lunar injection: {v1_mag:.0f} m/s"
         assert v1_mag <= 15000, f"Initial velocity too high: {v1_mag:.0f} m/s"
 
     def test_lambert_energy_conservation(self):
@@ -158,7 +172,9 @@ class TestLambertSolver:
 
             # Energy should be conserved
             energy_error = abs(energy1 - energy2) / abs(energy1)
-            assert energy_error < 1e-6, f"Energy conservation violated: {energy_error:.2e}"
+            assert (
+                energy_error < 1e-6
+            ), f"Energy conservation violated: {energy_error:.2e}"
 
             # Energy should be negative for bound orbit
             assert energy1 < 0, "Transfer orbit energy should be negative (bound)"
@@ -187,7 +203,9 @@ class TestLambertSolver:
                 v1_short_mag = np.linalg.norm(v1_short)
                 v1_long_mag = np.linalg.norm(v1_long)
 
-                assert v1_long_mag > v1_short_mag, "Long way transfer should require higher velocity"
+                assert (
+                    v1_long_mag > v1_short_mag
+                ), "Long way transfer should require higher velocity"
 
             except Exception:
                 # Long way may not be implemented, which is acceptable
@@ -195,8 +213,9 @@ class TestLambertSolver:
 
             # Validate short way solution
             v1_mag = np.linalg.norm(v1_short)
-            assert REALISTIC_VELOCITY_RANGE[0] <= v1_mag <= REALISTIC_VELOCITY_RANGE[1], \
-                f"Short way velocity unrealistic: {v1_mag:.0f} m/s"
+            assert (
+                REALISTIC_VELOCITY_RANGE[0] <= v1_mag <= REALISTIC_VELOCITY_RANGE[1]
+            ), f"Short way velocity unrealistic: {v1_mag:.0f} m/s"
 
         except Exception as e:
             pytest.fail(f"Lambert short vs long way test failed: {e}")
@@ -220,7 +239,7 @@ class TestNBodyIntegration:
         propagator = EarthMoonNBodyPropagator(
             include_sun=False,  # Disable Sun to avoid SPICE issues in tests
             include_perturbations=False,
-            integrator_method="RK4"
+            integrator_method="RK4",
         )
 
         # LEO initial conditions
@@ -232,7 +251,7 @@ class TestNBodyIntegration:
             initial_velocity=initial_velocity,
             reference_epoch=10000.0,
             propagation_time=3600.0,  # 1 hour for faster testing
-            num_points=10  # Fewer points for faster testing
+            num_points=10,  # Fewer points for faster testing
         )
 
         # Validate result structure
@@ -247,16 +266,24 @@ class TestNBodyIntegration:
         # Validate array shapes
         assert positions.shape[0] == 3, "Positions should be 3D"
         assert velocities.shape[0] == 3, "Velocities should be 3D"
-        assert positions.shape[1] == velocities.shape[1] == len(times), "Arrays should have same length"
+        assert (
+            positions.shape[1] == velocities.shape[1] == len(times)
+        ), "Arrays should have same length"
 
         # Validate position magnitudes
         pos_magnitudes = np.linalg.norm(positions, axis=0)
-        assert np.all(pos_magnitudes >= EARTH_RADIUS), "Position should be above Earth surface"
-        assert np.all(pos_magnitudes <= 2 * EARTH_RADIUS), "Position should be reasonable for LEO propagation"
+        assert np.all(
+            pos_magnitudes >= EARTH_RADIUS
+        ), "Position should be above Earth surface"
+        assert np.all(
+            pos_magnitudes <= 2 * EARTH_RADIUS
+        ), "Position should be reasonable for LEO propagation"
 
         # Validate velocity magnitudes (more lenient ranges)
         vel_magnitudes = np.linalg.norm(velocities, axis=0)
-        assert np.all(vel_magnitudes >= 5000), "Velocity should be reasonable for orbital motion"
+        assert np.all(
+            vel_magnitudes >= 5000
+        ), "Velocity should be reasonable for orbital motion"
         assert np.all(vel_magnitudes <= 10000), "Velocity should be reasonable for LEO"
 
     def test_energy_conservation_nbody(self):
@@ -265,7 +292,7 @@ class TestNBodyIntegration:
             propagator = EarthMoonNBodyPropagator(
                 include_sun=False,  # Simplified for energy conservation test
                 include_perturbations=False,
-                integrator_method="DOP853"  # High-accuracy integrator
+                integrator_method="DOP853",  # High-accuracy integrator
             )
 
             # Circular LEO orbit
@@ -279,15 +306,19 @@ class TestNBodyIntegration:
                 initial_velocity=initial_velocity,
                 reference_epoch=10000.0,
                 propagation_time=5400.0,  # 1.5 hours (partial orbit)
-                num_points=50
+                num_points=50,
             )
 
             if "total_energy" in result:
                 energies = result["total_energy"]
 
                 # Energy should be approximately conserved
-                energy_variation = (np.max(energies) - np.min(energies)) / abs(np.mean(energies))
-                assert energy_variation < 0.01, f"Energy conservation poor: {energy_variation:.2%} variation"
+                energy_variation = (np.max(energies) - np.min(energies)) / abs(
+                    np.mean(energies)
+                )
+                assert (
+                    energy_variation < 0.01
+                ), f"Energy conservation poor: {energy_variation:.2%} variation"
 
                 # Energy should be negative for bound orbit
                 assert np.all(energies < 0), "Bound orbit should have negative energy"
@@ -297,8 +328,12 @@ class TestNBodyIntegration:
                 pos_magnitudes = np.linalg.norm(positions, axis=0)
 
                 # For circular orbit, radius should be approximately constant
-                radius_variation = (np.max(pos_magnitudes) - np.min(pos_magnitudes)) / np.mean(pos_magnitudes)
-                assert radius_variation < 0.05, f"Circular orbit radius variation too large: {radius_variation:.2%}"
+                radius_variation = (
+                    np.max(pos_magnitudes) - np.min(pos_magnitudes)
+                ) / np.mean(pos_magnitudes)
+                assert (
+                    radius_variation < 0.05
+                ), f"Circular orbit radius variation too large: {radius_variation:.2%}"
 
         except Exception as e:
             pytest.fail(f"Energy conservation test failed: {e}")
@@ -309,8 +344,12 @@ class TestNBodyIntegration:
 
         # Create sample trajectory data
         times = np.linspace(0, 86400, 100)  # 1 day
-        positions = np.random.rand(3, 100) * 1e7 + EARTH_RADIUS  # Random positions above Earth
-        velocities = np.random.rand(3, 100) * 1000 + 7000  # Random velocities around orbital speed
+        positions = (
+            np.random.rand(3, 100) * 1e7 + EARTH_RADIUS
+        )  # Random positions above Earth
+        velocities = (
+            np.random.rand(3, 100) * 1000 + 7000
+        )  # Random velocities around orbital speed
 
         trajectory_data = {
             "times": times,
@@ -319,8 +358,8 @@ class TestNBodyIntegration:
             "metadata": {
                 "propagator": "test",
                 "reference_frame": "Earth_centered",
-                "time_system": "ET"
-            }
+                "time_system": "ET",
+            },
         }
 
         # Test data validation if the method exists
@@ -329,8 +368,11 @@ class TestNBodyIntegration:
             assert is_valid, "Trajectory data should be valid"
 
         # Test export/import (if implemented)
-        if hasattr(trajectory_io, "export_trajectory") and hasattr(trajectory_io, "import_trajectory"):
+        if hasattr(trajectory_io, "export_trajectory") and hasattr(
+            trajectory_io, "import_trajectory"
+        ):
             import tempfile
+
             with tempfile.NamedTemporaryFile(suffix=".npz", delete=False) as f:
                 temp_file = f.name
 
@@ -361,9 +403,9 @@ class TestEarthMoonTrajectories:
             trajectory, total_dv = generate_earth_moon_trajectory(
                 departure_epoch=7000.0,  # Use a more recent epoch within DE430 coverage (~2019)
                 earth_orbit_alt=400.0,  # km
-                moon_orbit_alt=100.0,   # km
-                transfer_time=4.5,      # days
-                method="lambert"
+                moon_orbit_alt=100.0,  # km
+                transfer_time=4.5,  # days
+                method="lambert",
             )
 
             # Validate output structure
@@ -371,19 +413,25 @@ class TestEarthMoonTrajectories:
             assert isinstance(total_dv, int | float)
 
             # Validate delta-v range
-            assert TRANSFER_DELTAV_RANGE[0] <= total_dv <= TRANSFER_DELTAV_RANGE[1], \
-                f"Total delta-v unrealistic: {total_dv:.0f} m/s"
+            assert (
+                TRANSFER_DELTAV_RANGE[0] <= total_dv <= TRANSFER_DELTAV_RANGE[1]
+            ), f"Total delta-v unrealistic: {total_dv:.0f} m/s"
 
             # Validate trajectory object
             assert hasattr(trajectory, "departure_epoch")
             assert hasattr(trajectory, "arrival_epoch")
 
             # Check transfer time
-            if hasattr(trajectory, "arrival_epoch") and hasattr(trajectory, "departure_epoch"):
-                transfer_time_calculated = trajectory.arrival_epoch - trajectory.departure_epoch
+            if hasattr(trajectory, "arrival_epoch") and hasattr(
+                trajectory, "departure_epoch"
+            ):
+                transfer_time_calculated = (
+                    trajectory.arrival_epoch - trajectory.departure_epoch
+                )
                 expected_transfer_time = 4.5
-                assert abs(transfer_time_calculated - expected_transfer_time) < 0.1, \
-                    f"Transfer time mismatch: {transfer_time_calculated:.1f} vs {expected_transfer_time:.1f} days"
+                assert (
+                    abs(transfer_time_calculated - expected_transfer_time) < 0.1
+                ), f"Transfer time mismatch: {transfer_time_calculated:.1f} vs {expected_transfer_time:.1f} days"
 
         except Exception as e:
             pytest.fail(f"Earth-Moon trajectory generation test failed: {e}")
@@ -396,7 +444,7 @@ class TestEarthMoonTrajectories:
                 earth_orbit_alt=400.0,
                 moon_orbit_alt=100.0,
                 transfer_time=4.5,
-                method="patched_conics"
+                method="patched_conics",
             )
 
             # Validate output
@@ -404,8 +452,9 @@ class TestEarthMoonTrajectories:
             assert isinstance(total_dv, int | float)
 
             # Validate delta-v (patched conics should be close to Lambert)
-            assert TRANSFER_DELTAV_RANGE[0] <= total_dv <= TRANSFER_DELTAV_RANGE[1], \
-                f"Patched conics delta-v unrealistic: {total_dv:.0f} m/s"
+            assert (
+                TRANSFER_DELTAV_RANGE[0] <= total_dv <= TRANSFER_DELTAV_RANGE[1]
+            ), f"Patched conics delta-v unrealistic: {total_dv:.0f} m/s"
 
         except Exception as e:
             pytest.fail(f"Patched conics trajectory generation test failed: {e}")
@@ -417,7 +466,9 @@ class TestEarthMoonTrajectories:
         # Test the basic initialization and attributes
         assert hasattr(pca, "earth_soi"), "Should have Earth sphere of influence"
         assert hasattr(pca, "moon_soi"), "Should have Moon sphere of influence"
-        assert hasattr(pca, "calculate_trajectory"), "Should have calculate_trajectory method"
+        assert hasattr(
+            pca, "calculate_trajectory"
+        ), "Should have calculate_trajectory method"
 
         # Test basic Earth escape calculation
         earth_orbit_alt = 400.0  # km
@@ -429,7 +480,9 @@ class TestEarthMoonTrajectories:
         expected_escape_dv = v_escape - v_park
 
         # Earth escape from LEO should be approximately 3.2 km/s
-        assert 3000 <= expected_escape_dv <= 3400, f"Earth escape delta-v calculation unrealistic: {expected_escape_dv:.0f} m/s"
+        assert (
+            3000 <= expected_escape_dv <= 3400
+        ), f"Earth escape delta-v calculation unrealistic: {expected_escape_dv:.0f} m/s"
 
         # Test basic lunar capture calculation
         moon_orbit_alt = 100.0  # km
@@ -437,19 +490,22 @@ class TestEarthMoonTrajectories:
         v_moon_orbit = np.sqrt(MOON_MU / r_moon)  # Circular velocity around Moon
 
         # Lunar orbital velocity should be reasonable
-        assert 1500 <= v_moon_orbit <= 2000, f"Lunar orbital velocity unrealistic: {v_moon_orbit:.0f} m/s"
+        assert (
+            1500 <= v_moon_orbit <= 2000
+        ), f"Lunar orbital velocity unrealistic: {v_moon_orbit:.0f} m/s"
 
         # If the patched conics approximation has specific calculation methods, test them
         if hasattr(pca, "_calculate_earth_escape"):
             from trajectory.models import OrbitState
+
             try:
                 earth_state = OrbitState(
-                    pos=(r_park, 0, 0),
-                    vel=(0, v_park, 0),
-                    epoch=10000.0
+                    pos=(r_park, 0, 0), vel=(0, v_park, 0), epoch=10000.0
                 )
                 escape_result = pca._calculate_earth_escape(earth_state)
-                assert isinstance(escape_result, dict), "Earth escape calculation should return dictionary"
+                assert isinstance(
+                    escape_result, dict
+                ), "Earth escape calculation should return dictionary"
                 assert "deltav" in escape_result, "Should contain delta-v"
             except Exception:
                 # Skip this part if OrbitState interface is different
@@ -473,7 +529,7 @@ class TestEarthMoonTrajectories:
                 start_epoch=start_epoch,
                 search_days=14,  # 2 weeks
                 earth_orbit_alt=400.0,
-                moon_orbit_alt=100.0
+                moon_orbit_alt=100.0,
             )
 
             # Validate result structure
@@ -483,15 +539,14 @@ class TestEarthMoonTrajectories:
 
             # Validate delta-v
             optimal_dv = result["optimal_deltav"]
-            assert TRANSFER_DELTAV_RANGE[0] <= optimal_dv <= TRANSFER_DELTAV_RANGE[1], \
-                f"Optimal delta-v unrealistic: {optimal_dv:.0f} m/s"
+            assert (
+                TRANSFER_DELTAV_RANGE[0] <= optimal_dv <= TRANSFER_DELTAV_RANGE[1]
+            ), f"Optimal delta-v unrealistic: {optimal_dv:.0f} m/s"
 
         # Test calculate_launch_windows if available
         elif hasattr(calculator, "calculate_launch_windows"):
             windows = calculator.calculate_launch_windows(
-                year=2025,
-                month=6,
-                num_windows=3  # Small number for testing
+                year=2025, month=6, num_windows=3  # Small number for testing
             )
 
             assert isinstance(windows, list), "Should return list of windows"
@@ -500,7 +555,11 @@ class TestEarthMoonTrajectories:
             if len(windows) > 0:
                 window = windows[0]
                 assert "optimal_deltav" in window
-                assert TRANSFER_DELTAV_RANGE[0] <= window["optimal_deltav"] <= TRANSFER_DELTAV_RANGE[1]
+                assert (
+                    TRANSFER_DELTAV_RANGE[0]
+                    <= window["optimal_deltav"]
+                    <= TRANSFER_DELTAV_RANGE[1]
+                )
 
 
 @pytest.mark.skipif(not TRAJECTORY_AVAILABLE, reason="Trajectory modules not available")
@@ -511,10 +570,7 @@ class TestTransferWindowAnalysis:
         """Test TrajectoryWindowAnalyzer initialization."""
         try:
             analyzer = TrajectoryWindowAnalyzer(
-                min_earth_alt=200,
-                max_earth_alt=1000,
-                min_moon_alt=50,
-                max_moon_alt=500
+                min_earth_alt=200, max_earth_alt=1000, min_moon_alt=50, max_moon_alt=500
             )
             assert analyzer is not None
             assert hasattr(analyzer, "find_transfer_windows")
@@ -524,10 +580,7 @@ class TestTransferWindowAnalysis:
     def test_find_transfer_windows(self):
         """Test transfer window finding functionality."""
         analyzer = TrajectoryWindowAnalyzer(
-            min_earth_alt=200,
-            max_earth_alt=1000,
-            min_moon_alt=50,
-            max_moon_alt=500
+            min_earth_alt=200, max_earth_alt=1000, min_moon_alt=50, max_moon_alt=500
         )
 
         start_date = datetime(2025, 6, 1)
@@ -540,7 +593,7 @@ class TestTransferWindowAnalysis:
             moon_orbit_alt=100.0,
             min_transfer_time=3.0,
             max_transfer_time=6.0,  # Smaller range for testing
-            time_step=2.0  # 2-day steps for faster execution
+            time_step=2.0,  # 2-day steps for faster execution
         )
 
         # Should return a list (even if empty)
@@ -554,29 +607,30 @@ class TestTransferWindowAnalysis:
             assert hasattr(window, "transfer_time")
 
             # Validate departure date in range
-            assert start_date <= window.departure_date <= end_date, \
-                f"Window departure date outside range: {window.departure_date}"
+            assert (
+                start_date <= window.departure_date <= end_date
+            ), f"Window departure date outside range: {window.departure_date}"
 
             # Validate delta-v
-            assert TRANSFER_DELTAV_RANGE[0] <= window.total_dv <= TRANSFER_DELTAV_RANGE[1], \
-                f"Window delta-v unrealistic: {window.total_dv:.0f} m/s"
+            assert (
+                TRANSFER_DELTAV_RANGE[0] <= window.total_dv <= TRANSFER_DELTAV_RANGE[1]
+            ), f"Window delta-v unrealistic: {window.total_dv:.0f} m/s"
 
             # Validate transfer time
-            assert 3.0 <= window.transfer_time <= 6.0, \
-                f"Window transfer time outside constraints: {window.transfer_time:.1f} days"
+            assert (
+                3.0 <= window.transfer_time <= 6.0
+            ), f"Window transfer time outside constraints: {window.transfer_time:.1f} days"
 
             # Windows should be sorted by total_dv (best first)
             if len(windows) > 1:
-                assert windows[0].total_dv <= windows[1].total_dv, \
-                    "Windows should be sorted by delta-v"
+                assert (
+                    windows[0].total_dv <= windows[1].total_dv
+                ), "Windows should be sorted by delta-v"
 
     def test_transfer_window_optimization(self):
         """Test transfer window optimization functionality."""
         analyzer = TrajectoryWindowAnalyzer(
-            min_earth_alt=200,
-            max_earth_alt=1000,
-            min_moon_alt=50,
-            max_moon_alt=500
+            min_earth_alt=200, max_earth_alt=1000, min_moon_alt=50, max_moon_alt=500
         )
 
         # Test optimization for specific constraints with smaller date range
@@ -590,7 +644,7 @@ class TestTransferWindowAnalysis:
             moon_orbit_alt=100.0,
             min_transfer_time=3.0,
             max_transfer_time=6.0,  # Smaller range
-            time_step=3.0  # Larger steps for faster execution
+            time_step=3.0,  # Larger steps for faster execution
         )
 
         # Should return a list
@@ -598,10 +652,12 @@ class TestTransferWindowAnalysis:
 
         # All windows should meet constraints if any are found
         for window in windows:
-            assert 3.0 <= window.transfer_time <= 6.0, \
-                f"Window violates transfer time constraint: {window.transfer_time:.1f} days"
-            assert TRANSFER_DELTAV_RANGE[0] <= window.total_dv <= TRANSFER_DELTAV_RANGE[1], \
-                f"Window delta-v unrealistic: {window.total_dv:.0f} m/s"
+            assert (
+                3.0 <= window.transfer_time <= 6.0
+            ), f"Window violates transfer time constraint: {window.transfer_time:.1f} days"
+            assert (
+                TRANSFER_DELTAV_RANGE[0] <= window.total_dv <= TRANSFER_DELTAV_RANGE[1]
+            ), f"Window delta-v unrealistic: {window.total_dv:.0f} m/s"
 
 
 @pytest.mark.skipif(not TRAJECTORY_AVAILABLE, reason="Trajectory modules not available")
@@ -612,17 +668,12 @@ class TestTrajectoryOptimization:
         """Test TrajectoryOptimizer Pareto front analysis functionality."""
         try:
             optimizer = TrajectoryOptimizer(
-                min_earth_alt=200,
-                max_earth_alt=800,
-                min_moon_alt=50,
-                max_moon_alt=300
+                min_earth_alt=200, max_earth_alt=800, min_moon_alt=50, max_moon_alt=300
             )
 
             # Test Pareto front analysis with small number of solutions for testing
             results = optimizer.pareto_front_analysis(
-                epoch=10000.0,
-                objectives=["delta_v", "time"],
-                num_solutions=10
+                epoch=10000.0, objectives=["delta_v", "time"], num_solutions=10
             )
 
             # Should return list of Pareto solutions
@@ -646,8 +697,9 @@ class TestTrajectoryOptimization:
                 # Validate objective realism
                 if "delta_v" in objectives:
                     delta_v = objectives["delta_v"]
-                    assert TRANSFER_DELTAV_RANGE[0] <= delta_v <= TRANSFER_DELTAV_RANGE[1], \
-                        f"Optimized delta-v unrealistic: {delta_v:.0f} m/s"
+                    assert (
+                        TRANSFER_DELTAV_RANGE[0] <= delta_v <= TRANSFER_DELTAV_RANGE[1]
+                    ), f"Optimized delta-v unrealistic: {delta_v:.0f} m/s"
 
         except Exception as e:
             pytest.fail(f"Trajectory optimizer Pareto analysis test failed: {e}")
@@ -655,9 +707,9 @@ class TestTrajectoryOptimization:
 
 def test_trajectory_modules_summary():
     """Summary test for all trajectory modules."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TRAJECTORY MODULES TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
     print("✅ Lambert problem solver validation")
     print("✅ N-body integration and propagation")
     print("✅ Earth-Moon trajectory generation")
@@ -665,9 +717,9 @@ def test_trajectory_modules_summary():
     print("✅ Trajectory optimization")
     print("✅ Physics validation and energy conservation")
     print("✅ Realistic parameter ranges and constraints")
-    print("="*60)
+    print("=" * 60)
     print("🚀 All trajectory modules tests implemented!")
-    print("="*60)
+    print("=" * 60)
 
 
 if __name__ == "__main__":
@@ -690,7 +742,7 @@ if __name__ == "__main__":
                 earth_orbit_alt=400.0,
                 moon_orbit_alt=100.0,
                 transfer_time=4.5,
-                method="lambert"
+                method="lambert",
             )
             print("✅ Earth-Moon trajectory generation passed")
 
@@ -699,6 +751,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Trajectory modules validation failed: {e}")
             import traceback
+
             traceback.print_exc()
     else:
         print("⚠️  Trajectory modules not available for testing")

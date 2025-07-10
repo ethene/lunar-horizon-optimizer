@@ -87,7 +87,7 @@ class TrajectoryVisualizer:
 
         # Physical constants
         self.earth_radius = 6378137.0  # meters
-        self.moon_radius = 1737400.0   # meters
+        self.moon_radius = 1737400.0  # meters
         self.earth_moon_distance = 384400000.0  # meters (average)
 
     def create_3d_trajectory_plot(
@@ -159,8 +159,11 @@ class TrajectoryVisualizer:
             fig = go.Figure()
             fig.add_annotation(
                 text="No transfer windows found in specified period",
-                xref="paper", yref="paper",
-                x=0.5, y=0.5, showarrow=False,
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
                 font={"size": 16, "color": self.config.text_color},
             )
             return fig
@@ -170,7 +173,8 @@ class TrajectoryVisualizer:
 
         # Create subplot with multiple views
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Transfer Windows (Delta-V vs Time)",
                 "C3 Energy vs Transfer Time",
@@ -206,7 +210,8 @@ class TrajectoryVisualizer:
                     "colorbar": {"title": "Delta-V (m/s)", "x": 0.45},
                 },
             ),
-            row=1, col=1,
+            row=1,
+            col=1,
         )
 
         # Plot 2: C3 Energy vs Transfer Time
@@ -221,7 +226,8 @@ class TrajectoryVisualizer:
                 marker={"size": 6, "color": "orange"},
                 showlegend=False,
             ),
-            row=1, col=2,
+            row=1,
+            col=2,
         )
 
         # Plot 3: Departure Date vs Delta-V
@@ -236,7 +242,8 @@ class TrajectoryVisualizer:
                 line={"width": 2},
                 showlegend=False,
             ),
-            row=2, col=1,
+            row=2,
+            col=1,
         )
 
         # Plot 4: Transfer Duration Distribution
@@ -248,7 +255,8 @@ class TrajectoryVisualizer:
                 marker={"color": "lightblue", "opacity": 0.7},
                 showlegend=False,
             ),
-            row=2, col=2,
+            row=2,
+            col=2,
         )
 
         # Update layout
@@ -304,11 +312,15 @@ class TrajectoryVisualizer:
         if show_evolution:
             # Create time evolution plots
             fig = make_subplots(
-                rows=3, cols=2,
+                rows=3,
+                cols=2,
                 subplot_titles=[
-                    "Semi-major Axis", "Eccentricity",
-                    "Inclination", "RAAN",
-                    "Argument of Periapsis", "True Anomaly",
+                    "Semi-major Axis",
+                    "Eccentricity",
+                    "Inclination",
+                    "RAAN",
+                    "Argument of Periapsis",
+                    "True Anomaly",
                 ],
             )
 
@@ -316,7 +328,9 @@ class TrajectoryVisualizer:
             element_names = ["a", "e", "i", "raan", "argp", "nu"]
             element_units = ["km", "", "deg", "deg", "deg", "deg"]
 
-            for idx, (name, unit) in enumerate(zip(element_names, element_units, strict=False)):
+            for idx, (name, unit) in enumerate(
+                zip(element_names, element_units, strict=False)
+            ):
                 row = (idx // 2) + 1
                 col = (idx % 2) + 1
 
@@ -335,10 +349,13 @@ class TrajectoryVisualizer:
                         line={"width": 2},
                         showlegend=False,
                     ),
-                    row=row, col=col,
+                    row=row,
+                    col=col,
                 )
 
-                fig.update_yaxes(title_text=f"{name.upper()} ({unit})", row=row, col=col)
+                fig.update_yaxes(
+                    title_text=f"{name.upper()} ({unit})", row=row, col=col
+                )
                 fig.update_xaxes(title_text="Time", row=row, col=col)
         else:
             # Create single orbital elements summary
@@ -413,10 +430,12 @@ class TrajectoryVisualizer:
         self._add_celestial_bodies(fig)
 
         # Color palette for trajectories
-        colors = px.colors.qualitative.Set1[:len(trajectories)]
+        colors = px.colors.qualitative.Set1[: len(trajectories)]
 
         # Add each trajectory
-        for i, (trajectory, label) in enumerate(zip(trajectories, labels, strict=False)):
+        for i, (trajectory, label) in enumerate(
+            zip(trajectories, labels, strict=False)
+        ):
             self._add_trajectory_path(fig, trajectory, label, colors[i % len(colors)])
 
         # Configure layout
@@ -430,7 +449,9 @@ class TrajectoryVisualizer:
             # Earth at origin
             fig.add_trace(
                 go.Scatter3d(
-                    x=[0], y=[0], z=[0],
+                    x=[0],
+                    y=[0],
+                    z=[0],
                     mode="markers",
                     marker={
                         "size": self.config.earth_radius_scale,
@@ -447,7 +468,9 @@ class TrajectoryVisualizer:
             moon_x = self.earth_moon_distance / 1000  # Convert to km for display
             fig.add_trace(
                 go.Scatter3d(
-                    x=[moon_x], y=[0], z=[0],
+                    x=[moon_x],
+                    y=[0],
+                    z=[0],
                     mode="markers",
                     marker={
                         "size": self.config.moon_radius_scale,
@@ -481,15 +504,21 @@ class TrajectoryVisualizer:
         # Create hover text
         if "times" in trajectory:
             times = trajectory["times"]
-            hover_text = [f"Time: {t:.2f}<br>Position: ({x:.0f}, {y:.0f}, {z:.0f}) km"
-                         for t, x, y, z in zip(times, x_km, y_km, z_km, strict=False)]
+            hover_text = [
+                f"Time: {t:.2f}<br>Position: ({x:.0f}, {y:.0f}, {z:.0f}) km"
+                for t, x, y, z in zip(times, x_km, y_km, z_km, strict=False)
+            ]
         else:
-            hover_text = [f"Position: ({x:.0f}, {y:.0f}, {z:.0f}) km"
-                         for x, y, z in zip(x_km, y_km, z_km, strict=False)]
+            hover_text = [
+                f"Position: ({x:.0f}, {y:.0f}, {z:.0f}) km"
+                for x, y, z in zip(x_km, y_km, z_km, strict=False)
+            ]
 
         fig.add_trace(
             go.Scatter3d(
-                x=x_km, y=y_km, z=z_km,
+                x=x_km,
+                y=y_km,
+                z=z_km,
                 mode="lines+markers",
                 line={
                     "width": self.config.trajectory_width,
@@ -543,12 +572,12 @@ class TrajectoryVisualizer:
 
         # Initialize arrays
         elements = {
-            "a": np.zeros(n_points),      # Semi-major axis
-            "e": np.zeros(n_points),      # Eccentricity
-            "i": np.zeros(n_points),      # Inclination
-            "raan": np.zeros(n_points),   # Right ascension of ascending node
-            "argp": np.zeros(n_points),   # Argument of periapsis
-            "nu": np.zeros(n_points),      # True anomaly
+            "a": np.zeros(n_points),  # Semi-major axis
+            "e": np.zeros(n_points),  # Eccentricity
+            "i": np.zeros(n_points),  # Inclination
+            "raan": np.zeros(n_points),  # Right ascension of ascending node
+            "argp": np.zeros(n_points),  # Argument of periapsis
+            "nu": np.zeros(n_points),  # True anomaly
         }
 
         for idx in range(n_points):
@@ -617,14 +646,16 @@ def create_quick_trajectory_plot(
             title=f"Earth-Moon Transfer (ΔV: {total_dv:.0f} m/s)",
         )
 
-
     except Exception as e:
         # Create error plot
         fig = go.Figure()
         fig.add_annotation(
             text=f"Trajectory generation failed: {e!s}",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 16, "color": "red"},
         )
         return fig

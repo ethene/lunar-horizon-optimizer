@@ -27,13 +27,14 @@ from test_helpers import SimpleLunarTransfer, SimpleOptimizationProblem
 try:
     # Optimization module imports
     from optimization.global_optimizer import (
-        LunarMissionProblem, GlobalOptimizer, optimize_lunar_mission
+        LunarMissionProblem,
+        GlobalOptimizer,
+        optimize_lunar_mission,
     )
-    from optimization.pareto_analysis import (
-        ParetoAnalyzer, OptimizationResult
-    )
+    from optimization.pareto_analysis import ParetoAnalyzer, OptimizationResult
     from optimization.cost_integration import CostCalculator
     from config.costs import CostFactors
+
     OPTIMIZATION_AVAILABLE = True
 except ImportError as e:
     OPTIMIZATION_AVAILABLE = False
@@ -90,7 +91,9 @@ def calculate_hypervolume(pareto_front, reference_point):
     return hypervolume
 
 
-@pytest.mark.skipif(not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available")
+@pytest.mark.skipif(
+    not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available"
+)
 class TestLunarMissionProblem:
     """Test LunarMissionProblem functionality and realism."""
 
@@ -101,7 +104,7 @@ class TestLunarMissionProblem:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             problem = LunarMissionProblem(
@@ -112,7 +115,7 @@ class TestLunarMissionProblem:
                 max_moon_alt=500,
                 min_transfer_time=3.0,
                 max_transfer_time=10.0,
-                reference_epoch=10000.0
+                reference_epoch=10000.0,
             )
 
             assert problem is not None
@@ -137,7 +140,7 @@ class TestLunarMissionProblem:
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=100000.0,
             development_cost=1e9,
-            contingency_percentage=20.0
+            contingency_percentage=20.0,
         )
 
         problem = LunarMissionProblem(
@@ -148,13 +151,13 @@ class TestLunarMissionProblem:
             max_moon_alt=500,
             min_transfer_time=3.0,
             max_transfer_time=10.0,
-            reference_epoch=10000.0
+            reference_epoch=10000.0,
         )
 
         # Test realistic parameter combinations
         test_cases = [
             [400, 100, 4.5],  # Typical lunar mission
-            [200, 50, 7.0],   # Low energy mission
+            [200, 50, 7.0],  # Low energy mission
             [800, 300, 3.5],  # High energy mission
         ]
 
@@ -174,14 +177,19 @@ class TestLunarMissionProblem:
                     assert cost == 1e6, "Penalty cost should be 1e6"
                 else:
                     # This is a successful case - validate realistic ranges
-                    assert REALISTIC_DELTAV_RANGE[0] <= delta_v <= REALISTIC_DELTAV_RANGE[1], \
-                        f"Delta-v unrealistic: {delta_v:.0f} m/s"
+                    assert (
+                        REALISTIC_DELTAV_RANGE[0]
+                        <= delta_v
+                        <= REALISTIC_DELTAV_RANGE[1]
+                    ), f"Delta-v unrealistic: {delta_v:.0f} m/s"
                     # Time should be in seconds (converted from days)
                     expected_time_seconds = test_case[2] * 86400
-                    assert abs(transfer_time - expected_time_seconds) < 1, \
-                        f"Transfer time conversion incorrect: {transfer_time} vs expected {expected_time_seconds}"
-                    assert REALISTIC_COST_RANGE[0] <= cost <= REALISTIC_COST_RANGE[1], \
-                        f"Cost unrealistic: ${cost/1e6:.1f}M"
+                    assert (
+                        abs(transfer_time - expected_time_seconds) < 1
+                    ), f"Transfer time conversion incorrect: {transfer_time} vs expected {expected_time_seconds}"
+                    assert (
+                        REALISTIC_COST_RANGE[0] <= cost <= REALISTIC_COST_RANGE[1]
+                    ), f"Cost unrealistic: ${cost/1e6:.1f}M"
 
                 # All objectives should be positive
                 assert delta_v > 0, "Delta-v must be positive"
@@ -195,7 +203,7 @@ class TestLunarMissionProblem:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             problem = LunarMissionProblem(
@@ -206,7 +214,7 @@ class TestLunarMissionProblem:
                 max_moon_alt=500,
                 min_transfer_time=3.0,
                 max_transfer_time=10.0,
-                reference_epoch=10000.0
+                reference_epoch=10000.0,
             )
 
             bounds = problem.get_bounds()
@@ -238,7 +246,7 @@ class TestLunarMissionProblem:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             problem = LunarMissionProblem(
@@ -249,7 +257,7 @@ class TestLunarMissionProblem:
                 max_moon_alt=500,
                 min_transfer_time=3.0,
                 max_transfer_time=10.0,
-                reference_epoch=10000.0
+                reference_epoch=10000.0,
             )
 
             test_params = [400, 100, 4.5]
@@ -272,14 +280,20 @@ class TestLunarMissionProblem:
                 if hasattr(problem, "get_cache_stats"):
                     cache_stats = problem.get_cache_stats()
                     # Cache may not have hits due to mocking - this is acceptable
-                    assert "cache_hits" in cache_stats, "Cache stats should have cache_hits key"
-                    assert cache_stats["cache_hits"] >= 0, "Cache hits should be non-negative"
+                    assert (
+                        "cache_hits" in cache_stats
+                    ), "Cache stats should have cache_hits key"
+                    assert (
+                        cache_stats["cache_hits"] >= 0
+                    ), "Cache hits should be non-negative"
 
         except Exception as e:
             pytest.fail(f"Fitness caching test failed: {e}")
 
 
-@pytest.mark.skipif(not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available")
+@pytest.mark.skipif(
+    not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available"
+)
 class TestGlobalOptimizer:
     """Test GlobalOptimizer functionality and convergence."""
 
@@ -293,7 +307,7 @@ class TestGlobalOptimizer:
                 problem=problem,
                 population_size=20,  # Multiple of 4 for NSGA-II
                 num_generations=25,
-                seed=42
+                seed=42,
             )
 
             assert optimizer is not None
@@ -315,7 +329,7 @@ class TestGlobalOptimizer:
                 problem=problem,
                 population_size=16,  # Multiple of 4 for NSGA-II
                 num_generations=10,  # Small for testing
-                seed=42
+                seed=42,
             )
 
             results = optimizer.optimize(verbose=False)
@@ -340,15 +354,21 @@ class TestGlobalOptimizer:
 
             # Validate parameter ranges (check if parameters are in dict format or list format)
             if isinstance(parameters, dict):
-                earth_alt = parameters.get("earth_orbit_alt", parameters.get("earth_alt", 0))
-                moon_alt = parameters.get("moon_orbit_alt", parameters.get("moon_alt", 0))
+                earth_alt = parameters.get(
+                    "earth_orbit_alt", parameters.get("earth_alt", 0)
+                )
+                moon_alt = parameters.get(
+                    "moon_orbit_alt", parameters.get("moon_alt", 0)
+                )
                 transfer_time = parameters.get("transfer_time", 0)
             else:
                 earth_alt = parameters[0]
                 moon_alt = parameters[1]
                 transfer_time = parameters[2]
 
-            assert 200 <= earth_alt <= 1000, "Earth altitude out of bounds"  # SimpleOptimizationProblem uses lunar mission bounds
+            assert (
+                200 <= earth_alt <= 1000
+            ), "Earth altitude out of bounds"  # SimpleOptimizationProblem uses lunar mission bounds
             assert 50 <= moon_alt <= 500, "Moon altitude out of bounds"
             assert 3.0 <= transfer_time <= 10.0, "Transfer time out of bounds"
 
@@ -378,8 +398,8 @@ class TestGlobalOptimizer:
             optimizer = GlobalOptimizer(
                 problem=problem,
                 population_size=16,  # Multiple of 4 for NSGA-II
-                num_generations=5,   # Small for testing
-                seed=42
+                num_generations=5,  # Small for testing
+                seed=42,
             )
 
             # Run quick optimization to get real results
@@ -394,10 +414,12 @@ class TestGlobalOptimizer:
             preference_weights = [0.5, 0.3, 0.2]  # Prefer delta-v
             best_solutions = optimizer.get_best_solutions(
                 num_solutions=min(2, len(pareto_solutions)),
-                preference_weights=preference_weights
+                preference_weights=preference_weights,
             )
 
-            assert len(best_solutions) <= 2, "Should return requested number of solutions"
+            assert (
+                len(best_solutions) <= 2
+            ), "Should return requested number of solutions"
             assert len(best_solutions) > 0, "Should return at least one solution"
 
             # Validate solution structure
@@ -407,8 +429,12 @@ class TestGlobalOptimizer:
             assert "weighted_score" in solution
 
             # Validate weighted score is a number
-            assert isinstance(solution["weighted_score"], int | float), "Weighted score should be numeric"
-            assert solution["weighted_score"] >= 0, "Weighted score should be non-negative"
+            assert isinstance(
+                solution["weighted_score"], int | float
+            ), "Weighted score should be numeric"
+            assert (
+                solution["weighted_score"] >= 0
+            ), "Weighted score should be non-negative"
 
         except Exception as e:
             pytest.fail(f"Solution ranking test failed: {e}")
@@ -426,8 +452,8 @@ class TestGlobalOptimizer:
 
                 def fitness(self, x):
                     # Quadratic functions with known minimum
-                    f1 = x[0]**2 + x[1]**2
-                    f2 = (x[0] - 1)**2 + (x[1] - 1)**2
+                    f1 = x[0] ** 2 + x[1] ** 2
+                    f2 = (x[0] - 1) ** 2 + (x[1] - 1) ** 2
                     return [f1, f2]
 
             problem = SimpleQuadraticProblem()
@@ -436,7 +462,7 @@ class TestGlobalOptimizer:
                 problem=problem,
                 population_size=20,  # Multiple of 4 for NSGA-II
                 num_generations=50,
-                seed=42
+                seed=42,
             )
 
             results = optimizer.optimize(verbose=False)
@@ -452,13 +478,17 @@ class TestGlobalOptimizer:
                 if len(convergence_history) > 10:
                     early_best = convergence_history[5]
                     late_best = convergence_history[-1]
-                    assert late_best <= early_best * 1.1, "Should show improvement or stabilization"
+                    assert (
+                        late_best <= early_best * 1.1
+                    ), "Should show improvement or stabilization"
 
         except Exception as e:
             pytest.fail(f"Convergence detection test failed: {e}")
 
 
-@pytest.mark.skipif(not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available")
+@pytest.mark.skipif(
+    not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available"
+)
 class TestParetoAnalysis:
     """Test Pareto analysis functionality."""
 
@@ -470,12 +500,24 @@ class TestParetoAnalysis:
             solution2 = [2.0, 3.0, 4.0]
             solution3 = [1.5, 1.5, 4.5]  # Non-dominated with others
 
-            assert dominates(solution1, solution2), "Solution1 should dominate solution2"
-            assert not dominates(solution2, solution1), "Solution2 should not dominate solution1"
-            assert not dominates(solution1, solution3), "Solution1 should not dominate solution3"
-            assert not dominates(solution3, solution1), "Solution3 should not dominate solution1"
-            assert not dominates(solution2, solution3), "Solution2 should not dominate solution3"
-            assert not dominates(solution3, solution2), "Solution3 should not dominate solution2"
+            assert dominates(
+                solution1, solution2
+            ), "Solution1 should dominate solution2"
+            assert not dominates(
+                solution2, solution1
+            ), "Solution2 should not dominate solution1"
+            assert not dominates(
+                solution1, solution3
+            ), "Solution1 should not dominate solution3"
+            assert not dominates(
+                solution3, solution1
+            ), "Solution3 should not dominate solution1"
+            assert not dominates(
+                solution2, solution3
+            ), "Solution2 should not dominate solution3"
+            assert not dominates(
+                solution3, solution2
+            ), "Solution3 should not dominate solution2"
 
         except Exception as e:
             pytest.fail(f"Dominance relation test failed: {e}")
@@ -498,15 +540,24 @@ class TestParetoAnalysis:
             # Create mock optimization results
             mock_results = {
                 "pareto_solutions": [
-                    {"parameters": [400, 100, 4.5], "objectives": {"delta_v": 3200, "time": 4.5, "cost": 500e6}},
-                    {"parameters": [300, 150, 6.0], "objectives": {"delta_v": 3100, "time": 6.0, "cost": 520e6}},
-                    {"parameters": [500, 80, 3.5], "objectives": {"delta_v": 3400, "time": 3.5, "cost": 480e6}},
+                    {
+                        "parameters": [400, 100, 4.5],
+                        "objectives": {"delta_v": 3200, "time": 4.5, "cost": 500e6},
+                    },
+                    {
+                        "parameters": [300, 150, 6.0],
+                        "objectives": {"delta_v": 3100, "time": 6.0, "cost": 520e6},
+                    },
+                    {
+                        "parameters": [500, 80, 3.5],
+                        "objectives": {"delta_v": 3400, "time": 3.5, "cost": 480e6},
+                    },
                 ],
                 "optimization_stats": {
                     "generations": 50,
                     "population_size": 100,
-                    "convergence_metric": 0.01
-                }
+                    "convergence_metric": 0.01,
+                },
             }
 
             analyzed_result = analyzer.analyze_pareto_front(mock_results)
@@ -533,9 +584,18 @@ class TestParetoAnalysis:
 
             # Test solutions with clear trade-offs
             solutions = [
-                {"parameters": [400, 100, 4.5], "objectives": {"delta_v": 3000, "time": 4.5, "cost": 600e6}},  # Good delta-v, bad cost
-                {"parameters": [300, 150, 6.0], "objectives": {"delta_v": 3500, "time": 6.0, "cost": 400e6}},  # Bad delta-v, good cost
-                {"parameters": [350, 125, 5.0], "objectives": {"delta_v": 3200, "time": 5.0, "cost": 500e6}},  # Balanced
+                {
+                    "parameters": [400, 100, 4.5],
+                    "objectives": {"delta_v": 3000, "time": 4.5, "cost": 600e6},
+                },  # Good delta-v, bad cost
+                {
+                    "parameters": [300, 150, 6.0],
+                    "objectives": {"delta_v": 3500, "time": 6.0, "cost": 400e6},
+                },  # Bad delta-v, good cost
+                {
+                    "parameters": [350, 125, 5.0],
+                    "objectives": {"delta_v": 3200, "time": 5.0, "cost": 500e6},
+                },  # Balanced
             ]
 
             # Test delta-v preference
@@ -548,7 +608,9 @@ class TestParetoAnalysis:
 
             # Best solution should have lowest delta-v
             best_solution = ranked_solutions[0][1]  # (score, solution) tuple
-            assert best_solution["objectives"]["delta_v"] == 3000, "Best solution should have lowest delta-v"
+            assert (
+                best_solution["objectives"]["delta_v"] == 3000
+            ), "Best solution should have lowest delta-v"
 
             # Test cost preference
             cost_preference = [0.0, 0.0, 1.0]  # Only care about cost
@@ -557,7 +619,9 @@ class TestParetoAnalysis:
             )
 
             best_cost_solution = cost_ranked[0][1]
-            assert best_cost_solution["objectives"]["cost"] == 400e6, "Best solution should have lowest cost"
+            assert (
+                best_cost_solution["objectives"]["cost"] == 400e6
+            ), "Best solution should have lowest cost"
 
         except Exception as e:
             pytest.fail(f"Solution preference ranking test failed: {e}")
@@ -566,12 +630,7 @@ class TestParetoAnalysis:
         """Test hypervolume calculation for Pareto front quality."""
         try:
             # Simple 2D test case
-            pareto_front = [
-                [1.0, 4.0],
-                [2.0, 3.0],
-                [3.0, 2.0],
-                [4.0, 1.0]
-            ]
+            pareto_front = [[1.0, 4.0], [2.0, 3.0], [3.0, 2.0], [4.0, 1.0]]
 
             reference_point = [5.0, 5.0]
 
@@ -582,17 +641,22 @@ class TestParetoAnalysis:
 
             # For this specific case, we can calculate expected value
             # Each point contributes a rectangle to the hypervolume
-            expected_hv = 16.0  # (5-1)*(5-4) + (5-2)*(5-3) + (5-3)*(5-2) + (5-4)*(5-1) - overlaps
+            expected_hv = (
+                16.0  # (5-1)*(5-4) + (5-2)*(5-3) + (5-3)*(5-2) + (5-4)*(5-1) - overlaps
+            )
 
             # Should be reasonably close (allowing for calculation method differences)
-            assert abs(hypervolume - expected_hv) / expected_hv < 0.5, \
-                f"Hypervolume calculation seems incorrect: {hypervolume} vs expected ~{expected_hv}"
+            assert (
+                abs(hypervolume - expected_hv) / expected_hv < 0.5
+            ), f"Hypervolume calculation seems incorrect: {hypervolume} vs expected ~{expected_hv}"
 
         except Exception as e:
             pytest.fail(f"Hypervolume calculation test failed: {e}")
 
 
-@pytest.mark.skipif(not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available")
+@pytest.mark.skipif(
+    not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available"
+)
 class TestCostIntegration:
     """Test cost integration functionality."""
 
@@ -603,7 +667,7 @@ class TestCostIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             calculator = CostCalculator(cost_factors)
@@ -619,7 +683,7 @@ class TestCostIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             calculator = CostCalculator(cost_factors)
@@ -628,7 +692,7 @@ class TestCostIntegration:
             test_cases = [
                 (3200, 4.5, 400, 100),  # 3200 m/s, 4.5 days, 400km Earth, 100km Moon
                 (3500, 7.0, 300, 150),  # 3500 m/s, 7.0 days, 300km Earth, 150km Moon
-                (2900, 3.0, 800, 80),   # 2900 m/s, 3.0 days, 800km Earth, 80km Moon
+                (2900, 3.0, 800, 80),  # 2900 m/s, 3.0 days, 800km Earth, 80km Moon
             ]
 
             for total_deltav, transfer_time, earth_alt, moon_alt in test_cases:
@@ -636,12 +700,13 @@ class TestCostIntegration:
                     total_dv=total_deltav,
                     transfer_time=transfer_time,
                     earth_orbit_alt=earth_alt,
-                    moon_orbit_alt=moon_alt
+                    moon_orbit_alt=moon_alt,
                 )
 
                 # Validate cost realism
-                assert REALISTIC_COST_RANGE[0] <= cost <= REALISTIC_COST_RANGE[1], \
-                    f"Mission cost unrealistic: ${cost/1e6:.1f}M for {total_deltav}m/s mission"
+                assert (
+                    REALISTIC_COST_RANGE[0] <= cost <= REALISTIC_COST_RANGE[1]
+                ), f"Mission cost unrealistic: ${cost/1e6:.1f}M for {total_deltav}m/s mission"
 
                 # Cost should increase with mass and delta-v
                 assert cost > 0, "Mission cost must be positive"
@@ -651,7 +716,7 @@ class TestCostIntegration:
                 total_dv=3200,
                 transfer_time=4.5,
                 earth_orbit_alt=400,
-                moon_orbit_alt=100
+                moon_orbit_alt=100,
             )
 
             # Higher delta-v should increase cost
@@ -659,10 +724,12 @@ class TestCostIntegration:
                 total_dv=4500,
                 transfer_time=4.5,
                 earth_orbit_alt=400,
-                moon_orbit_alt=100
+                moon_orbit_alt=100,
             )
 
-            assert high_deltav_cost > base_cost, "Cost should increase with delta-v requirement"
+            assert (
+                high_deltav_cost > base_cost
+            ), "Cost should increase with delta-v requirement"
 
         except Exception as e:
             pytest.fail(f"Mission cost calculation realism test failed: {e}")
@@ -674,7 +741,7 @@ class TestCostIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             calculator = CostCalculator(cost_factors)
@@ -683,7 +750,7 @@ class TestCostIntegration:
                 "total_dv": 3200,
                 "transfer_time": 4.5,
                 "earth_orbit_alt": 400,
-                "moon_orbit_alt": 100
+                "moon_orbit_alt": 100,
             }
 
             base_cost = calculator.calculate_mission_cost(**base_case)
@@ -696,7 +763,7 @@ class TestCostIntegration:
                 total_dv=4000,
                 transfer_time=4.5,
                 earth_orbit_alt=400,
-                moon_orbit_alt=100
+                moon_orbit_alt=100,
             )
             sensitivities["deltav"] = (high_deltav_cost - base_cost) / base_cost
 
@@ -705,20 +772,26 @@ class TestCostIntegration:
                 total_dv=3200,
                 transfer_time=7.0,
                 earth_orbit_alt=400,
-                moon_orbit_alt=100
+                moon_orbit_alt=100,
             )
             sensitivities["time"] = (long_time_cost - base_cost) / base_cost
 
             # All sensitivities should be positive
             for param, sensitivity in sensitivities.items():
-                assert sensitivity >= 0, f"{param} sensitivity should be non-negative: {sensitivity:.2%}"
-                assert sensitivity <= 2.0, f"{param} sensitivity unrealistically high: {sensitivity:.2%}"
+                assert (
+                    sensitivity >= 0
+                ), f"{param} sensitivity should be non-negative: {sensitivity:.2%}"
+                assert (
+                    sensitivity <= 2.0
+                ), f"{param} sensitivity unrealistically high: {sensitivity:.2%}"
 
         except Exception as e:
             pytest.fail(f"Cost sensitivity analysis test failed: {e}")
 
 
-@pytest.mark.skipif(not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available")
+@pytest.mark.skipif(
+    not OPTIMIZATION_AVAILABLE, reason="Optimization modules not available"
+)
 class TestOptimizationIntegration:
     """Test integrated optimization functionality."""
 
@@ -729,7 +802,7 @@ class TestOptimizationIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             optimization_config = {
@@ -741,15 +814,14 @@ class TestOptimizationIntegration:
                 },
                 "optimizer_params": {
                     "population_size": 20,  # Small for testing
-                    "num_generations": 10   # Small for testing
+                    "num_generations": 10,  # Small for testing
                 },
-                "verbose": False
+                "verbose": False,
             }
 
             with patch("trajectory.lunar_transfer.LunarTransfer", SimpleLunarTransfer):
                 results = optimize_lunar_mission(
-                    cost_factors=cost_factors,
-                    optimization_config=optimization_config
+                    cost_factors=cost_factors, optimization_config=optimization_config
                 )
 
                 # Validate results structure
@@ -788,7 +860,7 @@ class TestOptimizationIntegration:
                     return ([0, 0], [10, 10])
 
                 def fitness(self, x):
-                    return [x[0]**2, (x[0] - 5)**2 + x[1]**2]
+                    return [x[0] ** 2, (x[0] - 5) ** 2 + x[1] ** 2]
 
             problem = SimpleProblem()
 
@@ -796,7 +868,7 @@ class TestOptimizationIntegration:
                 problem=problem,
                 population_size=20,  # Multiple of 4 for NSGA-II
                 num_generations=20,
-                seed=42
+                seed=42,
             )
 
             start_time = time.time()
@@ -804,11 +876,15 @@ class TestOptimizationIntegration:
             optimization_time = time.time() - start_time
 
             # Performance validation
-            assert optimization_time < 30.0, f"Optimization took too long: {optimization_time:.1f}s"
+            assert (
+                optimization_time < 30.0
+            ), f"Optimization took too long: {optimization_time:.1f}s"
 
             # Quality validation
             pareto_solutions = results["pareto_solutions"]
-            assert len(pareto_solutions) > 5, "Should find reasonable number of Pareto solutions"
+            assert (
+                len(pareto_solutions) > 5
+            ), "Should find reasonable number of Pareto solutions"
             assert len(pareto_solutions) < 50, "Pareto front size should be reasonable"
 
         except Exception as e:
@@ -817,9 +893,9 @@ class TestOptimizationIntegration:
 
 def test_optimization_modules_summary():
     """Summary test for all optimization modules."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("OPTIMIZATION MODULES TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
     print("✅ Lunar mission problem formulation")
     print("✅ Global optimizer (NSGA-II) functionality")
     print("✅ Pareto analysis and dominance relations")
@@ -827,9 +903,9 @@ def test_optimization_modules_summary():
     print("✅ Solution ranking and preference handling")
     print("✅ Convergence detection and performance")
     print("✅ Realistic objective ranges and constraints")
-    print("="*60)
+    print("=" * 60)
     print("🎯 All optimization modules tests implemented!")
-    print("="*60)
+    print("=" * 60)
 
 
 if __name__ == "__main__":
@@ -844,7 +920,7 @@ if __name__ == "__main__":
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
             print("✅ Cost factors validation passed")
 
@@ -857,7 +933,7 @@ if __name__ == "__main__":
                 max_moon_alt=500,
                 min_transfer_time=3.0,
                 max_transfer_time=10.0,
-                reference_epoch=10000.0
+                reference_epoch=10000.0,
             )
             print("✅ Lunar mission problem validation passed")
 
@@ -870,6 +946,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Optimization modules validation failed: {e}")
             import traceback
+
             traceback.print_exc()
     else:
         print("⚠️  Optimization modules not available for testing")

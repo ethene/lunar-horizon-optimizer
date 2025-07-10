@@ -14,9 +14,10 @@ from .target_state import calculate_target_state
 # Configure logging
 logger = logging.getLogger(__name__)
 
-def calculate_initial_position(r_park: float,
-                             phase: float,
-                             moon_h_unit: np.ndarray) -> np.ndarray:
+
+def calculate_initial_position(
+    r_park: float, phase: float, moon_h_unit: np.ndarray
+) -> np.ndarray:
     """Calculate initial position vector for given phase angle.
 
     Args:
@@ -50,6 +51,7 @@ def calculate_initial_position(r_park: float,
 
     # Calculate initial position
     return r_park * (np.cos(phase) * ref_dir + np.sin(phase) * radial)
+
 
 def evaluate_transfer_solution(
     r1: np.ndarray,
@@ -113,7 +115,9 @@ def evaluate_transfer_solution(
 
     # Calculate parking orbit plane normal (assuming it's in Earth's equatorial plane)
     r1_unit = r1 / r1_mag
-    v_park_dir = np.array([-r1_unit[1], r1_unit[0], 0.0])  # Perpendicular to r1 in xy-plane
+    v_park_dir = np.array(
+        [-r1_unit[1], r1_unit[0], 0.0]
+    )  # Perpendicular to r1 in xy-plane
     v_park_dir = v_park_dir / np.linalg.norm(v_park_dir)
     v_park = v_park_dir * v_circ
 
@@ -133,7 +137,8 @@ def evaluate_transfer_solution(
 
         # Get Lambert solutions
         lambert = pk.lambert_problem(
-            r1_km, r2_km,
+            r1_km,
+            r2_km,
             transfer_time,
             mu_km,
             False,  # retrograde flag
@@ -169,7 +174,9 @@ def evaluate_transfer_solution(
             dv2 = np.linalg.norm(v2 - v2_target)  # Arrival delta-v
             total_dv = dv1 + dv2
 
-            logger.debug(f"Delta-v components [m/s]: {dv1:.1f} (departure), {dv2:.1f} (arrival)")
+            logger.debug(
+                f"Delta-v components [m/s]: {dv1:.1f} (departure), {dv2:.1f} (arrival)"
+            )
             logger.debug(f"Total delta-v [m/s]: {total_dv:.1f}")
 
             # Check if this is the best solution so far
@@ -184,9 +191,11 @@ def evaluate_transfer_solution(
                 continue
 
             # Validate solution physics
-            r1_v1_angle = np.arccos(np.dot(r1/r1_mag, v1/np.linalg.norm(v1)))
+            r1_v1_angle = np.arccos(np.dot(r1 / r1_mag, v1 / np.linalg.norm(v1)))
             if not (0.1 < r1_v1_angle < np.pi - 0.1):
-                logger.debug(f"Invalid departure angle: {np.degrees(r1_v1_angle):.1f} degrees")
+                logger.debug(
+                    f"Invalid departure angle: {np.degrees(r1_v1_angle):.1f} degrees"
+                )
                 continue
 
             return total_dv, v1, v2
@@ -200,6 +209,7 @@ def evaluate_transfer_solution(
         return float("inf"), None, None
 
     return min_dv, best_v1, best_v2
+
 
 def find_optimal_phase(
     r_park: float,
@@ -240,7 +250,7 @@ def find_optimal_phase(
     h_unit = h_unit / np.linalg.norm(h_unit)
 
     # Sample phase angles uniformly
-    phase_angles = np.linspace(0, 2*np.pi, num_samples)
+    phase_angles = np.linspace(0, 2 * np.pi, num_samples)
     best_dv = float("inf")
     best_phase = None
     best_r1 = None
@@ -251,7 +261,12 @@ def find_optimal_phase(
 
         # Evaluate transfer solution
         dv, v1, v2 = evaluate_transfer_solution(
-            r1, moon_pos, moon_vel, transfer_time, orbit_radius, max_revs,
+            r1,
+            moon_pos,
+            moon_vel,
+            transfer_time,
+            orbit_radius,
+            max_revs,
         )
 
         if dv < best_dv:
@@ -264,6 +279,7 @@ def find_optimal_phase(
         raise ValueError(msg)
 
     return best_phase, best_r1
+
 
 def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
     """Create rotation matrix for rotating around axis by angle.
@@ -282,8 +298,8 @@ def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
     axis = axis / np.linalg.norm(axis)
 
     # Rodriguez rotation formula
-    K = np.array([[0, -axis[2], axis[1]],
-                  [axis[2], 0, -axis[0]],
-                  [-axis[1], axis[0], 0]])
+    K = np.array(
+        [[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]]
+    )
     I = np.eye(3)
     return I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)

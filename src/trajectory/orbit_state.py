@@ -20,6 +20,7 @@ from .trajectory_physics import validate_basic_orbital_mechanics, validate_vecto
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 @dataclass
 class OrbitState:
     """Represents the state of an orbiting body.
@@ -110,11 +111,13 @@ class OrbitState:
 
         # Convert to vector in orbital plane
         true_anomaly_rad = np.radians(self.true_anomaly)
-        v_pqw = np.array([
-            v_r * np.cos(true_anomaly_rad) - v_t * np.sin(true_anomaly_rad),
-            v_r * np.sin(true_anomaly_rad) + v_t * np.cos(true_anomaly_rad),
-            0,
-        ])
+        v_pqw = np.array(
+            [
+                v_r * np.cos(true_anomaly_rad) - v_t * np.sin(true_anomaly_rad),
+                v_r * np.sin(true_anomaly_rad) + v_t * np.cos(true_anomaly_rad),
+                0,
+            ]
+        )
 
         # Transform to inertial frame
         return self._get_rotation_matrix() @ v_pqw
@@ -127,32 +130,41 @@ class OrbitState:
         argp = np.radians(self.arg_periapsis)
 
         # Rotation matrices
-        R_argp = np.array([
-            [np.cos(argp), -np.sin(argp), 0],
-            [np.sin(argp), np.cos(argp), 0],
-            [0, 0, 1],
-        ])
+        R_argp = np.array(
+            [
+                [np.cos(argp), -np.sin(argp), 0],
+                [np.sin(argp), np.cos(argp), 0],
+                [0, 0, 1],
+            ]
+        )
 
-        R_inc = np.array([
-            [1, 0, 0],
-            [0, np.cos(inc), -np.sin(inc)],
-            [0, np.sin(inc), np.cos(inc)],
-        ])
+        R_inc = np.array(
+            [
+                [1, 0, 0],
+                [0, np.cos(inc), -np.sin(inc)],
+                [0, np.sin(inc), np.cos(inc)],
+            ]
+        )
 
-        R_raan = np.array([
-            [np.cos(raan), -np.sin(raan), 0],
-            [np.sin(raan), np.cos(raan), 0],
-            [0, 0, 1],
-        ])
+        R_raan = np.array(
+            [
+                [np.cos(raan), -np.sin(raan), 0],
+                [np.sin(raan), np.cos(raan), 0],
+                [0, 0, 1],
+            ]
+        )
 
         # Combine rotation matrices
         return R_raan @ R_inc @ R_argp
 
     @classmethod
-    def from_state_vectors(cls, position: tuple[float, float, float],
-                         velocity: tuple[float, float, float],
-                         epoch: datetime | None = None,
-                         mu: float = pk.MU_EARTH) -> "OrbitState":
+    def from_state_vectors(
+        cls,
+        position: tuple[float, float, float],
+        velocity: tuple[float, float, float],
+        epoch: datetime | None = None,
+        mu: float = pk.MU_EARTH,
+    ) -> "OrbitState":
         """Create an OrbitState from position and velocity vectors.
 
         Args:
@@ -195,18 +207,20 @@ class OrbitState:
         # Calculate eccentricity vector
         r_mag = np.linalg.norm(r)
         v_mag = np.linalg.norm(v)
-        e = ((v_mag**2 - mu/r_mag) * r - np.dot(r, v) * v) / mu
+        e = ((v_mag**2 - mu / r_mag) * r - np.dot(r, v) * v) / mu
         ecc = np.linalg.norm(e)
 
         # Calculate specific orbital energy
-        energy = v_mag**2/2 - mu/r_mag
+        energy = v_mag**2 / 2 - mu / r_mag
 
         # Semi-major axis
         a = -mu / (2 * energy)
 
         # For hyperbolic orbits, modify to near-parabolic
         if ecc >= 1.0:
-            logger.warning(f"Converting hyperbolic orbit (e={ecc:.3f}) to near-parabolic")
+            logger.warning(
+                f"Converting hyperbolic orbit (e={ecc:.3f}) to near-parabolic"
+            )
             scale_factor = 0.98 / ecc
             v = v * scale_factor
             ecc = 0.98
@@ -215,20 +229,28 @@ class OrbitState:
         inc = np.arccos(h[2] / h_mag)
         raan = np.arccos(n[0] / n_mag) if n_mag > 0 else 0.0
         if n[1] < 0:
-            raan = 2*np.pi - raan
+            raan = 2 * np.pi - raan
 
-        argp = np.arccos(np.dot(n, e) / (n_mag * ecc)) if n_mag > 0 and ecc > 1e-10 else 0.0
+        argp = (
+            np.arccos(np.dot(n, e) / (n_mag * ecc))
+            if n_mag > 0 and ecc > 1e-10
+            else 0.0
+        )
         if e[2] < 0:
-            argp = 2*np.pi - argp
+            argp = 2 * np.pi - argp
 
-        ta = np.arccos(np.dot(e, r) / (ecc * r_mag)) if ecc > 1e-10 else np.arccos(np.dot(n, r) / (n_mag * r_mag))
+        ta = (
+            np.arccos(np.dot(e, r) / (ecc * r_mag))
+            if ecc > 1e-10
+            else np.arccos(np.dot(n, r) / (n_mag * r_mag))
+        )
         if np.isnan(ta):
             ta = 0.0  # Default for circular orbits or numerical issues
         if np.dot(r, v) < 0:
-            ta = 2*np.pi - ta
+            ta = 2 * np.pi - ta
 
         return cls(
-            semi_major_axis=abs(a)/1000.0,
+            semi_major_axis=abs(a) / 1000.0,
             eccentricity=ecc,
             inclination=np.degrees(inc),
             raan=np.degrees(raan),
@@ -273,7 +295,9 @@ class OrbitState:
             "temp",
         )
 
-    def get_state_vectors(self, mu: float = pk.MU_EARTH) -> tuple[np.ndarray, np.ndarray]:
+    def get_state_vectors(
+        self, mu: float = pk.MU_EARTH
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Get position and velocity vectors.
 
         Args:
@@ -285,7 +309,9 @@ class OrbitState:
         """
         return km_to_m(self.position), km_to_m(self.velocity(mu))
 
-    def get_state_vectors_km(self, mu: float = pk.MU_EARTH) -> tuple[np.ndarray, np.ndarray]:
+    def get_state_vectors_km(
+        self, mu: float = pk.MU_EARTH
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Get position and velocity vectors in km and km/s.
 
         Args:

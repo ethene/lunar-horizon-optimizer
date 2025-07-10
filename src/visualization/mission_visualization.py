@@ -183,7 +183,8 @@ class MissionVisualizer:
 
         # Create subplots for each resource type
         fig = make_subplots(
-            rows=len(resource_types), cols=1,
+            rows=len(resource_types),
+            cols=1,
             subplot_titles=[f"{res.title()} Utilization" for res in resource_types],
             vertical_spacing=0.1,
             shared_xaxes=True,
@@ -194,7 +195,7 @@ class MissionVisualizer:
         end_date = max(phase.end_date for phase in phases)
         date_range = pd.date_range(start_date, end_date, freq="D")
 
-        colors = px.colors.qualitative.Set1[:len(resource_types)]
+        colors = px.colors.qualitative.Set1[: len(resource_types)]
 
         for idx, resource_type in enumerate(resource_types):
             # Calculate daily resource utilization
@@ -203,10 +204,14 @@ class MissionVisualizer:
             for phase in phases:
                 if phase.resources and resource_type in phase.resources:
                     phase_start_idx = max(0, (phase.start_date - start_date).days)
-                    phase_end_idx = min(len(date_range), (phase.end_date - start_date).days + 1)
+                    phase_end_idx = min(
+                        len(date_range), (phase.end_date - start_date).days + 1
+                    )
 
                     if phase_end_idx > phase_start_idx and phase.resources:
-                        daily_amount = phase.resources[resource_type] / (phase_end_idx - phase_start_idx)
+                        daily_amount = phase.resources[resource_type] / (
+                            phase_end_idx - phase_start_idx
+                        )
                         daily_utilization[phase_start_idx:phase_end_idx] += daily_amount
 
             # Add utilization trace
@@ -220,7 +225,8 @@ class MissionVisualizer:
                     line={"color": colors[idx % len(colors)], "width": 2},
                     showlegend=True,
                 ),
-                row=idx + 1, col=1,
+                row=idx + 1,
+                col=1,
             )
 
             # Add peak utilization annotation
@@ -234,7 +240,8 @@ class MissionVisualizer:
                 showarrow=True,
                 arrowhead=2,
                 arrowcolor=colors[idx % len(colors)],
-                row=idx + 1, col=1,
+                row=idx + 1,
+                col=1,
             )
 
         # Update layout
@@ -272,7 +279,11 @@ class MissionVisualizer:
 
         # Add all phases
         for phase in phases:
-            color = self.config.critical_path_color if phase.critical_path else self._get_phase_color(phase.category)
+            color = (
+                self.config.critical_path_color
+                if phase.critical_path
+                else self._get_phase_color(phase.category)
+            )
             width = self.config.critical_path_width if phase.critical_path else 2
 
             fig.add_trace(
@@ -284,9 +295,9 @@ class MissionVisualizer:
                     line={"color": color, "width": width},
                     marker={"size": 8},
                     hovertemplate=f"<b>{phase.name}</b><br>"
-                                f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
-                                f"Critical: {'Yes' if phase.critical_path else 'No'}<br>"
-                                f"Risk: {phase.risk_level}<extra></extra>",
+                    f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
+                    f"Critical: {'Yes' if phase.critical_path else 'No'}<br>"
+                    f"Risk: {phase.risk_level}<extra></extra>",
                 ),
             )
 
@@ -329,7 +340,8 @@ class MissionVisualizer:
 
         # Create 2x2 subplot layout
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Mission Timeline",
                 "Phase Status",
@@ -344,7 +356,9 @@ class MissionVisualizer:
         )
 
         # 1. Mission Timeline (Top, full width)
-        self._add_dashboard_timeline(fig, phases, milestones, current_date, row=1, col=1)
+        self._add_dashboard_timeline(
+            fig, phases, milestones, current_date, row=1, col=1
+        )
 
         # 2. Phase Status
         self._add_phase_status_chart(fig, phases, current_date, row=2, col=1)
@@ -402,8 +416,8 @@ class MissionVisualizer:
                     line={"color": color, "width": 6},
                     marker={"size": 10, "color": color},
                     hovertemplate=f"<b>{phase.name}</b><br>"
-                                f"Risk Level: {phase.risk_level}<br>"
-                                f"Duration: {(phase.end_date - phase.start_date).days} days<extra></extra>",
+                    f"Risk Level: {phase.risk_level}<br>"
+                    f"Duration: {(phase.end_date - phase.start_date).days} days<extra></extra>",
                 ),
             )
 
@@ -450,22 +464,26 @@ class MissionVisualizer:
                     line={"color": color, "width": 8},
                     marker={"size": 10, "color": color},
                     hovertemplate=f"<b>{phase.name}</b><br>"
-                                f"Start: {phase.start_date.strftime('%Y-%m-%d')}<br>"
-                                f"End: {phase.end_date.strftime('%Y-%m-%d')}<br>"
-                                f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
-                                f"Category: {phase.category}<br>"
-                                f"Cost: ${phase.cost/1e6:.1f}M<extra></extra>",
+                    f"Start: {phase.start_date.strftime('%Y-%m-%d')}<br>"
+                    f"End: {phase.end_date.strftime('%Y-%m-%d')}<br>"
+                    f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
+                    f"Category: {phase.category}<br>"
+                    f"Cost: ${phase.cost/1e6:.1f}M<extra></extra>",
                 ),
             )
 
-    def _add_milestones(self, fig: go.Figure, milestones: list[MissionMilestone]) -> None:
+    def _add_milestones(
+        self, fig: go.Figure, milestones: list[MissionMilestone]
+    ) -> None:
         """Add milestones to timeline."""
         milestone_y_positions: dict[str, str] = {}
 
         for milestone in milestones:
             # Create unique y-position for milestone
             if milestone.category not in milestone_y_positions:
-                milestone_y_positions[milestone.category] = f"Milestone {len(milestone_y_positions) + 1}"
+                milestone_y_positions[milestone.category] = (
+                    f"Milestone {len(milestone_y_positions) + 1}"
+                )
 
             y_pos = milestone_y_positions[milestone.category]
 
@@ -484,9 +502,9 @@ class MissionVisualizer:
                         "line": {"width": 2, "color": "white"},
                     },
                     hovertemplate=f"<b>{milestone.name}</b><br>"
-                                f"Date: {milestone.date.strftime('%Y-%m-%d')}<br>"
-                                f"Category: {milestone.category}<br>"
-                                f"Description: {milestone.description}<extra></extra>",
+                    f"Date: {milestone.date.strftime('%Y-%m-%d')}<br>"
+                    f"Category: {milestone.category}<br>"
+                    f"Description: {milestone.description}<extra></extra>",
                 ),
             )
 
@@ -506,8 +524,10 @@ class MissionVisualizer:
                         y=dep_phase.name,
                         ax=phase.start_date,
                         ay=phase.name,
-                        xref="x", yref="y",
-                        axref="x", ayref="y",
+                        xref="x",
+                        yref="y",
+                        axref="x",
+                        ayref="y",
                         arrowhead=2,
                         arrowsize=1,
                         arrowwidth=2,
@@ -548,7 +568,8 @@ class MissionVisualizer:
                     line={"color": color, "width": 6},
                     showlegend=False,
                 ),
-                row=row, col=col,
+                row=row,
+                col=col,
             )
 
     def _add_phase_status_chart(
@@ -573,7 +594,11 @@ class MissionVisualizer:
 
         statuses = list(status_counts.keys())
         counts = list(status_counts.values())
-        colors = [self.config.development_color, self.config.launch_color, self.config.completion_color]
+        colors = [
+            self.config.development_color,
+            self.config.launch_color,
+            self.config.completion_color,
+        ]
 
         fig.add_trace(
             go.Bar(
@@ -584,7 +609,8 @@ class MissionVisualizer:
                 textposition="auto",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_upcoming_milestones_table(
@@ -604,12 +630,14 @@ class MissionVisualizer:
             table_data = []
             for milestone in upcoming[:5]:  # Top 5 upcoming
                 days_until = (milestone.date - current_date).days
-                table_data.append([
-                    milestone.name,
-                    milestone.date.strftime("%Y-%m-%d"),
-                    f"{days_until} days",
-                    milestone.category,
-                ])
+                table_data.append(
+                    [
+                        milestone.name,
+                        milestone.date.strftime("%Y-%m-%d"),
+                        f"{days_until} days",
+                        milestone.category,
+                    ]
+                )
 
             fig.add_trace(
                 go.Table(
@@ -626,19 +654,26 @@ class MissionVisualizer:
                         "font": {"size": 11},
                     },
                 ),
-                row=row, col=col,
+                row=row,
+                col=col,
             )
         else:
             # Add empty table message
             fig.add_annotation(
                 text="No upcoming milestones",
-                xref=f"x{col}", yref=f"y{col}",
-                x=0.5, y=0.5, showarrow=False,
+                xref=f"x{col}",
+                yref=f"y{col}",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
                 font={"size": 14, "color": "gray"},
-                row=row, col=col,
+                row=row,
+                col=col,
             )
 
-    def _calculate_critical_path(self, phases: list[MissionPhase]) -> list[MissionPhase]:
+    def _calculate_critical_path(
+        self, phases: list[MissionPhase]
+    ) -> list[MissionPhase]:
         """Calculate critical path (simplified implementation)."""
         # Mark phases on critical path based on dependencies and duration
         phase_dict = {phase.name: phase for phase in phases}
@@ -656,7 +691,9 @@ class MissionVisualizer:
 
         return [phase for phase in phases if phase.critical_path]
 
-    def _add_dependency_arrows(self, fig: go.Figure, phases: list[MissionPhase]) -> None:
+    def _add_dependency_arrows(
+        self, fig: go.Figure, phases: list[MissionPhase]
+    ) -> None:
         """Add dependency arrows for critical path visualization."""
         phase_dict = {phase.name: phase for phase in phases}
 
@@ -666,9 +703,11 @@ class MissionVisualizer:
                     if dep_name in phase_dict:
                         dep_phase = phase_dict[dep_name]
 
-                    arrow_color = self.config.critical_path_color if (
-                        phase.critical_path and dep_phase.critical_path
-                    ) else "gray"
+                    arrow_color = (
+                        self.config.critical_path_color
+                        if (phase.critical_path and dep_phase.critical_path)
+                        else "gray"
+                    )
 
                     fig.add_annotation(
                         x=dep_phase.end_date,
@@ -719,8 +758,11 @@ class MissionVisualizer:
         fig = go.Figure()
         fig.add_annotation(
             text=message,
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 16, "color": "gray"},
         )
         return fig

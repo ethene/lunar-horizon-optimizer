@@ -26,15 +26,17 @@ class LunarMissionProblem:
     for delta-v, time, and cost.
     """
 
-    def __init__(self,
-                 cost_factors: CostFactors = None,
-                 min_earth_alt: float = 200,    # km
-                 max_earth_alt: float = 1000,   # km
-                 min_moon_alt: float = 50,      # km
-                 max_moon_alt: float = 500,     # km
-                 min_transfer_time: float = 3.0,  # days
-                 max_transfer_time: float = 10.0, # days
-                 reference_epoch: float = 10000.0) -> None:  # days since J2000
+    def __init__(
+        self,
+        cost_factors: CostFactors = None,
+        min_earth_alt: float = 200,  # km
+        max_earth_alt: float = 1000,  # km
+        min_moon_alt: float = 50,  # km
+        max_moon_alt: float = 500,  # km
+        min_transfer_time: float = 3.0,  # days
+        max_transfer_time: float = 10.0,  # days
+        reference_epoch: float = 10000.0,
+    ) -> None:  # days since J2000
         """Initialize the lunar mission optimization problem.
 
         Args:
@@ -72,10 +74,12 @@ class LunarMissionProblem:
         self._cache_hits = 0
         self._cache_misses = 0
 
-        logger.info(f"Initialized LunarMissionProblem with bounds: "
-                   f"Earth [{min_earth_alt}-{max_earth_alt}] km, "
-                   f"Moon [{min_moon_alt}-{max_moon_alt}] km, "
-                   f"Time [{min_transfer_time}-{max_transfer_time}] days")
+        logger.info(
+            f"Initialized LunarMissionProblem with bounds: "
+            f"Earth [{min_earth_alt}-{max_earth_alt}] km, "
+            f"Moon [{min_moon_alt}-{max_moon_alt}] km, "
+            f"Time [{min_transfer_time}-{max_transfer_time}] days"
+        )
 
     def fitness(self, x: list[float]) -> list[float]:
         """Evaluate fitness for multi-objective optimization.
@@ -160,7 +164,7 @@ class LunarMissionProblem:
         """
         return "Lunar Mission Multi-Objective Optimization"
 
-    def get_cache_stats(self) -> dict[str, int]:
+    def get_cache_stats(self) -> dict[str, int | float]:
         """Get trajectory cache statistics.
 
         Returns
@@ -171,11 +175,11 @@ class LunarMissionProblem:
         hit_rate = self._cache_hits / total if total > 0 else 0
 
         return {
-            "cache_hits": self._cache_hits,
-            "cache_misses": self._cache_misses,
-            "total_evaluations": total,
-            "hit_rate": hit_rate,
-            "cache_size": len(self._trajectory_cache),
+            "cache_hits": int(self._cache_hits),
+            "cache_misses": int(self._cache_misses),
+            "total_evaluations": int(total),
+            "hit_rate": float(hit_rate),
+            "cache_size": int(len(self._trajectory_cache)),
         }
 
     def clear_cache(self) -> None:
@@ -185,7 +189,9 @@ class LunarMissionProblem:
         self._cache_misses = 0
         logger.info("Trajectory cache cleared")
 
-    def _create_cache_key(self, earth_alt: float, moon_alt: float, transfer_time: float) -> str:
+    def _create_cache_key(
+        self, earth_alt: float, moon_alt: float, transfer_time: float
+    ) -> str:
         """Create cache key for parameter combination.
 
         Args:
@@ -209,11 +215,13 @@ class GlobalOptimizer:
     generate Pareto fronts for lunar transfer trajectories.
     """
 
-    def __init__(self,
-                 problem: LunarMissionProblem = None,
-                 population_size: int = 100,
-                 num_generations: int = 100,
-                 seed: int = 42) -> None:
+    def __init__(
+        self,
+        problem: LunarMissionProblem = None,
+        population_size: int = 100,
+        num_generations: int = 100,
+        seed: int = 42,
+    ) -> None:
         """Initialize the global optimizer.
 
         Args:
@@ -238,8 +246,10 @@ class GlobalOptimizer:
         self.population = None
         self.optimization_history = []
 
-        logger.info(f"Initialized GlobalOptimizer with NSGA-II: "
-                   f"pop_size={population_size}, generations={num_generations}")
+        logger.info(
+            f"Initialized GlobalOptimizer with NSGA-II: "
+            f"pop_size={population_size}, generations={num_generations}"
+        )
 
     def optimize(self, verbose: bool = True) -> dict[str, Any]:
         """Run multi-objective optimization.
@@ -251,10 +261,14 @@ class GlobalOptimizer:
         -------
             Dictionary with optimization results
         """
-        logger.info(f"Starting NSGA-II optimization: {self.num_generations} generations")
+        logger.info(
+            f"Starting NSGA-II optimization: {self.num_generations} generations"
+        )
 
         # Initialize population
-        self.population = pg.population(self.pg_problem, self.population_size, seed=self.seed)
+        self.population = pg.population(
+            self.pg_problem, self.population_size, seed=self.seed
+        )
 
         if verbose:
             logger.info(f"Initial population: {len(self.population)} individuals")
@@ -312,17 +326,21 @@ class GlobalOptimizer:
             results["cache_stats"] = {}
 
         if verbose:
-            logger.info(f"Optimization completed: {len(final_pareto)} Pareto solutions found")
+            logger.info(
+                f"Optimization completed: {len(final_pareto)} Pareto solutions found"
+            )
             if hasattr(self.problem, "get_cache_stats"):
                 cache_stats = self.problem.get_cache_stats()
-                logger.info(f"Cache efficiency: {cache_stats.get('hit_rate', 0):.1%} "
-                           f"({cache_stats.get('cache_hits', 0)}/{cache_stats.get('total_evaluations', 0)} hits)")
+                logger.info(
+                    f"Cache efficiency: {cache_stats.get('hit_rate', 0):.1%} "
+                    f"({cache_stats.get('cache_hits', 0)}/{cache_stats.get('total_evaluations', 0)} hits)"
+                )
 
         return results
 
-    def get_best_solutions(self,
-                          num_solutions: int = 10,
-                          preference_weights: list[float] | None = None) -> list[dict[str, Any]]:
+    def get_best_solutions(
+        self, num_solutions: int = 10, preference_weights: list[float] | None = None
+    ) -> list[dict[str, Any]]:
         """Get best solutions from Pareto front based on preferences.
 
         Args:
@@ -352,14 +370,23 @@ class GlobalOptimizer:
 
             # Convert objectives to list if it's a dictionary
             if isinstance(objectives, dict):
-                obj_list = [objectives["delta_v"], objectives["time"], objectives["cost"]]
+                obj_list = [
+                    objectives["delta_v"],
+                    objectives["time"],
+                    objectives["cost"],
+                ]
             else:
                 obj_list = objectives
 
             # Normalize objectives (lower is better for all)
-            norm_objectives = self._normalize_objectives([obj_list], pareto_solutions)[0]
+            norm_objectives = self._normalize_objectives([obj_list], pareto_solutions)[
+                0
+            ]
             # Calculate weighted score
-            weighted_score = sum(w * obj for w, obj in zip(preference_weights, norm_objectives, strict=False))
+            weighted_score = sum(
+                w * obj
+                for w, obj in zip(preference_weights, norm_objectives, strict=False)
+            )
 
             # Add weighted score to solution for testing
             sol_with_score = sol.copy()
@@ -394,7 +421,9 @@ class GlobalOptimizer:
             return [population.get_f()[i].tolist() for i in pareto_indices]
         return []
 
-    def _extract_pareto_solutions(self, population: pg.population) -> list[dict[str, Any]]:
+    def _extract_pareto_solutions(
+        self, population: pg.population
+    ) -> list[dict[str, Any]]:
         """Extract complete Pareto solutions with parameters and objectives.
 
         Args:
@@ -437,18 +466,18 @@ class GlobalOptimizer:
                     "transfer_time": params[2],
                 }
                 solution["objectives"] = {
-                    "delta_v": objectives[0],      # m/s
-                    "time": objectives[1],         # seconds
-                    "cost": objectives[2],          # cost units
+                    "delta_v": objectives[0],  # m/s
+                    "time": objectives[1],  # seconds
+                    "cost": objectives[2],  # cost units
                 }
 
             solutions.append(solution)
 
         return solutions
 
-    def _normalize_objectives(self,
-                            objective_vectors: list[list[float]],
-                            all_solutions: list[dict[str, Any]]) -> list[list[float]]:
+    def _normalize_objectives(
+        self, objective_vectors: list[list[float]], all_solutions: list[dict[str, Any]]
+    ) -> list[list[float]]:
         """Normalize objectives for weighted ranking.
 
         Args:
@@ -480,7 +509,9 @@ class GlobalOptimizer:
         normalized = []
         for objectives in objective_vectors:
             norm_obj = []
-            for _i, (obj, min_val, max_val) in enumerate(zip(objectives, min_vals, max_vals, strict=False)):
+            for _i, (obj, min_val, max_val) in enumerate(
+                zip(objectives, min_vals, max_vals, strict=False)
+            ):
                 if max_val > min_val:
                     norm_obj.append((obj - min_val) / (max_val - min_val))
                 else:
@@ -502,13 +533,16 @@ class GlobalOptimizer:
             time_values = [f[1] for f in fitness_values]
             cost_values = [f[2] for f in fitness_values]
 
-            logger.info(f"{label} - Best ΔV: {min(delta_v_values):.0f} m/s, "
-                       f"Best Time: {min(time_values)/86400:.1f} days, "
-                       f"Best Cost: {min(cost_values):.0f}")
+            logger.info(
+                f"{label} - Best ΔV: {min(delta_v_values):.0f} m/s, "
+                f"Best Time: {min(time_values)/86400:.1f} days, "
+                f"Best Cost: {min(cost_values):.0f}"
+            )
 
 
-def optimize_lunar_mission(cost_factors: CostFactors = None,
-                          optimization_config: dict[str, Any] | None = None) -> dict[str, Any]:
+def optimize_lunar_mission(
+    cost_factors: CostFactors = None, optimization_config: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Convenience function for lunar mission optimization.
 
     Args:

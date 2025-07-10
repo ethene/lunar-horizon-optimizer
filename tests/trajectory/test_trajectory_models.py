@@ -23,6 +23,7 @@ import numpy as np
 from datetime import datetime
 from src.trajectory.models import OrbitState, Maneuver, Trajectory
 
+
 class TestOrbitState:
     """Test suite for OrbitState model validation.
 
@@ -48,7 +49,7 @@ class TestOrbitState:
             inclination=self.VALID_INCLINATION,
             raan=0.0,
             arg_periapsis=0.0,
-            true_anomaly=0.0
+            true_anomaly=0.0,
         )
         assert orbit is not None, "Valid orbit state creation failed"
 
@@ -66,7 +67,7 @@ class TestOrbitState:
                 inclination=0.0,
                 raan=0.0,
                 arg_periapsis=0.0,
-                true_anomaly=0.0
+                true_anomaly=0.0,
             )
 
     def test_invalid_eccentricity(self):
@@ -83,7 +84,7 @@ class TestOrbitState:
                 inclination=0.0,
                 raan=0.0,
                 arg_periapsis=0.0,
-                true_anomaly=0.0
+                true_anomaly=0.0,
             )
 
     def test_invalid_inclination(self):
@@ -99,7 +100,7 @@ class TestOrbitState:
                 inclination=200.0,
                 raan=0.0,
                 arg_periapsis=0.0,
-                true_anomaly=0.0
+                true_anomaly=0.0,
             )
 
     def test_invalid_angles(self):
@@ -113,19 +114,22 @@ class TestOrbitState:
         for param, name in [
             ("raan", "RAAN"),
             ("arg_periapsis", "Argument of periapsis"),
-            ("true_anomaly", "True anomaly")
+            ("true_anomaly", "True anomaly"),
         ]:
-            with pytest.raises(ValueError, match=f"{name} must be between 0 and 360 degrees"):
+            with pytest.raises(
+                ValueError, match=f"{name} must be between 0 and 360 degrees"
+            ):
                 kwargs = {
                     "semi_major_axis": 6678.0,
                     "eccentricity": 0.0,
                     "inclination": 0.0,
                     "raan": 0.0,
                     "arg_periapsis": 0.0,
-                    "true_anomaly": 0.0
+                    "true_anomaly": 0.0,
                 }
                 kwargs[param] = 400.0
                 OrbitState(**kwargs)
+
 
 class TestManeuver:
     """Test suite for Maneuver model validation.
@@ -147,12 +151,11 @@ class TestManeuver:
         - Maneuver object properties match inputs
         """
         delta_v = np.array([self.VALID_DELTA_V, 0.0, 0.0])
-        maneuver = Maneuver(
-            delta_v=delta_v,
-            epoch=self.VALID_EPOCH
-        )
+        maneuver = Maneuver(delta_v=delta_v, epoch=self.VALID_EPOCH)
         assert maneuver is not None, "Valid maneuver creation failed"
-        np.testing.assert_array_equal(maneuver.delta_v, delta_v, "Delta-v vector mismatch")
+        np.testing.assert_array_equal(
+            maneuver.delta_v, delta_v, "Delta-v vector mismatch"
+        )
 
     def test_invalid_delta_v(self):
         """Test validation of delta-v vector.
@@ -162,10 +165,7 @@ class TestManeuver:
         - Invalid shapes raise ValueError
         """
         with pytest.raises(ValueError, match="delta_v must be a 3D vector"):
-            Maneuver(
-                delta_v=np.array([1.0, 0.0]),
-                epoch=1000.0
-            )
+            Maneuver(delta_v=np.array([1.0, 0.0]), epoch=1000.0)
 
     def test_invalid_epoch(self):
         """Test validation of maneuver epoch.
@@ -176,8 +176,9 @@ class TestManeuver:
         with pytest.raises(ValueError, match="Time must be timezone-aware"):
             Maneuver(
                 delta_v=np.array([1.0, 0.0, 0.0]),
-                epoch=datetime(2024, 1, 1)  # Non-timezone-aware datetime
+                epoch=datetime(2024, 1, 1),  # Non-timezone-aware datetime
             )
+
 
 class TestTrajectory:
     """Test suite for Trajectory model validation.
@@ -203,7 +204,7 @@ class TestTrajectory:
         - Single TLI maneuver
         """
         self.departure_epoch = 0.0  # MJD2000
-        self.arrival_epoch = 5.0    # MJD2000 (+5 days)
+        self.arrival_epoch = 5.0  # MJD2000 (+5 days)
 
         self.initial_state = OrbitState(
             semi_major_axis=self.EARTH_RADIUS + self.LEO_ALTITUDE,
@@ -211,7 +212,7 @@ class TestTrajectory:
             inclination=28.5,
             raan=0.0,
             arg_periapsis=0.0,
-            true_anomaly=0.0
+            true_anomaly=0.0,
         )
 
         self.final_state = OrbitState(
@@ -220,13 +221,13 @@ class TestTrajectory:
             inclination=28.5,
             raan=0.0,
             arg_periapsis=0.0,
-            true_anomaly=0.0
+            true_anomaly=0.0,
         )
 
         self.maneuvers = [
             Maneuver(
                 delta_v=np.array([self.TLI_DELTA_V, 0.0, 0.0]),
-                epoch=1.0  # MJD2000 (+1 day)
+                epoch=1.0,  # MJD2000 (+1 day)
             )
         ]
 
@@ -244,7 +245,7 @@ class TestTrajectory:
             maneuvers=self.maneuvers,
             central_body="Earth",
             departure_epoch=self.departure_epoch,
-            arrival_epoch=self.arrival_epoch
+            arrival_epoch=self.arrival_epoch,
         )
         assert trajectory is not None
 
@@ -255,14 +256,16 @@ class TestTrajectory:
         - Arrival before departure raises ValueError
         - Equal epochs raise ValueError
         """
-        with pytest.raises(ValueError, match="Arrival epoch must be after departure epoch"):
+        with pytest.raises(
+            ValueError, match="Arrival epoch must be after departure epoch"
+        ):
             Trajectory(
                 initial_state=self.initial_state,
                 final_state=self.final_state,
                 maneuvers=self.maneuvers,
                 central_body="Earth",
                 departure_epoch=self.arrival_epoch,
-                arrival_epoch=self.departure_epoch
+                arrival_epoch=self.departure_epoch,
             )
 
     def test_invalid_maneuver_timing(self):
@@ -275,7 +278,7 @@ class TestTrajectory:
         invalid_maneuvers = [
             Maneuver(
                 delta_v=np.array([3.1, 0.0, 0.0]),
-                epoch=10.0  # Outside trajectory timespan
+                epoch=10.0,  # Outside trajectory timespan
             )
         ]
         with pytest.raises(ValueError, match="Maneuver epoch .* must be between"):
@@ -285,5 +288,5 @@ class TestTrajectory:
                 maneuvers=invalid_maneuvers,
                 central_body="Earth",
                 departure_epoch=self.departure_epoch,
-                arrival_epoch=self.arrival_epoch
+                arrival_epoch=self.arrival_epoch,
             )

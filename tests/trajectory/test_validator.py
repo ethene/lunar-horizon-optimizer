@@ -17,6 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 class TestTrajectoryValidator:
     """Test suite for TrajectoryValidator class."""
 
@@ -28,16 +29,14 @@ class TestTrajectoryValidator:
             min_moon_alt=50,
             max_moon_alt=500,
             min_transfer_time=2.0,
-            max_transfer_time=7.0
+            max_transfer_time=7.0,
         )
 
     def test_valid_inputs(self):
         """Test that valid inputs pass validation."""
         # Should not raise any exceptions
         self.validator.validate_inputs(
-            earth_orbit_alt=300,
-            moon_orbit_alt=100,
-            transfer_time=3.5
+            earth_orbit_alt=300, moon_orbit_alt=100, transfer_time=3.5
         )
 
     def test_invalid_earth_altitude(self):
@@ -46,7 +45,7 @@ class TestTrajectoryValidator:
             self.validator.validate_inputs(
                 earth_orbit_alt=100,  # Below minimum
                 moon_orbit_alt=100,
-                transfer_time=3.5
+                transfer_time=3.5,
             )
         assert "Earth orbit altitude must be between" in str(exc_info.value)
 
@@ -54,7 +53,7 @@ class TestTrajectoryValidator:
             self.validator.validate_inputs(
                 earth_orbit_alt=1200,  # Above maximum
                 moon_orbit_alt=100,
-                transfer_time=3.5
+                transfer_time=3.5,
             )
         assert "Earth orbit altitude must be between" in str(exc_info.value)
 
@@ -64,7 +63,7 @@ class TestTrajectoryValidator:
             self.validator.validate_inputs(
                 earth_orbit_alt=300,
                 moon_orbit_alt=25,  # Below minimum
-                transfer_time=3.5
+                transfer_time=3.5,
             )
         assert "Moon orbit altitude must be between" in str(exc_info.value)
 
@@ -72,7 +71,7 @@ class TestTrajectoryValidator:
             self.validator.validate_inputs(
                 earth_orbit_alt=300,
                 moon_orbit_alt=600,  # Above maximum
-                transfer_time=3.5
+                transfer_time=3.5,
             )
         assert "Moon orbit altitude must be between" in str(exc_info.value)
 
@@ -82,7 +81,7 @@ class TestTrajectoryValidator:
             self.validator.validate_inputs(
                 earth_orbit_alt=300,
                 moon_orbit_alt=100,
-                transfer_time=1.5  # Below minimum
+                transfer_time=1.5,  # Below minimum
             )
         assert "Transfer time must be between" in str(exc_info.value)
 
@@ -90,31 +89,26 @@ class TestTrajectoryValidator:
             self.validator.validate_inputs(
                 earth_orbit_alt=300,
                 moon_orbit_alt=100,
-                transfer_time=8.0  # Above maximum
+                transfer_time=8.0,  # Above maximum
             )
         assert "Transfer time must be between" in str(exc_info.value)
 
     def test_delta_v_validation(self):
         """Test validation of delta-v values."""
         # Valid delta-v values should not raise exceptions
-        self.validator.validate_delta_v(
-            tli_dv=3200,  # m/s
-            loi_dv=850    # m/s
-        )
+        self.validator.validate_delta_v(tli_dv=3200, loi_dv=850)  # m/s  # m/s
 
         # Test TLI delta-v limit
         with pytest.raises(ValueError) as exc_info:
             self.validator.validate_delta_v(
-                tli_dv=3600,  # Exceeds 3500 m/s limit
-                loi_dv=850
+                tli_dv=3600, loi_dv=850  # Exceeds 3500 m/s limit
             )
         assert "TLI delta-v" in str(exc_info.value)
 
         # Test LOI delta-v limit
         with pytest.raises(ValueError) as exc_info:
             self.validator.validate_delta_v(
-                tli_dv=3200,
-                loi_dv=1300  # Exceeds 1200 m/s limit
+                tli_dv=3200, loi_dv=1300  # Exceeds 1200 m/s limit
             )
         assert "LOI delta-v" in str(exc_info.value)
 
@@ -123,27 +117,27 @@ class TestTrajectoryValidator:
         # Test minimum valid values
         self.validator.validate_inputs(
             earth_orbit_alt=200,  # Minimum Earth altitude
-            moon_orbit_alt=50,   # Minimum Moon altitude
-            transfer_time=2.0    # Minimum transfer time
+            moon_orbit_alt=50,  # Minimum Moon altitude
+            transfer_time=2.0,  # Minimum transfer time
         )
 
         # Test maximum valid values
         self.validator.validate_inputs(
             earth_orbit_alt=1000,  # Maximum Earth altitude
-            moon_orbit_alt=500,   # Maximum Moon altitude
-            transfer_time=7.0     # Maximum transfer time
+            moon_orbit_alt=500,  # Maximum Moon altitude
+            transfer_time=7.0,  # Maximum transfer time
         )
 
     def test_unit_conversions(self):
         """Test that unit conversions are handled correctly."""
         # Create validator with values in km
         validator = TrajectoryValidator(
-            min_earth_alt=200,      # km
-            max_earth_alt=1000,     # km
-            min_moon_alt=50,        # km
-            max_moon_alt=500,       # km
+            min_earth_alt=200,  # km
+            max_earth_alt=1000,  # km
+            min_moon_alt=50,  # km
+            max_moon_alt=500,  # km
             min_transfer_time=2.0,  # days
-            max_transfer_time=7.0   # days
+            max_transfer_time=7.0,  # days
         )
 
         # Internal values should be in meters
@@ -154,17 +148,17 @@ class TestTrajectoryValidator:
 
         # Test with values in meters
         earth_alt_m = km_to_m(300)  # 300 km to m
-        moon_alt_m = km_to_m(100)   # 100 km to m
+        moon_alt_m = km_to_m(100)  # 100 km to m
 
         # Should handle both km and m inputs correctly
         validator.validate_inputs(
             earth_orbit_alt=300,  # km
             moon_orbit_alt=m_to_km(moon_alt_m),  # Convert back to km
-            transfer_time=3.5
+            transfer_time=3.5,
         )
 
         validator.validate_inputs(
             earth_orbit_alt=m_to_km(earth_alt_m),  # Convert back to km
             moon_orbit_alt=100,  # km
-            transfer_time=3.5
+            transfer_time=3.5,
         )

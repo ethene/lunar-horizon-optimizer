@@ -15,14 +15,15 @@ import os
 import tempfile
 import json
 from datetime import datetime, timedelta
+
 # Note: No mocking used - all tests use real implementations
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # Test constants
-EARTH_RADIUS = 6378137.0   # m
-MOON_RADIUS = 1737400.0    # m
+EARTH_RADIUS = 6378137.0  # m
+MOON_RADIUS = 1737400.0  # m
 
 
 class TestFinancialModels:
@@ -32,8 +33,11 @@ class TestFinancialModels:
         """Setup test fixtures."""
         try:
             from economics.financial_models import (
-                CashFlowModel, NPVAnalyzer, ROICalculator,
-                FinancialParameters, CashFlow
+                CashFlowModel,
+                NPVAnalyzer,
+                ROICalculator,
+                FinancialParameters,
+                CashFlow,
             )
 
             self.FinancialParameters = FinancialParameters
@@ -47,7 +51,7 @@ class TestFinancialModels:
                 discount_rate=0.08,
                 inflation_rate=0.03,
                 tax_rate=0.25,
-                project_duration_years=10
+                project_duration_years=10,
             )
 
         except ImportError:
@@ -78,7 +82,7 @@ class TestFinancialModels:
             date=date,
             amount=-100e6,
             category="development",
-            description="Initial development cost"
+            description="Initial development cost",
         )
 
         assert cash_flow.date == date
@@ -92,9 +96,7 @@ class TestFinancialModels:
         start_date = datetime(2025, 1, 1)
 
         cash_model.add_development_costs(
-            total_cost=100e6,
-            start_date=start_date,
-            duration_months=24
+            total_cost=100e6, start_date=start_date, duration_months=24
         )
 
         # Should create 24 monthly cash flows
@@ -108,15 +110,9 @@ class TestFinancialModels:
     def test_launch_costs_addition(self):
         """Test adding launch costs."""
         cash_model = self.CashFlowModel(self.params)
-        launch_dates = [
-            datetime(2025, 6, 1),
-            datetime(2025, 12, 1)
-        ]
+        launch_dates = [datetime(2025, 6, 1), datetime(2025, 12, 1)]
 
-        cash_model.add_launch_costs(
-            cost_per_launch=50e6,
-            launch_dates=launch_dates
-        )
+        cash_model.add_launch_costs(cost_per_launch=50e6, launch_dates=launch_dates)
 
         # Should create 2 launch cash flows
         launch_flows = [cf for cf in cash_model.cash_flows if cf.category == "launch"]
@@ -132,9 +128,7 @@ class TestFinancialModels:
         start_date = datetime(2025, 6, 1)
 
         cash_model.add_operational_costs(
-            monthly_cost=5e6,
-            start_date=start_date,
-            duration_months=36
+            monthly_cost=5e6, start_date=start_date, duration_months=36
         )
 
         # Should create 36 monthly operational cash flows
@@ -143,7 +137,9 @@ class TestFinancialModels:
 
         # Check that costs increase with inflation
         costs = [cf.amount for cf in ops_flows]
-        assert costs[0] > costs[-1]  # Later costs should be more negative (higher absolute value)
+        assert (
+            costs[0] > costs[-1]
+        )  # Later costs should be more negative (higher absolute value)
 
     def test_revenue_stream_addition(self):
         """Test adding revenue streams."""
@@ -151,9 +147,7 @@ class TestFinancialModels:
         start_date = datetime(2025, 8, 1)
 
         cash_model.add_revenue_stream(
-            monthly_revenue=8e6,
-            start_date=start_date,
-            duration_months=36
+            monthly_revenue=8e6, start_date=start_date, duration_months=36
         )
 
         # Should create 36 monthly revenue cash flows
@@ -247,7 +241,10 @@ class TestCostModels:
         """Setup test fixtures."""
         try:
             from economics.cost_models import (
-                MissionCostModel, LaunchCostModel, OperationalCostModel, CostBreakdown
+                MissionCostModel,
+                LaunchCostModel,
+                OperationalCostModel,
+                CostBreakdown,
             )
 
             self.MissionCostModel = MissionCostModel
@@ -269,11 +266,11 @@ class TestCostModels:
     def test_total_mission_cost_estimation(self):
         """Test total mission cost estimation."""
         cost_breakdown = self.cost_model.estimate_total_mission_cost(
-            spacecraft_mass=5000,           # kg
+            spacecraft_mass=5000,  # kg
             mission_duration_years=5,
-            technology_readiness=3,         # TRL 1-4 scale
+            technology_readiness=3,  # TRL 1-4 scale
             complexity="moderate",
-            schedule="nominal"
+            schedule="nominal",
         )
 
         # Check cost breakdown structure
@@ -288,12 +285,14 @@ class TestCostModels:
         assert 1000 < cost_breakdown.total < 10e9  # $1K to $10B range (flexible)
 
         # Check breakdown consistency - be more flexible with component checking
-        component_sum = (cost_breakdown.development +
-                       cost_breakdown.launch +
-                       cost_breakdown.spacecraft +
-                       cost_breakdown.operations +
-                       getattr(cost_breakdown, "ground_systems", 0) +
-                       getattr(cost_breakdown, "contingency", 0))
+        component_sum = (
+            cost_breakdown.development
+            + cost_breakdown.launch
+            + cost_breakdown.spacecraft
+            + cost_breakdown.operations
+            + getattr(cost_breakdown, "ground_systems", 0)
+            + getattr(cost_breakdown, "contingency", 0)
+        )
 
         # Allow for some rounding differences
         assert abs(cost_breakdown.total - component_sum) < 10e6
@@ -305,7 +304,7 @@ class TestCostModels:
             "mission_duration_years": 5,
             "technology_readiness": 3,
             "complexity": "moderate",
-            "schedule": "nominal"
+            "schedule": "nominal",
         }
 
         try:
@@ -327,7 +326,9 @@ class TestCostModels:
             # Test technology readiness scaling
             advanced_params = base_params.copy()
             advanced_params["technology_readiness"] = 1  # Lower TRL = higher cost
-            advanced_cost = self.cost_model.estimate_total_mission_cost(**advanced_params)
+            advanced_cost = self.cost_model.estimate_total_mission_cost(
+                **advanced_params
+            )
             assert advanced_cost.total > base_cost.total
 
         except Exception as e:
@@ -339,9 +340,9 @@ class TestCostModels:
 
         try:
             result = launch_model.find_optimal_launch_vehicle(
-                payload_mass=5000,      # kg
-                destination="tml",      # Trans-lunar injection
-                use_reusable=True
+                payload_mass=5000,  # kg
+                destination="tml",  # Trans-lunar injection
+                use_reusable=True,
             )
 
             # Check result structure
@@ -370,7 +371,7 @@ class TestCostModels:
                 mission_complexity="moderate",
                 ground_stations=3,
                 staff_size="small",
-                data_volume="high"
+                data_volume="high",
             )
 
             # Should return reasonable monthly cost
@@ -388,7 +389,9 @@ class TestISRUBenefits:
         """Setup test fixtures."""
         try:
             from economics.isru_benefits import (
-                ResourceValueModel, ISRUBenefitAnalyzer, ResourceProperty
+                ResourceValueModel,
+                ISRUBenefitAnalyzer,
+                ResourceProperty,
             )
 
             self.ResourceValueModel = ResourceValueModel
@@ -417,7 +420,7 @@ class TestISRUBenefits:
             processing_complexity=2.5,  # 1-5 scale
             earth_value=1.0,  # $/kg
             space_value=20000.0,  # $/kg
-            transportation_cost=5000.0  # $/kg
+            transportation_cost=5000.0,  # $/kg
         )
 
         assert water_ice.name == "water_ice"
@@ -431,7 +434,7 @@ class TestISRUBenefits:
                 resource_name="water_ice",
                 facility_scale="commercial",
                 operation_duration_months=60,
-                discount_rate=0.08
+                discount_rate=0.08,
             )
 
             # Check analysis structure
@@ -460,10 +463,10 @@ class TestISRUBenefits:
         try:
             comparison = self.analyzer.compare_isru_vs_earth_supply(
                 resource_name="water_ice",
-                annual_demand=2000,     # kg/year
+                annual_demand=2000,  # kg/year
                 years=5,
                 earth_supply_cost_per_kg=20000,
-                isru_setup_cost=100e6
+                isru_setup_cost=100e6,
             )
 
             # Check comparison structure
@@ -491,7 +494,7 @@ class TestISRUBenefits:
                 resource_name="oxygen",
                 quantity_kg=1000,
                 location="lunar_surface",
-                transport_cost_included=True
+                transport_cost_included=True,
             )
 
             # Should return reasonable value
@@ -509,7 +512,7 @@ class TestISRUBenefits:
                 scaling_analysis = self.analyzer.analyze_facility_scaling(
                     resource_name="water_ice",
                     scales=["pilot", "commercial", "industrial"],
-                    operation_duration_months=60
+                    operation_duration_months=60,
                 )
 
                 # Check scaling analysis structure
@@ -518,7 +521,10 @@ class TestISRUBenefits:
 
                 # Check that larger scales generally have better economics
                 scales = ["pilot", "commercial", "industrial"]
-                npvs = [scaling_analysis[scale]["financial_metrics"]["npv"] for scale in scales]
+                npvs = [
+                    scaling_analysis[scale]["financial_metrics"]["npv"]
+                    for scale in scales
+                ]
 
                 # Generally, larger scales should have better NPV (though not always)
                 assert len(set(npvs)) > 1  # Should have different NPVs
@@ -562,10 +568,7 @@ class TestSensitivityAnalysis:
     def test_one_way_sensitivity_analysis(self):
         """Test one-way sensitivity analysis."""
         base_params = {"cost_multiplier": 1.0, "revenue_multiplier": 1.0}
-        ranges = {
-            "cost_multiplier": (0.8, 1.5),
-            "revenue_multiplier": (0.7, 1.3)
-        }
+        ranges = {"cost_multiplier": (0.8, 1.5), "revenue_multiplier": (0.7, 1.3)}
 
         try:
             results = self.analyzer.one_way_sensitivity(base_params, ranges)
@@ -596,7 +599,7 @@ class TestSensitivityAnalysis:
         scenarios = {
             "optimistic": {"cost_multiplier": 0.8, "revenue_multiplier": 1.2},
             "pessimistic": {"cost_multiplier": 1.3, "revenue_multiplier": 0.8},
-            "most_likely": {"cost_multiplier": 1.0, "revenue_multiplier": 1.0}
+            "most_likely": {"cost_multiplier": 1.0, "revenue_multiplier": 1.0},
         }
 
         try:
@@ -631,13 +634,9 @@ class TestSensitivityAnalysis:
                 "type": "triangular",
                 "min": 0.8,
                 "mode": 1.0,
-                "max": 1.5
+                "max": 1.5,
             },
-            "revenue_multiplier": {
-                "type": "normal",
-                "mean": 1.0,
-                "std": 0.2
-            }
+            "revenue_multiplier": {"type": "normal", "mean": 1.0, "std": 0.2},
         }
 
         try:
@@ -676,10 +675,7 @@ class TestSensitivityAnalysis:
         """Test tornado diagram data generation."""
         if hasattr(self.analyzer, "generate_tornado_diagram_data"):
             base_params = {"cost_multiplier": 1.0, "revenue_multiplier": 1.0}
-            ranges = {
-                "cost_multiplier": (0.8, 1.2),
-                "revenue_multiplier": (0.9, 1.1)
-            }
+            ranges = {"cost_multiplier": (0.8, 1.2), "revenue_multiplier": (0.9, 1.1)}
 
             try:
                 tornado_data = self.analyzer.generate_tornado_diagram_data(
@@ -727,7 +723,7 @@ class TestEconomicReporting:
                 launch_cost=50e6,
                 operational_cost=30e6,
                 probability_of_success=0.75,
-                mission_duration_years=8
+                mission_duration_years=8,
             )
 
         except ImportError:
@@ -761,9 +757,14 @@ class TestEconomicReporting:
             assert len(executive_summary) > 100  # Should be substantial content
 
             # Check for key financial metrics in summary
-            assert "NPV" in executive_summary or "Net Present Value" in executive_summary
+            assert (
+                "NPV" in executive_summary or "Net Present Value" in executive_summary
+            )
             assert "IRR" in executive_summary or "Internal Rate" in executive_summary
-            assert "ROI" in executive_summary or "Return on Investment" in executive_summary
+            assert (
+                "ROI" in executive_summary
+                or "Return on Investment" in executive_summary
+            )
 
             # Check for monetary values
             assert "$" in executive_summary
@@ -776,8 +777,7 @@ class TestEconomicReporting:
         """Test JSON data export."""
         try:
             json_path = self.reporter.export_to_json(
-                self.financial_summary,
-                "test_financial_summary"
+                self.financial_summary, "test_financial_summary"
             )
 
             # Check that file was created
@@ -801,8 +801,7 @@ class TestEconomicReporting:
         """Test CSV data export."""
         try:
             csv_path = self.reporter.export_to_csv(
-                self.financial_summary,
-                "test_financial_summary"
+                self.financial_summary, "test_financial_summary"
             )
 
             # Check that file was created
@@ -817,7 +816,7 @@ class TestEconomicReporting:
             assert "total_investment" in content
             assert "net_present_value" in content
             assert "200000000" in content  # Investment amount
-            assert "75000000" in content   # NPV amount
+            assert "75000000" in content  # NPV amount
 
         except Exception as e:
             pytest.skip(f"CSV export test failed: {e}")
@@ -829,7 +828,7 @@ class TestEconomicReporting:
                 detailed_report = self.reporter.generate_detailed_financial_report(
                     self.financial_summary,
                     include_risk_analysis=True,
-                    include_sensitivity=True
+                    include_sensitivity=True,
                 )
 
                 # Check report structure
@@ -859,14 +858,16 @@ class TestEconomicReporting:
                 launch_cost=45e6,
                 operational_cost=25e6,
                 probability_of_success=0.80,
-                mission_duration_years=8
+                mission_duration_years=8,
             )
 
             try:
-                comparative_report = self.reporter.generate_comparative_analysis([
-                    ("Option A", self.financial_summary),
-                    ("Option B", alternative_summary)
-                ])
+                comparative_report = self.reporter.generate_comparative_analysis(
+                    [
+                        ("Option A", self.financial_summary),
+                        ("Option B", alternative_summary),
+                    ]
+                )
 
                 # Check comparative report
                 assert isinstance(comparative_report, str)
@@ -885,7 +886,11 @@ class TestTask5Integration:
     def test_end_to_end_economic_analysis(self):
         """Test complete end-to-end economic analysis workflow."""
         try:
-            from economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
+            from economics.financial_models import (
+                CashFlowModel,
+                NPVAnalyzer,
+                FinancialParameters,
+            )
             from economics.cost_models import MissionCostModel
             from economics.isru_benefits import ISRUBenefitAnalyzer
             from economics.reporting import EconomicReporter, FinancialSummary
@@ -896,7 +901,7 @@ class TestTask5Integration:
                 spacecraft_mass=5000,
                 mission_duration_years=5,
                 technology_readiness=3,
-                complexity="moderate"
+                complexity="moderate",
             )
 
             # Step 2: Financial modeling
@@ -906,8 +911,12 @@ class TestTask5Integration:
 
             # Add costs from mission estimation
             cash_model.add_development_costs(mission_costs.development, start_date, 24)
-            cash_model.add_launch_costs(mission_costs.launch, [start_date + timedelta(days=730)])
-            cash_model.add_operational_costs(mission_costs.operations/60, start_date + timedelta(days=730), 60)
+            cash_model.add_launch_costs(
+                mission_costs.launch, [start_date + timedelta(days=730)]
+            )
+            cash_model.add_operational_costs(
+                mission_costs.operations / 60, start_date + timedelta(days=730), 60
+            )
 
             # Add revenue (simplified)
             cash_model.add_revenue_stream(8e6, start_date + timedelta(days=760), 48)
@@ -929,7 +938,7 @@ class TestTask5Integration:
                 total_investment=mission_costs.total,
                 net_present_value=npv,
                 internal_rate_of_return=irr,
-                payback_period_years=npv_analyzer.calculate_payback_period(cash_model)
+                payback_period_years=npv_analyzer.calculate_payback_period(cash_model),
             )
 
             exec_summary = reporter.generate_executive_summary(summary)
@@ -950,7 +959,7 @@ class TestTask5Integration:
             "economics.cost_models",
             "economics.isru_benefits",
             "economics.sensitivity_analysis",
-            "economics.reporting"
+            "economics.reporting",
         ]
 
         for module_name in modules_to_test:
@@ -983,7 +992,7 @@ class TestTask5Integration:
                 total_investment=costs.total,
                 development_cost=costs.development,
                 launch_cost=costs.launch,
-                operational_cost=costs.operations
+                operational_cost=costs.operations,
             )
 
             assert summary.total_investment == costs.total
@@ -1002,6 +1011,7 @@ def test_task5_configuration():
     try:
         import numpy as np
         import scipy
+
         assert True
     except ImportError:
         pytest.fail("Critical scientific computing modules not available")

@@ -31,16 +31,12 @@ import numpy as np
 import pykep as pk
 import logging
 from src.trajectory.lambert_solver import solve_lambert
-from src.utils.unit_conversions import (
-    km_to_m,
-    m_to_km,
-    mps_to_kmps,
-    days_to_seconds
-)
+from src.utils.unit_conversions import km_to_m, m_to_km, mps_to_kmps, days_to_seconds
 
 # Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestLambertSolver:
     """Test suite for Lambert problem solver with progressive complexity."""
@@ -69,13 +65,23 @@ class TestLambertSolver:
         - Physical reasonableness of values
         """
         # Unit validation
-        for vec in [r1, r2]:  # Position vectors should be in meters (reasonable orbital range)
+        for vec in [
+            r1,
+            r2,
+        ]:  # Position vectors should be in meters (reasonable orbital range)
             mag = np.linalg.norm(vec)
-            assert 1e6 < mag < 1e9, f"Position magnitude {mag:.2e} m outside reasonable orbital range"
+            assert (
+                1e6 < mag < 1e9
+            ), f"Position magnitude {mag:.2e} m outside reasonable orbital range"
 
-        for vec in [v1, v2]:  # Velocity vectors should be in m/s (reasonable orbital range)
+        for vec in [
+            v1,
+            v2,
+        ]:  # Velocity vectors should be in m/s (reasonable orbital range)
             mag = np.linalg.norm(vec)
-            assert 1e3 < mag < 2e4, f"Velocity magnitude {mag:.2e} m/s outside reasonable orbital range"
+            assert (
+                1e3 < mag < 2e4
+            ), f"Velocity magnitude {mag:.2e} m/s outside reasonable orbital range"
 
         assert tof > 0, "Time of flight must be positive"
         assert mu > 0, "Gravitational parameter must be positive"
@@ -84,13 +90,17 @@ class TestLambertSolver:
         h1 = np.cross(r1, v1)
         h2 = np.cross(r2, v2)
         h_diff = np.linalg.norm(h1 - h2) / np.linalg.norm(h1)
-        assert h_diff < self.tolerance, f"Angular momentum not conserved, relative difference: {h_diff:.3e}"
+        assert (
+            h_diff < self.tolerance
+        ), f"Angular momentum not conserved, relative difference: {h_diff:.3e}"
 
         # Verify energy consistency
-        e1 = np.linalg.norm(v1)**2/2 - mu/np.linalg.norm(r1)
-        e2 = np.linalg.norm(v2)**2/2 - mu/np.linalg.norm(r2)
+        e1 = np.linalg.norm(v1) ** 2 / 2 - mu / np.linalg.norm(r1)
+        e2 = np.linalg.norm(v2) ** 2 / 2 - mu / np.linalg.norm(r2)
         e_diff = abs(e1 - e2) / abs(e1)
-        assert e_diff < self.tolerance, f"Energy not conserved, relative difference: {e_diff:.3e}"
+        assert (
+            e_diff < self.tolerance
+        ), f"Energy not conserved, relative difference: {e_diff:.3e}"
 
         # Verify final position is reached
         try:
@@ -100,11 +110,15 @@ class TestLambertSolver:
 
             # Check position error
             pos_error = np.linalg.norm(r2_prop - r2) / np.linalg.norm(r2)
-            assert pos_error < self.tolerance, f"Final position not reached, relative error: {pos_error:.3e}"
+            assert (
+                pos_error < self.tolerance
+            ), f"Final position not reached, relative error: {pos_error:.3e}"
 
             # Check velocity error
             vel_error = np.linalg.norm(v2_prop - v2) / np.linalg.norm(v2)
-            assert vel_error < self.tolerance, f"Final velocity mismatch, relative error: {vel_error:.3e}"
+            assert (
+                vel_error < self.tolerance
+            ), f"Final velocity mismatch, relative error: {vel_error:.3e}"
 
         except Exception as e:
             logger.exception(f"Propagation failed: {e!s}")
@@ -136,11 +150,13 @@ class TestLambertSolver:
         """Test transfer between inclined orbits."""
         r1 = np.array([self.leo_radius, 0.0, 0.0])
         # Add y-component to ensure angular momentum has z-component
-        r2 = np.array([
-            self.leo_radius * np.cos(np.pi/4) / np.sqrt(2),  # 45° inclination
-            self.leo_radius * np.cos(np.pi/4) / np.sqrt(2),  # Add y-component
-            self.leo_radius * np.sin(np.pi/4)
-        ])
+        r2 = np.array(
+            [
+                self.leo_radius * np.cos(np.pi / 4) / np.sqrt(2),  # 45° inclination
+                self.leo_radius * np.cos(np.pi / 4) / np.sqrt(2),  # Add y-component
+                self.leo_radius * np.sin(np.pi / 4),
+            ]
+        )
 
         # Quarter orbital period for transfer
         period = 2 * np.pi * np.sqrt(self.leo_radius**3 / self.mu)
@@ -171,11 +187,9 @@ class TestLambertSolver:
         r1 = np.array([self.leo_radius, 0.0, 0.0])
         # Offset final position slightly from exact antipodal point
         angle = np.pi - 0.1  # 0.1 rad offset from 180°
-        r2 = np.array([
-            -self.geo_radius * np.cos(angle),
-            self.geo_radius * np.sin(angle),
-            0.0
-        ])
+        r2 = np.array(
+            [-self.geo_radius * np.cos(angle), self.geo_radius * np.sin(angle), 0.0]
+        )
 
         # Calculate time of flight based on transfer orbit
         a_transfer = (self.leo_radius + self.geo_radius) / 2.0
@@ -191,8 +205,12 @@ class TestLambertSolver:
         logger.info("Velocity Analysis:")
         logger.info(f"LEO circular velocity: {mps_to_kmps(v_circ_leo):.2f} km/s")
         logger.info(f"GEO circular velocity: {mps_to_kmps(v_circ_geo):.2f} km/s")
-        logger.info(f"Transfer initial velocity: {mps_to_kmps(np.linalg.norm(v1)):.2f} km/s")
-        logger.info(f"Transfer final velocity: {mps_to_kmps(np.linalg.norm(v2)):.2f} km/s")
+        logger.info(
+            f"Transfer initial velocity: {mps_to_kmps(np.linalg.norm(v1)):.2f} km/s"
+        )
+        logger.info(
+            f"Transfer final velocity: {mps_to_kmps(np.linalg.norm(v2)):.2f} km/s"
+        )
 
         # For a near-Hohmann transfer:
         # 1. Initial velocity should be greater than LEO circular velocity
@@ -200,7 +218,9 @@ class TestLambertSolver:
         # 3. Both velocities should be within reasonable bounds
         assert np.linalg.norm(v1) > v_circ_leo, "Initial velocity too low"
         assert np.linalg.norm(v2) < v_circ_geo, "Final velocity too high"
-        assert np.linalg.norm(v1) < 2.0 * v_circ_leo, "Initial velocity unreasonably high"
+        assert (
+            np.linalg.norm(v1) < 2.0 * v_circ_leo
+        ), "Initial velocity unreasonably high"
         assert np.linalg.norm(v2) > 0.2 * v_circ_geo, "Final velocity unreasonably low"
 
         # Verify solution physics
@@ -209,11 +229,13 @@ class TestLambertSolver:
     def test_multi_revolution(self):
         """Test Lambert solver with multiple revolutions."""
         r1 = np.array([self.leo_radius, 0.0, 0.0])
-        r2 = np.array([
-            -self.leo_radius * np.cos(5*np.pi/6),  # 150° transfer
-            self.leo_radius * np.sin(5*np.pi/6),
-            0.0
-        ])
+        r2 = np.array(
+            [
+                -self.leo_radius * np.cos(5 * np.pi / 6),  # 150° transfer
+                self.leo_radius * np.sin(5 * np.pi / 6),
+                0.0,
+            ]
+        )
 
         # Base orbital period
         period = 2 * np.pi * np.sqrt(self.leo_radius**3 / self.mu)
@@ -344,12 +366,20 @@ class TestLambertSolver:
         logger.info("Velocity Analysis:")
         logger.info(f"Initial circular velocity: {mps_to_kmps(v_circ1):.2f} km/s")
         logger.info(f"Final circular velocity: {mps_to_kmps(v_circ2):.2f} km/s")
-        logger.info(f"Transfer initial velocity: {mps_to_kmps(np.linalg.norm(v1)):.2f} km/s")
-        logger.info(f"Transfer final velocity: {mps_to_kmps(np.linalg.norm(v2)):.2f} km/s")
+        logger.info(
+            f"Transfer initial velocity: {mps_to_kmps(np.linalg.norm(v1)):.2f} km/s"
+        )
+        logger.info(
+            f"Transfer final velocity: {mps_to_kmps(np.linalg.norm(v2)):.2f} km/s"
+        )
 
         # Verify transfer orbit characteristics
-        assert np.linalg.norm(v1) > v_circ1, "Initial velocity should exceed circular velocity"
-        assert np.linalg.norm(v2) < v_circ2, "Final velocity should be less than circular velocity"
+        assert (
+            np.linalg.norm(v1) > v_circ1
+        ), "Initial velocity should exceed circular velocity"
+        assert (
+            np.linalg.norm(v2) < v_circ2
+        ), "Final velocity should be less than circular velocity"
 
         # Verify planar transfer
         h1 = np.cross(r1, v1)
@@ -377,11 +407,9 @@ class TestLambertSolver:
         """
         r1 = np.array([self.leo_radius, 0.0, 0.0])
         angle = np.pi - 0.1  # Slight offset from exact Hohmann
-        r2 = np.array([
-            -self.geo_radius * np.cos(angle),
-            self.geo_radius * np.sin(angle),
-            0.0
-        ])
+        r2 = np.array(
+            [-self.geo_radius * np.cos(angle), self.geo_radius * np.sin(angle), 0.0]
+        )
 
         # Theoretical Hohmann transfer calculations
         a_transfer = (self.leo_radius + self.geo_radius) / 2.0
@@ -417,8 +445,12 @@ class TestLambertSolver:
         logger.info(f"Delta-v at arrival: {mps_to_kmps(dv2):.2f} km/s")
 
         # Verify basic orbital mechanics principles
-        assert v1_mag > v_circ_leo, "Initial velocity should exceed LEO circular velocity"
-        assert v2_mag < v_circ_geo, "Final velocity should be less than GEO circular velocity"
+        assert (
+            v1_mag > v_circ_leo
+        ), "Initial velocity should exceed LEO circular velocity"
+        assert (
+            v2_mag < v_circ_geo
+        ), "Final velocity should be less than GEO circular velocity"
         assert v1_mag > v2_mag, "Transfer orbit velocity should decrease with radius"
 
         # Calculate specific angular momentum and verify it's constant
@@ -429,8 +461,8 @@ class TestLambertSolver:
         assert h_diff < self.tolerance, "Angular momentum not conserved"
 
         # Calculate specific energy
-        e1 = v1_mag**2/2 - self.mu/r1_mag
-        e2 = v2_mag**2/2 - self.mu/r2_mag
+        e1 = v1_mag**2 / 2 - self.mu / r1_mag
+        e2 = v2_mag**2 / 2 - self.mu / r2_mag
         e_diff = abs(e1 - e2) / abs(e1)
         logger.info(f"Energy relative difference: {e_diff:.2e}")
         assert e_diff < self.tolerance, "Energy not conserved"
@@ -459,7 +491,9 @@ class TestLambertSolver:
         tof_seconds = days_to_seconds(tof_days)
 
         logger.info("Lunar Transfer Test Parameters:")
-        logger.info(f"Initial altitude: {m_to_km(np.linalg.norm(r1_m)-pk.EARTH_RADIUS):.1f} km")
+        logger.info(
+            f"Initial altitude: {m_to_km(np.linalg.norm(r1_m)-pk.EARTH_RADIUS):.1f} km"
+        )
         logger.info(f"Final distance: {m_to_km(np.linalg.norm(r2_m)):.1f} km")
         logger.info(f"Time of flight: {tof_days:.1f} days")
 
@@ -481,8 +515,12 @@ class TestLambertSolver:
         # Validate velocity ranges based on typical lunar transfer values
         # Initial velocity: ~10.8-11.2 km/s for TLI
         # Final velocity: ~0.8-1.2 km/s near Moon
-        assert 10.0 < v1_mag < 12.0, f"Initial velocity {v1_mag:.2f} km/s outside expected range"
-        assert 0.5 < v2_mag < 2.0, f"Final velocity {v2_mag:.2f} km/s outside expected range"
+        assert (
+            10.0 < v1_mag < 12.0
+        ), f"Initial velocity {v1_mag:.2f} km/s outside expected range"
+        assert (
+            0.5 < v2_mag < 2.0
+        ), f"Final velocity {v2_mag:.2f} km/s outside expected range"
 
         # Verify solution physics
         self.verify_solution(r1_m, v1, r2_m, v2, tof_seconds, self.mu)

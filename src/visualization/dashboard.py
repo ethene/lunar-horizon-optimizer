@@ -126,11 +126,18 @@ class ComprehensiveDashboard:
         """
         # Create 3x3 grid layout
         fig = make_subplots(
-            rows=3, cols=3,
+            rows=3,
+            cols=3,
             subplot_titles=[
-                "Mission Overview", "Key Financial Metrics", "Trajectory Summary",
-                "Optimization Results", "Cost Analysis", "Timeline Status",
-                "Risk Assessment", "Performance Indicators", "Decision Support",
+                "Mission Overview",
+                "Key Financial Metrics",
+                "Trajectory Summary",
+                "Optimization Results",
+                "Cost Analysis",
+                "Timeline Status",
+                "Risk Assessment",
+                "Performance Indicators",
+                "Decision Support",
             ],
             specs=[
                 [{"type": "table"}, {"type": "indicator"}, {"type": "scatter"}],
@@ -150,11 +157,15 @@ class ComprehensiveDashboard:
 
         # 3. Trajectory Summary
         if mission_data.trajectory_data:
-            self._add_trajectory_summary(fig, mission_data.trajectory_data, row=1, col=3)
+            self._add_trajectory_summary(
+                fig, mission_data.trajectory_data, row=1, col=3
+            )
 
         # 4. Optimization Results
         if mission_data.optimization_results:
-            self._add_optimization_summary(fig, mission_data.optimization_results, row=2, col=1)
+            self._add_optimization_summary(
+                fig, mission_data.optimization_results, row=2, col=1
+            )
 
         # 5. Cost Analysis
         if mission_data.cost_breakdown:
@@ -179,7 +190,10 @@ class ComprehensiveDashboard:
             title={
                 "text": f"Executive Dashboard - {mission_data.mission_name}",
                 "x": 0.5,
-                "font": {"size": self.theme.title_size, "family": self.theme.font_family},
+                "font": {
+                    "size": self.theme.title_size,
+                    "family": self.theme.font_family,
+                },
             },
             template=self.theme.plotly_theme,
             height=1200,
@@ -206,7 +220,8 @@ class ComprehensiveDashboard:
         """
         # Create 2x2 layout for detailed technical views
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "3D Trajectory Analysis",
                 "Pareto Front Optimization",
@@ -221,7 +236,9 @@ class ComprehensiveDashboard:
 
         # 1. 3D Trajectory (placeholder - would need actual 3D implementation)
         if mission_data.trajectory_data:
-            self._add_3d_trajectory_placeholder(fig, mission_data.trajectory_data, row=1, col=1)
+            self._add_3d_trajectory_placeholder(
+                fig, mission_data.trajectory_data, row=1, col=1
+            )
 
         # 2. Pareto Front
         if mission_data.optimization_results:
@@ -229,7 +246,9 @@ class ComprehensiveDashboard:
 
         # 3. Economic Sensitivity
         if mission_data.sensitivity_results:
-            self._add_sensitivity_analysis(fig, mission_data.sensitivity_results, row=2, col=1)
+            self._add_sensitivity_analysis(
+                fig, mission_data.sensitivity_results, row=2, col=1
+            )
 
         # 4. Critical Path
         if mission_data.mission_phases:
@@ -269,7 +288,8 @@ class ComprehensiveDashboard:
 
         # Create 2x3 comparison layout
         fig = make_subplots(
-            rows=2, cols=3,
+            rows=2,
+            cols=3,
             subplot_titles=[
                 "Financial Comparison",
                 "Performance Comparison",
@@ -288,10 +308,14 @@ class ComprehensiveDashboard:
         comparison_data = self._extract_comparison_data(scenarios)
 
         # 1. Financial Comparison
-        self._add_financial_comparison(fig, comparison_data, scenario_names, row=1, col=1)
+        self._add_financial_comparison(
+            fig, comparison_data, scenario_names, row=1, col=1
+        )
 
         # 2. Performance Comparison
-        self._add_performance_comparison(fig, comparison_data, scenario_names, row=1, col=2)
+        self._add_performance_comparison(
+            fig, comparison_data, scenario_names, row=1, col=2
+        )
 
         # 3. Risk Comparison
         self._add_risk_comparison(fig, comparison_data, scenario_names, row=1, col=3)
@@ -300,7 +324,9 @@ class ComprehensiveDashboard:
         self._add_cost_comparison(fig, comparison_data, scenario_names, row=2, col=1)
 
         # 5. Timeline Comparison
-        self._add_timeline_comparison(fig, comparison_data, scenario_names, row=2, col=2)
+        self._add_timeline_comparison(
+            fig, comparison_data, scenario_names, row=2, col=2
+        )
 
         # 6. Trade-off Analysis
         self._add_tradeoff_analysis(fig, comparison_data, scenario_names, row=2, col=3)
@@ -331,7 +357,8 @@ class ComprehensiveDashboard:
         """
         # Create flexible 2x2 layout for interactive exploration
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Mission Parameter Explorer",
                 "Interactive Timeline",
@@ -424,7 +451,8 @@ class ComprehensiveDashboard:
                     "font": {"size": 11},
                 },
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_financial_kpis(
@@ -445,7 +473,8 @@ class ComprehensiveDashboard:
                 delta={"reference": 0, "position": "bottom"},
                 domain={"x": [0, 0.5], "y": [0.7, 1]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         # IRR Indicator
@@ -465,7 +494,8 @@ class ComprehensiveDashboard:
                 },
                 domain={"x": [0.5, 1], "y": [0.7, 1]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         # ROI Indicator
@@ -477,7 +507,8 @@ class ComprehensiveDashboard:
                 number={"suffix": "%", "font": {"size": 14}},
                 domain={"x": [0, 0.5], "y": [0.3, 0.6]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         # Payback Indicator
@@ -489,7 +520,8 @@ class ComprehensiveDashboard:
                 number={"suffix": " yr", "font": {"size": 14}},
                 domain={"x": [0.5, 1], "y": [0.3, 0.6]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_trajectory_summary(
@@ -505,8 +537,12 @@ class ComprehensiveDashboard:
         values = [3200, 4.5, 12.5, 2500]  # Sample values
         units = ["m/s", "days", "km²/s²", "kg"]
 
-        colors = [self.theme.primary_color, self.theme.secondary_color,
-                 self.theme.info_color, self.theme.warning_color]
+        colors = [
+            self.theme.primary_color,
+            self.theme.secondary_color,
+            self.theme.info_color,
+            self.theme.warning_color,
+        ]
 
         fig.add_trace(
             go.Bar(
@@ -517,7 +553,8 @@ class ComprehensiveDashboard:
                 textposition="auto",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_optimization_summary(
@@ -530,12 +567,20 @@ class ComprehensiveDashboard:
         """Add optimization results summary."""
         # Sample Pareto front visualization
         if "pareto_front" in optimization_results:
-            pareto_solutions = optimization_results["pareto_front"][:10]  # First 10 solutions
+            pareto_solutions = optimization_results["pareto_front"][
+                :10
+            ]  # First 10 solutions
 
             if pareto_solutions:
                 # Extract objectives (assuming first two objectives)
-                obj1 = [sol["objectives"][0] if isinstance(sol, dict) else sol[0][0] for sol in pareto_solutions]
-                obj2 = [sol["objectives"][1] if isinstance(sol, dict) else sol[0][1] for sol in pareto_solutions]
+                obj1 = [
+                    sol["objectives"][0] if isinstance(sol, dict) else sol[0][0]
+                    for sol in pareto_solutions
+                ]
+                obj2 = [
+                    sol["objectives"][1] if isinstance(sol, dict) else sol[0][1]
+                    for sol in pareto_solutions
+                ]
 
                 fig.add_trace(
                     go.Scatter(
@@ -547,7 +592,8 @@ class ComprehensiveDashboard:
                         line={"color": self.theme.primary_color, "width": 2},
                         showlegend=False,
                     ),
-                    row=row, col=col,
+                    row=row,
+                    col=col,
                 )
 
     def _add_cost_summary(
@@ -558,7 +604,14 @@ class ComprehensiveDashboard:
         col: int,
     ) -> None:
         """Add cost breakdown pie chart."""
-        categories = ["Development", "Launch", "Spacecraft", "Operations", "Ground", "Contingency"]
+        categories = [
+            "Development",
+            "Launch",
+            "Spacecraft",
+            "Operations",
+            "Ground",
+            "Contingency",
+        ]
         values = [
             cost_breakdown.development,
             cost_breakdown.launch,
@@ -575,7 +628,8 @@ class ComprehensiveDashboard:
                 textinfo="label+percent",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_timeline_status(
@@ -601,7 +655,11 @@ class ComprehensiveDashboard:
 
         statuses = list(status_counts.keys())
         counts = list(status_counts.values())
-        colors = [self.theme.warning_color, self.theme.info_color, self.theme.success_color]
+        colors = [
+            self.theme.warning_color,
+            self.theme.info_color,
+            self.theme.success_color,
+        ]
 
         fig.add_trace(
             go.Bar(
@@ -612,7 +670,8 @@ class ComprehensiveDashboard:
                 textposition="auto",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_risk_summary(
@@ -632,8 +691,12 @@ class ComprehensiveDashboard:
 
         risks = list(risk_counts.keys())
         counts = list(risk_counts.values())
-        colors = [self.theme.success_color, self.theme.warning_color,
-                 self.theme.secondary_color, "#8E44AD"]
+        colors = [
+            self.theme.success_color,
+            self.theme.warning_color,
+            self.theme.secondary_color,
+            "#8E44AD",
+        ]
 
         fig.add_trace(
             go.Bar(
@@ -644,7 +707,8 @@ class ComprehensiveDashboard:
                 textposition="auto",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_performance_indicators(
@@ -656,7 +720,11 @@ class ComprehensiveDashboard:
     ) -> None:
         """Add performance indicators."""
         # Sample performance metrics
-        metrics = ["Mission Success Probability", "Technical Readiness", "Schedule Confidence"]
+        metrics = [
+            "Mission Success Probability",
+            "Technical Readiness",
+            "Schedule Confidence",
+        ]
         values = [75, 85, 70]  # Percentages
 
         fig.add_trace(
@@ -675,7 +743,8 @@ class ComprehensiveDashboard:
                 },
                 domain={"x": [0, 1], "y": [0.7, 1]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         fig.add_trace(
@@ -689,7 +758,8 @@ class ComprehensiveDashboard:
                 },
                 domain={"x": [0, 0.5], "y": [0, 0.6]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         fig.add_trace(
@@ -703,7 +773,8 @@ class ComprehensiveDashboard:
                 },
                 domain={"x": [0.5, 1], "y": [0, 0.6]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_decision_support(
@@ -732,12 +803,19 @@ class ComprehensiveDashboard:
                 },
                 cells={
                     "values": list(zip(*recommendations, strict=False)),
-                    "fill_color": ["lightcoral", "lightblue", "lightgreen", "lightyellow", "lightgray"],
+                    "fill_color": [
+                        "lightcoral",
+                        "lightblue",
+                        "lightgreen",
+                        "lightyellow",
+                        "lightgray",
+                    ],
                     "align": "left",
                     "font": {"size": 10},
                 },
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     # Placeholder methods for complex components
@@ -748,9 +826,12 @@ class ComprehensiveDashboard:
             text="3D Trajectory Visualization<br>(Requires specialized implementation)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
-            x=0.5, y=0.5, showarrow=False,
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 14, "color": "gray"},
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_pareto_front(self, fig, optimization_results, row, col) -> None:
@@ -760,9 +841,12 @@ class ComprehensiveDashboard:
             text="Pareto Front Analysis<br>(Detailed implementation available)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
-            x=0.5, y=0.5, showarrow=False,
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 14, "color": "gray"},
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_sensitivity_analysis(self, fig, sensitivity_results, row, col) -> None:
@@ -771,9 +855,12 @@ class ComprehensiveDashboard:
             text="Economic Sensitivity Analysis<br>(Detailed implementation available)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
-            x=0.5, y=0.5, showarrow=False,
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 14, "color": "gray"},
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_critical_path(self, fig, mission_phases, row, col) -> None:
@@ -782,9 +869,12 @@ class ComprehensiveDashboard:
             text="Mission Critical Path<br>(Detailed implementation available)",
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
-            x=0.5, y=0.5, showarrow=False,
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 14, "color": "gray"},
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _extract_comparison_data(self, scenarios):
@@ -831,8 +921,11 @@ class ComprehensiveDashboard:
         fig = go.Figure()
         fig.add_annotation(
             text=message,
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 16, "color": "gray"},
         )
         return fig

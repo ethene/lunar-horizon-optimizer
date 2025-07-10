@@ -36,17 +36,21 @@ class CostCalculator:
 
         # Mission parameters for cost calculations
         self.spacecraft_mass = 5000.0  # kg (typical lunar mission)
-        self.fuel_efficiency = 0.85    # Propellant efficiency factor
+        self.fuel_efficiency = 0.85  # Propellant efficiency factor
         self.operational_overhead = 1.2  # 20% overhead on operations
 
-        logger.info(f"Initialized CostCalculator with launch cost: "
-                   f"${self.cost_factors.launch_cost_per_kg}/kg")
+        logger.info(
+            f"Initialized CostCalculator with launch cost: "
+            f"${self.cost_factors.launch_cost_per_kg}/kg"
+        )
 
-    def calculate_mission_cost(self,
-                             total_dv: float,
-                             transfer_time: float,
-                             earth_orbit_alt: float,
-                             moon_orbit_alt: float) -> float:
+    def calculate_mission_cost(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+    ) -> float:
         """Calculate total mission cost based on trajectory parameters.
 
         Args:
@@ -75,14 +79,21 @@ class CostCalculator:
         altitude_cost = self._calculate_altitude_cost(earth_orbit_alt, moon_orbit_alt)
 
         # Total cost with contingency
-        base_cost = (propellant_cost + launch_cost + operations_cost +
-                    development_cost + altitude_cost)
+        base_cost = (
+            propellant_cost
+            + launch_cost
+            + operations_cost
+            + development_cost
+            + altitude_cost
+        )
 
         total_cost = base_cost * (1 + self.cost_factors.contingency_percentage / 100)
 
-        logger.debug(f"Cost breakdown - Propellant: ${propellant_cost:.0f}, "
-                    f"Launch: ${launch_cost:.0f}, Operations: ${operations_cost:.0f}, "
-                    f"Development: ${development_cost:.0f}, Total: ${total_cost:.0f}")
+        logger.debug(
+            f"Cost breakdown - Propellant: ${propellant_cost:.0f}, "
+            f"Launch: ${launch_cost:.0f}, Operations: ${operations_cost:.0f}, "
+            f"Development: ${development_cost:.0f}, Total: ${total_cost:.0f}"
+        )
 
         return total_cost
 
@@ -101,7 +112,7 @@ class CostCalculator:
         # Assuming typical Isp = 450s for chemical propulsion
 
         isp = 450.0  # seconds
-        g = 9.81     # m/s²
+        g = 9.81  # m/s²
 
         # Calculate mass ratio
         mass_ratio = np.exp(total_dv / (isp * g))
@@ -156,7 +167,9 @@ class CostCalculator:
         amortization_factor = 0.1  # 10% of development cost per mission
         return self.cost_factors.development_cost * amortization_factor
 
-    def _calculate_altitude_cost(self, earth_orbit_alt: float, moon_orbit_alt: float) -> float:
+    def _calculate_altitude_cost(
+        self, earth_orbit_alt: float, moon_orbit_alt: float
+    ) -> float:
         """Calculate altitude-dependent cost factors.
 
         Args:
@@ -177,11 +190,13 @@ class CostCalculator:
 
         return base_altitude_cost * lunar_precision_factor * earth_complexity_factor
 
-    def calculate_cost_breakdown(self,
-                               total_dv: float,
-                               transfer_time: float,
-                               earth_orbit_alt: float,
-                               moon_orbit_alt: float) -> dict[str, float]:
+    def calculate_cost_breakdown(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+    ) -> dict[str, float]:
         """Calculate detailed cost breakdown.
 
         Args:
@@ -200,8 +215,13 @@ class CostCalculator:
         development_cost = self._calculate_development_cost()
         altitude_cost = self._calculate_altitude_cost(earth_orbit_alt, moon_orbit_alt)
 
-        base_cost = (propellant_cost + launch_cost + operations_cost +
-                    development_cost + altitude_cost)
+        base_cost = (
+            propellant_cost
+            + launch_cost
+            + operations_cost
+            + development_cost
+            + altitude_cost
+        )
 
         contingency_cost = base_cost * (self.cost_factors.contingency_percentage / 100)
         total_cost = base_cost + contingency_cost
@@ -214,11 +234,9 @@ class CostCalculator:
             "altitude_cost": altitude_cost,
             "contingency_cost": contingency_cost,
             "total_cost": total_cost,
-            "cost_factors": {
-                "propellant_fraction": propellant_cost / total_cost,
-                "launch_fraction": launch_cost / total_cost,
-                "operations_fraction": operations_cost / total_cost,
-            },
+            "propellant_fraction": propellant_cost / total_cost,
+            "launch_fraction": launch_cost / total_cost,
+            "operations_fraction": operations_cost / total_cost,
         }
 
 
@@ -237,11 +255,13 @@ class EconomicObjectives:
         """
         self.cost_calculator = cost_calculator or CostCalculator()
 
-    def minimize_total_cost(self,
-                           total_dv: float,
-                           transfer_time: float,
-                           earth_orbit_alt: float,
-                           moon_orbit_alt: float) -> float:
+    def minimize_total_cost(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+    ) -> float:
         """Objective function to minimize total mission cost.
 
         Args:
@@ -255,15 +275,20 @@ class EconomicObjectives:
             Total mission cost [cost units]
         """
         return self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
+            total_dv,
+            transfer_time,
+            earth_orbit_alt,
+            moon_orbit_alt,
         )
 
-    def minimize_cost_per_kg(self,
-                           total_dv: float,
-                           transfer_time: float,
-                           earth_orbit_alt: float,
-                           moon_orbit_alt: float,
-                           payload_mass: float = 1000.0) -> float:
+    def minimize_cost_per_kg(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+        payload_mass: float = 1000.0,
+    ) -> float:
         """Objective function to minimize cost per kg of payload.
 
         Args:
@@ -278,15 +303,20 @@ class EconomicObjectives:
             Cost per kg of payload [cost units/kg]
         """
         total_cost = self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
+            total_dv,
+            transfer_time,
+            earth_orbit_alt,
+            moon_orbit_alt,
         )
         return total_cost / payload_mass
 
-    def maximize_cost_efficiency(self,
-                               total_dv: float,
-                               transfer_time: float,
-                               earth_orbit_alt: float,
-                               moon_orbit_alt: float) -> float:
+    def maximize_cost_efficiency(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+    ) -> float:
         """Objective function to maximize cost efficiency (minimize negative efficiency).
 
         Cost efficiency is defined as payload capability per unit cost.
@@ -302,7 +332,10 @@ class EconomicObjectives:
             Negative cost efficiency (for minimization)
         """
         total_cost = self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
+            total_dv,
+            transfer_time,
+            earth_orbit_alt,
+            moon_orbit_alt,
         )
 
         # Simple efficiency metric: inverse of normalized cost and delta-v
@@ -311,12 +344,14 @@ class EconomicObjectives:
         # Return negative for minimization
         return -efficiency
 
-    def calculate_roi_objective(self,
-                              total_dv: float,
-                              transfer_time: float,
-                              earth_orbit_alt: float,
-                              moon_orbit_alt: float,
-                              mission_revenue: float = 5e6) -> float:
+    def calculate_roi_objective(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+        mission_revenue: float = 5e6,
+    ) -> float:
         """Calculate ROI-based objective (minimize negative ROI).
 
         Args:
@@ -331,7 +366,10 @@ class EconomicObjectives:
             Negative ROI (for minimization)
         """
         total_cost = self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
+            total_dv,
+            transfer_time,
+            earth_orbit_alt,
+            moon_orbit_alt,
         )
 
         roi = (mission_revenue - total_cost) / total_cost if total_cost > 0 else 0.0
@@ -340,10 +378,12 @@ class EconomicObjectives:
         return -roi
 
 
-def create_cost_calculator(launch_cost_per_kg: float = 10000.0,
-                          operations_cost_per_day: float = 100000.0,
-                          development_cost: float = 1e9,
-                          contingency_percentage: float = 20.0) -> CostCalculator:
+def create_cost_calculator(
+    launch_cost_per_kg: float = 10000.0,
+    operations_cost_per_day: float = 100000.0,
+    development_cost: float = 1e9,
+    contingency_percentage: float = 20.0,
+) -> CostCalculator:
     """Create cost calculator with specified parameters.
 
     Args:

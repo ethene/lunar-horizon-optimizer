@@ -100,7 +100,8 @@ class EconomicVisualizer:
         """
         # Create 2x3 subplot layout
         fig = make_subplots(
-            rows=3, cols=2,
+            rows=3,
+            cols=2,
             subplot_titles=[
                 "Key Financial Metrics",
                 "Investment vs Revenue",
@@ -128,13 +129,17 @@ class EconomicVisualizer:
         if cash_flow_model:
             self._add_cash_flow_timeline(fig, cash_flow_model, row=2, col=1)
         else:
-            self._add_placeholder_chart(fig, "Cash Flow Data Not Available", row=2, col=1)
+            self._add_placeholder_chart(
+                fig, "Cash Flow Data Not Available", row=2, col=1
+            )
 
         # 4. Cost Breakdown
         if cost_breakdown:
             self._add_cost_breakdown_pie(fig, cost_breakdown, row=2, col=2)
         else:
-            self._add_placeholder_chart(fig, "Cost Breakdown Data Not Available", row=2, col=2)
+            self._add_placeholder_chart(
+                fig, "Cost Breakdown Data Not Available", row=2, col=2
+            )
 
         # 5. ROI Analysis
         self._add_roi_analysis(fig, financial_summary, row=3, col=1)
@@ -175,7 +180,8 @@ class EconomicVisualizer:
             Plotly Figure with cost analysis dashboard
         """
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Cost Category Breakdown",
                 "Cost Trends Over Time",
@@ -189,7 +195,14 @@ class EconomicVisualizer:
         )
 
         # 1. Cost Category Breakdown (Pie Chart)
-        categories = ["Development", "Launch", "Spacecraft", "Operations", "Ground Systems", "Contingency"]
+        categories = [
+            "Development",
+            "Launch",
+            "Spacecraft",
+            "Operations",
+            "Ground Systems",
+            "Contingency",
+        ]
         values = [
             cost_breakdown.development,
             cost_breakdown.launch,
@@ -199,9 +212,14 @@ class EconomicVisualizer:
             cost_breakdown.contingency,
         ]
 
-        colors = [self.config.primary_color, self.config.secondary_color,
-                 self.config.success_color, self.config.warning_color,
-                 "#8B5A83", "#6B7280"]
+        colors = [
+            self.config.primary_color,
+            self.config.secondary_color,
+            self.config.success_color,
+            self.config.warning_color,
+            "#8B5A83",
+            "#6B7280",
+        ]
 
         fig.add_trace(
             go.Pie(
@@ -212,13 +230,20 @@ class EconomicVisualizer:
                 texttemplate="%{label}<br>%{percent}<br>$%{value:.1f}M",
                 hovertemplate="%{label}<br>Cost: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>",
             ),
-            row=1, col=1,
+            row=1,
+            col=1,
         )
 
         # 2. Cost Trends Over Time (simulated)
         years = list(range(2025, 2035))
-        dev_costs = [cost_breakdown.development * (0.8 + 0.4 * np.exp(-0.5 * i)) for i in range(len(years))]
-        ops_costs = [cost_breakdown.operations * (0.5 + 0.5 * i / len(years)) for i in range(len(years))]
+        dev_costs = [
+            cost_breakdown.development * (0.8 + 0.4 * np.exp(-0.5 * i))
+            for i in range(len(years))
+        ]
+        ops_costs = [
+            cost_breakdown.operations * (0.5 + 0.5 * i / len(years))
+            for i in range(len(years))
+        ]
 
         fig.add_trace(
             go.Scatter(
@@ -229,7 +254,8 @@ class EconomicVisualizer:
                 line={"color": self.config.primary_color, "width": 3},
                 marker={"size": 8},
             ),
-            row=1, col=2,
+            row=1,
+            col=2,
         )
 
         fig.add_trace(
@@ -241,40 +267,60 @@ class EconomicVisualizer:
                 line={"color": self.config.secondary_color, "width": 3},
                 marker={"size": 8},
             ),
-            row=1, col=2,
+            row=1,
+            col=2,
         )
 
         # 3. Cost per Unit Analysis
-        units = ["Per kg to LEO", "Per kg to Moon", "Per Mission Day", "Per Crew Member"]
+        units = [
+            "Per kg to LEO",
+            "Per kg to Moon",
+            "Per Mission Day",
+            "Per Crew Member",
+        ]
         unit_costs = [
             cost_breakdown.launch / 5000,  # Assuming 5000 kg payload
-            cost_breakdown.total / 1000,   # Assuming 1000 kg lunar payload
+            cost_breakdown.total / 1000,  # Assuming 1000 kg lunar payload
             cost_breakdown.operations / 365,  # Per day
-            cost_breakdown.total / 4,       # Assuming 4 crew members
+            cost_breakdown.total / 4,  # Assuming 4 crew members
         ]
 
         fig.add_trace(
             go.Bar(
                 x=units,
                 y=unit_costs,
-                marker={"color": [self.config.primary_color, self.config.secondary_color,
-                                  self.config.success_color, self.config.warning_color]},
+                marker={
+                    "color": [
+                        self.config.primary_color,
+                        self.config.secondary_color,
+                        self.config.success_color,
+                        self.config.warning_color,
+                    ]
+                },
                 text=[f"${v:.1f}K" for v in unit_costs],
                 textposition="auto",
             ),
-            row=2, col=1,
+            row=2,
+            col=1,
         )
 
         # 4. Scenario Comparison
         if comparison_scenarios:
-            scenario_names = [s.get("name", f"Scenario {i+1}") for i, s in enumerate(comparison_scenarios)]
-            scenario_costs = [s.get("total_cost", 0) / 1e6 for s in comparison_scenarios]  # Convert to millions
+            scenario_names = [
+                s.get("name", f"Scenario {i+1}")
+                for i, s in enumerate(comparison_scenarios)
+            ]
+            scenario_costs = [
+                s.get("total_cost", 0) / 1e6 for s in comparison_scenarios
+            ]  # Convert to millions
 
             # Add baseline
             scenario_names.insert(0, "Baseline")
             scenario_costs.insert(0, cost_breakdown.total)
 
-            colors_scenarios = [self.config.primary_color] + [self.config.secondary_color] * len(comparison_scenarios)
+            colors_scenarios = [self.config.primary_color] + [
+                self.config.secondary_color
+            ] * len(comparison_scenarios)
 
             fig.add_trace(
                 go.Bar(
@@ -284,10 +330,13 @@ class EconomicVisualizer:
                     text=[f"${v:.0f}M" for v in scenario_costs],
                     textposition="auto",
                 ),
-                row=2, col=2,
+                row=2,
+                col=2,
             )
         else:
-            self._add_placeholder_chart(fig, "No Comparison Scenarios Available", row=2, col=2)
+            self._add_placeholder_chart(
+                fig, "No Comparison Scenarios Available", row=2, col=2
+            )
 
         # Update layout
         fig.update_layout(
@@ -316,7 +365,8 @@ class EconomicVisualizer:
             Plotly Figure with ISRU analysis dashboard
         """
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 f"ISRU {resource_name.title()} Economics",
                 "Production Timeline",
@@ -349,7 +399,8 @@ class EconomicVisualizer:
                 delta={"reference": 0, "position": "bottom"},
                 domain={"x": [0, 0.5], "y": [0.7, 1]},
             ),
-            row=1, col=1,
+            row=1,
+            col=1,
         )
 
         fig.add_trace(
@@ -365,11 +416,16 @@ class EconomicVisualizer:
                         {"range": [25, 50], "color": "yellow"},
                         {"range": [50, 100], "color": "lightgreen"},
                     ],
-                    "threshold": {"line": {"color": "red", "width": 4}, "thickness": 0.75, "value": 90},
+                    "threshold": {
+                        "line": {"color": "red", "width": 4},
+                        "thickness": 0.75,
+                        "value": 90,
+                    },
                 },
                 domain={"x": [0, 0.5], "y": [0, 0.6]},
             ),
-            row=1, col=1,
+            row=1,
+            col=1,
         )
 
         # 2. Production Timeline
@@ -387,7 +443,8 @@ class EconomicVisualizer:
                     line={"color": self.config.primary_color, "width": 3},
                     yaxis="y",
                 ),
-                row=1, col=2,
+                row=1,
+                col=2,
             )
 
             fig.add_trace(
@@ -399,10 +456,13 @@ class EconomicVisualizer:
                     line={"color": self.config.secondary_color, "width": 3},
                     yaxis="y2",
                 ),
-                row=1, col=2,
+                row=1,
+                col=2,
             )
         else:
-            self._add_placeholder_chart(fig, "Production Data Not Available", row=1, col=2)
+            self._add_placeholder_chart(
+                fig, "Production Data Not Available", row=1, col=2
+            )
 
         # 3. Break-even Analysis
         if "monthly_cash_flow" in break_even:
@@ -426,23 +486,33 @@ class EconomicVisualizer:
                     line={"color": self.config.success_color, "width": 3},
                     fill="tonexty",
                 ),
-                row=2, col=1,
+                row=2,
+                col=1,
             )
 
             # Add break-even line
             fig.add_hline(
-                y=0, line_dash="dash", line_color="red",
-                annotation_text="Break-even", row=2, col=1,
+                y=0,
+                line_dash="dash",
+                line_color="red",
+                annotation_text="Break-even",
+                row=2,
+                col=1,
             )
 
             if break_even_month:
                 fig.add_vline(
-                    x=break_even_month, line_dash="dash", line_color="green",
+                    x=break_even_month,
+                    line_dash="dash",
+                    line_color="green",
                     annotation_text=f"Break-even: Month {break_even_month}",
-                    row=2, col=1,
+                    row=2,
+                    col=1,
                 )
         else:
-            self._add_placeholder_chart(fig, "Break-even Data Not Available", row=2, col=1)
+            self._add_placeholder_chart(
+                fig, "Break-even Data Not Available", row=2, col=1
+            )
 
         # 4. Revenue Streams
         if revenue_streams:
@@ -456,10 +526,13 @@ class EconomicVisualizer:
                     textinfo="label+percent",
                     hovertemplate="%{label}<br>Revenue: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>",
                 ),
-                row=2, col=2,
+                row=2,
+                col=2,
             )
         else:
-            self._add_placeholder_chart(fig, "Revenue Stream Data Not Available", row=2, col=2)
+            self._add_placeholder_chart(
+                fig, "Revenue Stream Data Not Available", row=2, col=2
+            )
 
         # Update layout
         fig.update_layout(
@@ -488,7 +561,8 @@ class EconomicVisualizer:
             Plotly Figure with sensitivity analysis dashboard
         """
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Parameter Sensitivity",
                 "Monte Carlo Distribution",
@@ -507,10 +581,17 @@ class EconomicVisualizer:
             sensitivities = list(sensitivity_results["parameter_sensitivity"].values())
 
             # Sort by absolute sensitivity
-            sorted_pairs = sorted(zip(params, sensitivities, strict=False), key=lambda x: abs(x[1]), reverse=True)
+            sorted_pairs = sorted(
+                zip(params, sensitivities, strict=False),
+                key=lambda x: abs(x[1]),
+                reverse=True,
+            )
             params_sorted, sens_sorted = zip(*sorted_pairs, strict=False)
 
-            colors = [self.config.success_color if s > 0 else self.config.danger_color for s in sens_sorted]
+            colors = [
+                self.config.success_color if s > 0 else self.config.danger_color
+                for s in sens_sorted
+            ]
 
             fig.add_trace(
                 go.Bar(
@@ -520,10 +601,13 @@ class EconomicVisualizer:
                     text=[f"{s:.2f}" for s in sens_sorted],
                     textposition="auto",
                 ),
-                row=1, col=1,
+                row=1,
+                col=1,
             )
         else:
-            self._add_placeholder_chart(fig, "Sensitivity Data Not Available", row=1, col=1)
+            self._add_placeholder_chart(
+                fig, "Sensitivity Data Not Available", row=1, col=1
+            )
 
         # 2. Monte Carlo Distribution
         if monte_carlo_results and "npv_distribution" in monte_carlo_results:
@@ -537,7 +621,8 @@ class EconomicVisualizer:
                     marker={"color": self.config.primary_color, "opacity": 0.7},
                     histnorm="probability density",
                 ),
-                row=1, col=2,
+                row=1,
+                col=2,
             )
 
             # Add mean and percentiles
@@ -545,25 +630,60 @@ class EconomicVisualizer:
             p5 = np.percentile(npv_dist, 5)
             p95 = np.percentile(npv_dist, 95)
 
-            fig.add_vline(x=mean_npv, line_dash="dash", line_color="red",
-                         annotation_text=f"Mean: ${mean_npv/1e6:.1f}M", row=1, col=2)
-            fig.add_vline(x=p5, line_dash="dot", line_color="orange",
-                         annotation_text=f"5%: ${p5/1e6:.1f}M", row=1, col=2)
-            fig.add_vline(x=p95, line_dash="dot", line_color="orange",
-                         annotation_text=f"95%: ${p95/1e6:.1f}M", row=1, col=2)
+            fig.add_vline(
+                x=mean_npv,
+                line_dash="dash",
+                line_color="red",
+                annotation_text=f"Mean: ${mean_npv/1e6:.1f}M",
+                row=1,
+                col=2,
+            )
+            fig.add_vline(
+                x=p5,
+                line_dash="dot",
+                line_color="orange",
+                annotation_text=f"5%: ${p5/1e6:.1f}M",
+                row=1,
+                col=2,
+            )
+            fig.add_vline(
+                x=p95,
+                line_dash="dot",
+                line_color="orange",
+                annotation_text=f"95%: ${p95/1e6:.1f}M",
+                row=1,
+                col=2,
+            )
         else:
-            self._add_placeholder_chart(fig, "Monte Carlo Data Not Available", row=1, col=2)
+            self._add_placeholder_chart(
+                fig, "Monte Carlo Data Not Available", row=1, col=2
+            )
 
         # 3. Risk Metrics Table
         if monte_carlo_results and "risk_metrics" in monte_carlo_results:
             risk_metrics = monte_carlo_results["risk_metrics"]
 
             metrics_data = [
-                ["Probability of Positive NPV", f"{risk_metrics.get('probability_positive_npv', 0):.1%}"],
-                ["Value at Risk (5%)", f"${risk_metrics.get('value_at_risk_5%', 0)/1e6:.1f}M"],
-                ["Expected Shortfall", f"${risk_metrics.get('expected_shortfall', 0)/1e6:.1f}M"],
-                ["Standard Deviation", f"${risk_metrics.get('std_deviation', 0)/1e6:.1f}M"],
-                ["Coefficient of Variation", f"{risk_metrics.get('coefficient_variation', 0):.2f}"],
+                [
+                    "Probability of Positive NPV",
+                    f"{risk_metrics.get('probability_positive_npv', 0):.1%}",
+                ],
+                [
+                    "Value at Risk (5%)",
+                    f"${risk_metrics.get('value_at_risk_5%', 0)/1e6:.1f}M",
+                ],
+                [
+                    "Expected Shortfall",
+                    f"${risk_metrics.get('expected_shortfall', 0)/1e6:.1f}M",
+                ],
+                [
+                    "Standard Deviation",
+                    f"${risk_metrics.get('std_deviation', 0)/1e6:.1f}M",
+                ],
+                [
+                    "Coefficient of Variation",
+                    f"{risk_metrics.get('coefficient_variation', 0):.2f}",
+                ],
             ]
 
             fig.add_trace(
@@ -581,7 +701,8 @@ class EconomicVisualizer:
                         "font": {"size": 11},
                     },
                 ),
-                row=2, col=1,
+                row=2,
+                col=1,
             )
         else:
             self._add_placeholder_chart(fig, "Risk Metrics Not Available", row=2, col=1)
@@ -590,7 +711,7 @@ class EconomicVisualizer:
         if "scenario_analysis" in sensitivity_results:
             scenarios = sensitivity_results["scenario_analysis"]
             scenario_names = list(scenarios.keys())
-            scenario_npvs = [s.get("npv", 0)/1e6 for s in scenarios.values()]
+            scenario_npvs = [s.get("npv", 0) / 1e6 for s in scenarios.values()]
             scenario_probs = [s.get("probability", 0) for s in scenarios.values()]
 
             fig.add_trace(
@@ -601,7 +722,9 @@ class EconomicVisualizer:
                     text=scenario_names,
                     textposition="top center",
                     marker={
-                        "size": [p*100 for p in scenario_probs],  # Size by probability
+                        "size": [
+                            p * 100 for p in scenario_probs
+                        ],  # Size by probability
                         "color": scenario_npvs,
                         "colorscale": "RdYlGn",
                         "showscale": True,
@@ -609,10 +732,13 @@ class EconomicVisualizer:
                     },
                     name="Scenarios",
                 ),
-                row=2, col=2,
+                row=2,
+                col=2,
             )
         else:
-            self._add_placeholder_chart(fig, "Scenario Data Not Available", row=2, col=2)
+            self._add_placeholder_chart(
+                fig, "Scenario Data Not Available", row=2, col=2
+            )
 
         # Update layout
         fig.update_layout(
@@ -641,7 +767,8 @@ class EconomicVisualizer:
                 delta={"reference": 0, "position": "bottom"},
                 domain={"x": [0, 0.25], "y": [0.8, 1]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         fig.add_trace(
@@ -652,7 +779,8 @@ class EconomicVisualizer:
                 number={"suffix": "%", "font": {"size": 16}},
                 domain={"x": [0.25, 0.5], "y": [0.8, 1]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         fig.add_trace(
@@ -663,7 +791,8 @@ class EconomicVisualizer:
                 number={"suffix": " yr", "font": {"size": 16}},
                 domain={"x": [0, 0.25], "y": [0.4, 0.7]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         fig.add_trace(
@@ -682,7 +811,8 @@ class EconomicVisualizer:
                 },
                 domain={"x": [0.25, 0.5], "y": [0.4, 0.7]},
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_investment_revenue_chart(
@@ -699,7 +829,11 @@ class EconomicVisualizer:
             financial_summary.total_revenue / 1e6,
             financial_summary.net_present_value / 1e6,
         ]
-        colors = [self.config.danger_color, self.config.success_color, self.config.primary_color]
+        colors = [
+            self.config.danger_color,
+            self.config.success_color,
+            self.config.primary_color,
+        ]
 
         fig.add_trace(
             go.Bar(
@@ -710,7 +844,8 @@ class EconomicVisualizer:
                 textposition="auto",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_cash_flow_timeline(
@@ -724,7 +859,9 @@ class EconomicVisualizer:
         # Extract cash flows (simplified - would need actual implementation)
         # This is a placeholder implementation
         months = list(range(1, 61))  # 5 years
-        cash_flows = [(-10 if i < 24 else 5) * (1 + 0.1 * np.random.randn()) for i in months]
+        cash_flows = [
+            (-10 if i < 24 else 5) * (1 + 0.1 * np.random.randn()) for i in months
+        ]
         cumulative = np.cumsum(cash_flows)
 
         fig.add_trace(
@@ -736,7 +873,8 @@ class EconomicVisualizer:
                 line={"color": self.config.primary_color, "width": 2},
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
         fig.add_trace(
@@ -749,7 +887,8 @@ class EconomicVisualizer:
                 yaxis="y2",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_cost_breakdown_pie(
@@ -760,7 +899,14 @@ class EconomicVisualizer:
         col: int,
     ) -> None:
         """Add cost breakdown pie chart."""
-        labels = ["Development", "Launch", "Spacecraft", "Operations", "Ground", "Contingency"]
+        labels = [
+            "Development",
+            "Launch",
+            "Spacecraft",
+            "Operations",
+            "Ground",
+            "Contingency",
+        ]
         values = [
             cost_breakdown.development,
             cost_breakdown.launch,
@@ -777,7 +923,8 @@ class EconomicVisualizer:
                 textinfo="label+percent",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_roi_analysis(
@@ -789,7 +936,10 @@ class EconomicVisualizer:
     ) -> None:
         """Add ROI analysis chart."""
         years = list(range(1, 11))
-        roi_values = [financial_summary.return_on_investment * (1 - np.exp(-0.3 * y)) for y in years]
+        roi_values = [
+            financial_summary.return_on_investment * (1 - np.exp(-0.3 * y))
+            for y in years
+        ]
 
         fig.add_trace(
             go.Bar(
@@ -800,7 +950,8 @@ class EconomicVisualizer:
                 textposition="auto",
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_risk_assessment(
@@ -825,12 +976,17 @@ class EconomicVisualizer:
                 textposition="top center",
                 marker={
                     "size": 15,
-                    "color": [self.config.success_color, self.config.primary_color,
-                          self.config.warning_color, self.config.danger_color],
+                    "color": [
+                        self.config.success_color,
+                        self.config.primary_color,
+                        self.config.warning_color,
+                        self.config.danger_color,
+                    ],
                 },
                 showlegend=False,
             ),
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
     def _add_placeholder_chart(
@@ -845,9 +1001,12 @@ class EconomicVisualizer:
             text=message,
             xref=f"x{col if row > 1 or col > 1 else ''}",
             yref=f"y{col if row > 1 or col > 1 else ''}",
-            x=0.5, y=0.5, showarrow=False,
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 14, "color": "gray"},
-            row=row, col=col,
+            row=row,
+            col=col,
         )
 
 

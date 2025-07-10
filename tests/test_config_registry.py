@@ -8,35 +8,40 @@ import json
 from src.config.mission_config import MissionConfig
 from src.config.registry import ConfigRegistry, ConfigurationError
 
+
 @pytest.fixture
 def registry():
     """Fixture providing a ConfigRegistry instance."""
     return ConfigRegistry()
 
+
 @pytest.fixture
 def sample_config():
     """Fixture providing a sample mission configuration."""
-    return MissionConfig.model_validate({
-        "name": "Test Mission",
-        "description": "Test configuration",
-        "payload": {
-            "dry_mass": 1000.0,
-            "payload_mass": 500.0,
-            "max_propellant_mass": 2000.0,
-            "specific_impulse": 300.0
-        },
-        "cost_factors": {
-            "launch_cost_per_kg": 10000.0,
-            "operations_cost_per_day": 50000.0,
-            "development_cost": 1000000.0
-        },
-        "mission_duration_days": 180.0,
-        "target_orbit": {
-            "semi_major_axis": 384400.0,
-            "eccentricity": 0.1,
-            "inclination": 45.0
+    return MissionConfig.model_validate(
+        {
+            "name": "Test Mission",
+            "description": "Test configuration",
+            "payload": {
+                "dry_mass": 1000.0,
+                "payload_mass": 500.0,
+                "max_propellant_mass": 2000.0,
+                "specific_impulse": 300.0,
+            },
+            "cost_factors": {
+                "launch_cost_per_kg": 10000.0,
+                "operations_cost_per_day": 50000.0,
+                "development_cost": 1000000.0,
+            },
+            "mission_duration_days": 180.0,
+            "target_orbit": {
+                "semi_major_axis": 384400.0,
+                "eccentricity": 0.1,
+                "inclination": 45.0,
+            },
         }
-    })
+    )
+
 
 def test_default_templates(registry):
     """Test that default templates are loaded correctly."""
@@ -48,6 +53,7 @@ def test_default_templates(registry):
     assert isinstance(template, MissionConfig)
     assert template.name == "Lunar Payload Delivery"
 
+
 def test_register_template(registry, sample_config):
     """Test registering a new template."""
     registry.register_template("test_template", sample_config)
@@ -57,6 +63,7 @@ def test_register_template(registry, sample_config):
     assert loaded.name == "Test Mission"
     assert loaded.payload.dry_mass == 1000.0
 
+
 def test_register_duplicate_template(registry, sample_config):
     """Test that registering a duplicate template raises an error."""
     registry.register_template("test", sample_config)
@@ -64,11 +71,13 @@ def test_register_duplicate_template(registry, sample_config):
         registry.register_template("test", sample_config)
     assert "already exists" in str(exc_info.value)
 
+
 def test_get_nonexistent_template(registry):
     """Test that getting a non-existent template raises an error."""
     with pytest.raises(KeyError) as exc_info:
         registry.get_template("nonexistent")
     assert "not found" in str(exc_info.value)
+
 
 def test_template_isolation(registry, sample_config):
     """Test that templates are properly isolated when copied."""
@@ -82,6 +91,7 @@ def test_template_isolation(registry, sample_config):
     # Original and second copy should be unchanged
     assert registry.get_template("test").name == "Test Mission"
     assert template2.name == "Test Mission"
+
 
 def test_load_template_file(tmp_path, registry, sample_config):
     """Test loading a template from a file."""
@@ -101,6 +111,7 @@ def test_load_template_file(tmp_path, registry, sample_config):
     registry.load_template_file(yaml_file)
     assert "test" in registry.list_templates()
 
+
 def test_load_invalid_template_file(tmp_path, registry):
     """Test that loading an invalid template file raises an error."""
     invalid_file = tmp_path / "invalid.json"
@@ -110,6 +121,7 @@ def test_load_invalid_template_file(tmp_path, registry):
     with pytest.raises(ConfigurationError) as exc_info:
         registry.load_template_file(invalid_file)
     assert "Failed to load template" in str(exc_info.value)
+
 
 def test_load_templates_dir(tmp_path, registry, sample_config):
     """Test loading templates from a directory."""
@@ -130,11 +142,13 @@ def test_load_templates_dir(tmp_path, registry, sample_config):
     assert "template1" in templates
     assert "template2" in templates
 
+
 def test_load_nonexistent_templates_dir(registry):
     """Test that loading from a non-existent directory raises an error."""
     with pytest.raises(ConfigurationError) as exc_info:
         registry.load_templates_dir(Path("nonexistent"))
     assert "not found" in str(exc_info.value)
+
 
 def test_save_template(tmp_path, registry, sample_config):
     """Test saving a template to a file."""
@@ -158,6 +172,7 @@ def test_save_template(tmp_path, registry, sample_config):
     with open(yaml_file) as f:
         yaml_data = yaml.safe_load(f)
     assert yaml_data["name"] == "Test Mission"
+
 
 def test_save_nonexistent_template(tmp_path, registry):
     """Test that saving a non-existent template raises an error."""

@@ -11,8 +11,9 @@ import pykep as pk
 from src.utils.unit_conversions import (
     datetime_to_mjd2000,
     datetime_to_pykep_epoch,
-    pykep_epoch_to_datetime
+    pykep_epoch_to_datetime,
 )
+
 
 def test_datetime_to_mjd2000():
     """Test conversion from datetime to MJD2000."""
@@ -26,6 +27,7 @@ def test_datetime_to_mjd2000():
     mjd = datetime_to_mjd2000(dt)
     assert 8766.0 <= mjd <= 8767.0, "2024-01-01 should be around MJD2000 = 8766.5"
 
+
 def test_datetime_to_pykep():
     """Test conversion from datetime to PyKEP epoch."""
     # Test J2000 epoch
@@ -36,7 +38,10 @@ def test_datetime_to_pykep():
     # Test arbitrary date
     dt = datetime(2024, 1, 1, 0, 0, 0, tzinfo=UTC)
     epoch = datetime_to_pykep_epoch(dt)
-    assert 8766.0 <= epoch.mjd2000 <= 8767.0, "2024-01-01 should be around MJD2000 = 8766.5"
+    assert (
+        8766.0 <= epoch.mjd2000 <= 8767.0
+    ), "2024-01-01 should be around MJD2000 = 8766.5"
+
 
 def test_pykep_epoch_roundtrip():
     """Test roundtrip conversion between datetime and PyKEP epoch."""
@@ -46,7 +51,10 @@ def test_pykep_epoch_roundtrip():
     dt2 = pykep_epoch_to_datetime(epoch)
 
     # Compare timestamps (within 1 second due to floating point precision)
-    assert abs((dt - dt2).total_seconds()) < 1.0, "Roundtrip conversion should preserve time"
+    assert (
+        abs((dt - dt2).total_seconds()) < 1.0
+    ), "Roundtrip conversion should preserve time"
+
 
 class TestPhysicalConstants:
     """Test suite for physical constants validation.
@@ -64,8 +72,9 @@ class TestPhysicalConstants:
         """
         mu_earth_expected = 398600.4418  # km³/s²
         mu_earth_pykep = pk.MU_EARTH / (1000.0**3)  # Convert from m³/s² to km³/s²
-        assert abs(mu_earth_pykep - mu_earth_expected) < 0.1, \
-            f"PyKEP Earth mu {mu_earth_pykep} km³/s² doesn't match expected {mu_earth_expected} km³/s²"
+        assert (
+            abs(mu_earth_pykep - mu_earth_expected) < 0.1
+        ), f"PyKEP Earth mu {mu_earth_pykep} km³/s² doesn't match expected {mu_earth_expected} km³/s²"
 
     def test_earth_radius(self):
         """Verify Earth radius conversion from PyKEP.
@@ -75,5 +84,6 @@ class TestPhysicalConstants:
             - Converted value falls within expected range (6378.1 km to 6378.2 km)
         """
         earth_radius_pykep = pk.EARTH_RADIUS / 1000.0  # Convert from m to km
-        assert 6378.1 <= earth_radius_pykep <= 6378.2, \
-            f"PyKEP Earth radius {earth_radius_pykep} km outside expected range"
+        assert (
+            6378.1 <= earth_radius_pykep <= 6378.2
+        ), f"PyKEP Earth radius {earth_radius_pykep} km outside expected range"

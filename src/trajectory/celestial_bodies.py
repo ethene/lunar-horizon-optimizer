@@ -41,6 +41,7 @@ except Exception as e:
     logger.exception(f"Failed to load SPICE kernel: {e}")
     raise
 
+
 class CelestialBody:
     """
     Provides methods to calculate state vectors of celestial bodies.
@@ -142,11 +143,20 @@ class CelestialBody:
             vel = [v * KM_TO_M for v in state[3:]]
             return pos, vel
         except Exception as e:
-            logger.exception(f"Failed to get Moon state relative to Earth at epoch {epoch}: {e}")
+            logger.exception(
+                f"Failed to get Moon state relative to Earth at epoch {epoch}: {e}"
+            )
             raise
 
     @staticmethod
-    def create_local_frame(r: np.ndarray[np.float64, np.dtype[np.float64]], v: np.ndarray[np.float64, np.dtype[np.float64]] | None = None) -> tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]:
+    def create_local_frame(
+        r: np.ndarray[np.float64, np.dtype[np.float64]],
+        v: np.ndarray[np.float64, np.dtype[np.float64]] | None = None,
+    ) -> tuple[
+        np.ndarray[np.float64, np.dtype[np.float64]],
+        np.ndarray[np.float64, np.dtype[np.float64]],
+        np.ndarray[np.float64, np.dtype[np.float64]],
+    ]:
         """Create a local orbital reference frame.
 
         Args:
@@ -180,6 +190,7 @@ class CelestialBody:
         z_unit = np.cross(r_unit, y_unit)
 
         return r_unit, y_unit, z_unit
+
 
 # Initialize class instances for common bodies
 EARTH = CelestialBody()

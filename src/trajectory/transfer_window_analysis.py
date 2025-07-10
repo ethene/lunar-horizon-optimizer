@@ -22,32 +22,40 @@ logger = logging.getLogger(__name__)
 class TransferWindow:
     """Represents a transfer window opportunity."""
 
-    def __init__(self,
-                 departure_date: datetime,
-                 arrival_date: datetime,
-                 total_dv: float,
-                 c3_energy: float,
-                 trajectory: Trajectory) -> None:
+    def __init__(
+        self,
+        departure_date: datetime,
+        arrival_date: datetime,
+        total_dv: float,
+        c3_energy: float,
+        trajectory: Trajectory,
+    ) -> None:
         self.departure_date = departure_date
         self.arrival_date = arrival_date
         self.total_dv = total_dv  # m/s
         self.c3_energy = c3_energy  # m²/s²
         self.trajectory = trajectory
-        self.transfer_time = (arrival_date - departure_date).total_seconds() / 86400  # days
+        self.transfer_time = (
+            arrival_date - departure_date
+        ).total_seconds() / 86400  # days
 
     def __str__(self) -> str:
-        return (f"TransferWindow(departure={self.departure_date.strftime('%Y-%m-%d')}, "
-                f"transfer_time={self.transfer_time:.1f}d, dv={self.total_dv:.0f}m/s)")
+        return (
+            f"TransferWindow(departure={self.departure_date.strftime('%Y-%m-%d')}, "
+            f"transfer_time={self.transfer_time:.1f}d, dv={self.total_dv:.0f}m/s)"
+        )
 
 
 class TrajectoryWindowAnalyzer:
     """Analyzes Earth-Moon transfer windows for Task 3 implementation."""
 
-    def __init__(self,
-                 min_earth_alt: float = 200,  # km
-                 max_earth_alt: float = 1000,  # km
-                 min_moon_alt: float = 50,    # km
-                 max_moon_alt: float = 500) -> None:  # km
+    def __init__(
+        self,
+        min_earth_alt: float = 200,  # km
+        max_earth_alt: float = 1000,  # km
+        min_moon_alt: float = 50,  # km
+        max_moon_alt: float = 500,
+    ) -> None:  # km
         """Initialize the trajectory window analyzer.
 
         Args:
@@ -63,21 +71,28 @@ class TrajectoryWindowAnalyzer:
 
         self.celestial = CelestialBody()
         self.lunar_transfer = LunarTransfer(
-            min_earth_alt, max_earth_alt, min_moon_alt, max_moon_alt,
+            min_earth_alt,
+            max_earth_alt,
+            min_moon_alt,
+            max_moon_alt,
         )
 
-        logger.info(f"Initialized TrajectoryWindowAnalyzer with altitude ranges: "
-                   f"Earth [{min_earth_alt}-{max_earth_alt}] km, "
-                   f"Moon [{min_moon_alt}-{max_moon_alt}] km")
+        logger.info(
+            f"Initialized TrajectoryWindowAnalyzer with altitude ranges: "
+            f"Earth [{min_earth_alt}-{max_earth_alt}] km, "
+            f"Moon [{min_moon_alt}-{max_moon_alt}] km"
+        )
 
-    def find_transfer_windows(self,
-                            start_date: datetime,
-                            end_date: datetime,
-                            earth_orbit_alt: float = 300.0,  # km
-                            moon_orbit_alt: float = 100.0,   # km
-                            min_transfer_time: float = 3.0,  # days
-                            max_transfer_time: float = 7.0,  # days
-                            time_step: float = 1.0) -> list[TransferWindow]:
+    def find_transfer_windows(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        earth_orbit_alt: float = 300.0,  # km
+        moon_orbit_alt: float = 100.0,  # km
+        min_transfer_time: float = 3.0,  # days
+        max_transfer_time: float = 7.0,  # days
+        time_step: float = 1.0,
+    ) -> list[TransferWindow]:
         """Find optimal transfer windows in a given time period.
 
         Args:
@@ -103,7 +118,9 @@ class TrajectoryWindowAnalyzer:
             epoch = self._datetime_to_pykep_epoch(current_date)
 
             # Analyze different transfer times for this departure date
-            for transfer_time in np.arange(min_transfer_time, max_transfer_time + 0.5, 0.5):
+            for transfer_time in np.arange(
+                min_transfer_time, max_transfer_time + 0.5, 0.5
+            ):
                 try:
                     # Generate trajectory for this window
                     trajectory, total_dv = self.lunar_transfer.generate_transfer(
@@ -131,7 +148,9 @@ class TrajectoryWindowAnalyzer:
                     logger.debug(f"Found window: {window}")
 
                 except Exception as e:
-                    logger.debug(f"Failed to generate trajectory for {current_date} + {transfer_time}d: {e}")
+                    logger.debug(
+                        f"Failed to generate trajectory for {current_date} + {transfer_time}d: {e}"
+                    )
                     continue
 
             # Move to next analysis date
@@ -143,11 +162,13 @@ class TrajectoryWindowAnalyzer:
         logger.info(f"Found {len(windows)} viable transfer windows")
         return windows
 
-    def optimize_launch_window(self,
-                              target_date: datetime,
-                              window_days: int = 30,
-                              earth_orbit_alt: float = 300.0,
-                              moon_orbit_alt: float = 100.0) -> TransferWindow:
+    def optimize_launch_window(
+        self,
+        target_date: datetime,
+        window_days: int = 30,
+        earth_orbit_alt: float = 300.0,
+        moon_orbit_alt: float = 100.0,
+    ) -> TransferWindow:
         """Optimize launch window around a target date.
 
         Args:
@@ -184,10 +205,12 @@ class TrajectoryWindowAnalyzer:
 
         return best_window
 
-    def analyze_trajectory_sensitivity(self,
-                                     window: TransferWindow,
-                                     altitude_variations: list[float] | None = None,
-                                     time_variations: list[float] | None = None) -> dict[str, list[float]]:
+    def analyze_trajectory_sensitivity(
+        self,
+        window: TransferWindow,
+        altitude_variations: list[float] | None = None,
+        time_variations: list[float] | None = None,
+    ) -> dict[str, list[float]]:
         """Analyze trajectory sensitivity to parameter variations.
 
         Args:
@@ -261,7 +284,7 @@ class TrajectoryWindowAnalyzer:
         -------
             C3 characteristic energy [m²/s²]
         """
-        r_park = (PC.EARTH_RADIUS + earth_orbit_alt * 1000)  # [m]
+        r_park = PC.EARTH_RADIUS + earth_orbit_alt * 1000  # [m]
         np.sqrt(PC.EARTH_MU / r_park)  # Circular velocity [m/s]
         v_infinity = total_dv  # Approximation for C3 calculation
 
@@ -269,9 +292,9 @@ class TrajectoryWindowAnalyzer:
         return v_infinity**2
 
 
-def generate_multiple_transfer_options(start_date: datetime,
-                                     end_date: datetime,
-                                     max_options: int = 10) -> list[TransferWindow]:
+def generate_multiple_transfer_options(
+    start_date: datetime, end_date: datetime, max_options: int = 10
+) -> list[TransferWindow]:
     """Generate multiple transfer options for Task 3 completion.
 
     Args:
@@ -295,7 +318,9 @@ def generate_multiple_transfer_options(start_date: datetime,
     return windows[:max_options]
 
 
-def analyze_launch_opportunities(target_year: int = 2025) -> dict[str, list[TransferWindow]]:
+def analyze_launch_opportunities(
+    target_year: int = 2025,
+) -> dict[str, list[TransferWindow]]:
     """Analyze launch opportunities for a given year.
 
     Args:

@@ -59,6 +59,7 @@ class Units:
     DAYS2SEC = pk.DAY2SEC  # days to seconds
     SEC2DAYS = pk.SEC2DAY  # seconds to days
 
+
 class PhysicalConstants:
     """Physical constants in PyKEP native units.
 
@@ -96,13 +97,14 @@ class PhysicalConstants:
 
     # Moon's sphere of influence (SOI = a * (m/M)^(2/5))
     # where a is semi-major axis, m is Moon mass, M is Earth mass
-    MOON_SOI = MOON_ORBIT_RADIUS * (MU_MOON / MU_EARTH)**(0.4)  # m (~66,000 km)
+    MOON_SOI = MOON_ORBIT_RADIUS * (MU_MOON / MU_EARTH) ** (0.4)  # m (~66,000 km)
 
     # Sun constants (using PyKEP values)
     MU_SUN = pk.MU_SUN  # m^3/s^2 (1.32712440018e20)
     SUN_MU = MU_SUN  # Alias for backward compatibility
     SUN_RADIUS = 696000e3  # m (solar radius)
     AU = pk.AU  # m (astronomical unit)
+
 
 class EphemerisLimits:
     """Time limits for ephemeris calculations.

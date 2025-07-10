@@ -24,6 +24,7 @@ import pykep as pk
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 class TestOrbitalPeriod:
     """Test suite for orbital period calculations."""
 
@@ -66,6 +67,7 @@ class TestOrbitalPeriod:
 
         logger.debug(f"Calculated lunar period: {period/(24*3600):.2f} days")
 
+
 class TestOrbitalVelocity:
     """Test suite for orbital velocity calculations."""
 
@@ -90,7 +92,9 @@ class TestOrbitalVelocity:
         # Tangential velocity should be ~7.67 km/s for this altitude
         assert np.isclose(v_t, 7.67, rtol=0.01)
 
-        logger.debug(f"Circular orbit velocities - radial: {v_r:.3f} km/s, tangential: {v_t:.3f} km/s")
+        logger.debug(
+            f"Circular orbit velocities - radial: {v_r:.3f} km/s, tangential: {v_t:.3f} km/s"
+        )
 
     def test_elliptical_orbit_velocity(self):
         """Test velocity components in an elliptical orbit.
@@ -107,8 +111,8 @@ class TestOrbitalVelocity:
         # GTO-like orbit
         v_r, v_t = velocity_at_point(
             semi_major_axis=24396.0,  # (6378 + 35786) / 2 km
-            eccentricity=0.7306,      # Typical GTO
-            true_anomaly=0.0,         # At perigee
+            eccentricity=0.7306,  # Typical GTO
+            true_anomaly=0.0,  # At perigee
         )
 
         # At perigee of elliptical orbit:
@@ -117,7 +121,9 @@ class TestOrbitalVelocity:
         assert np.isclose(v_r, 0.0, atol=1e-10)
         assert v_t > 10.0  # Should be faster than LEO velocity
 
-        logger.debug(f"GTO perigee velocities - radial: {v_r:.3f} km/s, tangential: {v_t:.3f} km/s")
+        logger.debug(
+            f"GTO perigee velocities - radial: {v_r:.3f} km/s, tangential: {v_t:.3f} km/s"
+        )
 
     def test_velocity_components_perpendicular(self):
         """Test velocity components at key orbital points.
@@ -146,6 +152,7 @@ class TestOrbitalVelocity:
             # At 90° and 270°, radial velocity should be maximum/minimum
             if nu in [90, 270]:
                 assert abs(v_r) > 0.0
+
 
 class TestAnomalyConversion:
     """Test suite for anomaly conversion functions."""

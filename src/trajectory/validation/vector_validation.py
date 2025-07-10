@@ -12,7 +12,12 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def validate_vector_units(vector: np.ndarray, name: str, expected_magnitude_range: tuple[float, float], unit: str) -> bool:
+def validate_vector_units(
+    vector: np.ndarray,
+    name: str,
+    expected_magnitude_range: tuple[float, float],
+    unit: str,
+) -> bool:
     """
     Validate that a vector's magnitude falls within expected range and has correct units.
 
@@ -43,7 +48,9 @@ def validate_vector_units(vector: np.ndarray, name: str, expected_magnitude_rang
     logger.debug(f"  Expected range: [{min_mag:.2e}, {max_mag:.2e}] {unit}")
 
     if not (min_mag <= magnitude <= max_mag):
-        logger.error(f"{name} magnitude {magnitude:.2e} {unit} outside expected range [{min_mag:.2e}, {max_mag:.2e}] {unit}")
+        logger.error(
+            f"{name} magnitude {magnitude:.2e} {unit} outside expected range [{min_mag:.2e}, {max_mag:.2e}] {unit}"
+        )
         return False
 
     return True
@@ -114,7 +121,9 @@ def validate_state_vector(position: np.ndarray, velocity: np.ndarray) -> bool:
     return True
 
 
-def propagate_orbit(position: np.ndarray, velocity: np.ndarray, dt: float) -> tuple[np.ndarray, np.ndarray]:
+def propagate_orbit(
+    position: np.ndarray, velocity: np.ndarray, dt: float
+) -> tuple[np.ndarray, np.ndarray]:
     """Simple two-body orbit propagation.
 
     Args:
@@ -158,17 +167,21 @@ def propagate_orbit(position: np.ndarray, velocity: np.ndarray, dt: float) -> tu
         sin_theta = np.sin(theta)
 
         # Simple 2D rotation in orbital plane (approximation)
-        final_position = np.array([
-            position[0] * cos_theta - position[1] * sin_theta,
-            position[0] * sin_theta + position[1] * cos_theta,
-            position[2],
-        ])
+        final_position = np.array(
+            [
+                position[0] * cos_theta - position[1] * sin_theta,
+                position[0] * sin_theta + position[1] * cos_theta,
+                position[2],
+            ]
+        )
 
-        final_velocity = np.array([
-            velocity[0] * cos_theta - velocity[1] * sin_theta,
-            velocity[0] * sin_theta + velocity[1] * cos_theta,
-            velocity[2],
-        ])
+        final_velocity = np.array(
+            [
+                velocity[0] * cos_theta - velocity[1] * sin_theta,
+                velocity[0] * sin_theta + velocity[1] * cos_theta,
+                velocity[2],
+            ]
+        )
 
         return final_position, final_velocity
 

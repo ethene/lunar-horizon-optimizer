@@ -31,7 +31,9 @@ class TestPyKEPRealFunctionality:
 
         # Position vectors - different angles to avoid colinear issue
         pos1 = np.array([r1, 0, 0])
-        pos2 = np.array([r2 * np.cos(np.pi/3), r2 * np.sin(np.pi/3), 0])  # 60 degrees apart
+        pos2 = np.array(
+            [r2 * np.cos(np.pi / 3), r2 * np.sin(np.pi / 3), 0]
+        )  # 60 degrees apart
 
         # Use a reasonable transfer time (1 hour)
         tof = 3600.0  # 1 hour in seconds
@@ -86,11 +88,11 @@ class TestPyKEPRealFunctionality:
         """Test real orbital elements to Cartesian conversion."""
         # Classical orbital elements for a typical LEO orbit
         a = 7000000  # Semi-major axis (m)
-        e = 0.01     # Eccentricity
+        e = 0.01  # Eccentricity
         i = np.deg2rad(45)  # Inclination (rad)
         raan = np.deg2rad(0)  # RAAN (rad)
-        w = np.deg2rad(0)     # Argument of perigee (rad)
-        nu = np.deg2rad(0)    # True anomaly (rad)
+        w = np.deg2rad(0)  # Argument of perigee (rad)
+        nu = np.deg2rad(0)  # True anomaly (rad)
 
         # Convert to Cartesian
         r, v = pk.par2ic([a, e, i, raan, w, nu], pk.MU_EARTH)
@@ -122,6 +124,7 @@ class TestPyGMORealFunctionality:
 
     def test_single_objective_optimization(self):
         """Test real single-objective optimization."""
+
         # Real optimization problem: minimize orbit transfer cost
         class OrbitTransferProblem:
             def fitness(self, x):
@@ -129,7 +132,9 @@ class TestPyGMORealFunctionality:
                 transfer_time = max(1, min(20, x[0]))  # Bound the input
 
                 # Simple cost model: fuel cost + time cost
-                fuel_cost = 1000 + (10 - transfer_time)**2 * 100  # Minimum at 10 hours
+                fuel_cost = (
+                    1000 + (10 - transfer_time) ** 2 * 100
+                )  # Minimum at 10 hours
                 time_cost = transfer_time * 50  # Linear time cost
                 total_cost = fuel_cost + time_cost
 
@@ -159,6 +164,7 @@ class TestPyGMORealFunctionality:
 
     def test_multi_objective_optimization_realistic(self):
         """Test real multi-objective optimization with better diversity."""
+
         # Real multi-objective problem with strongly conflicting objectives
         class StronglyConflictingProblem:
             def fitness(self, x):
@@ -173,7 +179,7 @@ class TestPyGMORealFunctionality:
                 performance_score = -(altitude * 10 + mass * 5)
 
                 # Objective 3: Minimize complexity (varies non-linearly)
-                complexity = (altitude - 500)**2 / 1000 + (mass - 1000)**2 / 10000
+                complexity = (altitude - 500) ** 2 / 1000 + (mass - 1000) ** 2 / 10000
 
                 return [launch_cost, performance_score, complexity]
 
@@ -208,12 +214,13 @@ class TestPyGMORealFunctionality:
         complexities = fitnesses[:, 2]
 
         # More realistic diversity thresholds based on the problem scale
-        assert np.std(launch_costs) > 10000   # Good diversity in launch cost
+        assert np.std(launch_costs) > 10000  # Good diversity in launch cost
         assert np.std(performance_scores) > 100  # Good diversity in performance
-        assert np.std(complexities) > 100      # Good diversity in complexity
+        assert np.std(complexities) > 100  # Good diversity in complexity
 
     def test_algorithm_convergence(self):
         """Test real algorithm convergence behavior."""
+
         # Simple quadratic problem
         class QuadraticProblem:
             def fitness(self, x):
@@ -234,8 +241,12 @@ class TestPyGMORealFunctionality:
 
         # Should converge close to global minimum (0, 0)
         assert best_fitness < 1e-2, f"DE failed to converge: {best_fitness}"
-        assert abs(best_solution[0]) < 0.2, f"DE solution not near optimum: {best_solution}"
-        assert abs(best_solution[1]) < 0.2, f"DE solution not near optimum: {best_solution}"
+        assert (
+            abs(best_solution[0]) < 0.2
+        ), f"DE solution not near optimum: {best_solution}"
+        assert (
+            abs(best_solution[1]) < 0.2
+        ), f"DE solution not near optimum: {best_solution}"
 
 
 class TestConfigurationRealFunctionality:
@@ -248,7 +259,7 @@ class TestConfigurationRealFunctionality:
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=100000.0,
             development_cost=1e9,
-            contingency_percentage=20.0
+            contingency_percentage=20.0,
         )
 
         assert valid_costs.launch_cost_per_kg == 10000.0
@@ -269,7 +280,7 @@ class TestConfigurationRealFunctionality:
             launch_cost_per_kg=1000.0,
             operations_cost_per_day=10000.0,
             development_cost=10e6,
-            contingency_percentage=0.0
+            contingency_percentage=0.0,
         )
 
         assert min_costs.launch_cost_per_kg == 1000.0
@@ -280,7 +291,7 @@ class TestConfigurationRealFunctionality:
             launch_cost_per_kg=100000.0,
             operations_cost_per_day=10e6,
             development_cost=100e9,
-            contingency_percentage=50.0
+            contingency_percentage=50.0,
         )
 
         assert max_costs.launch_cost_per_kg == 100000.0
@@ -295,7 +306,7 @@ class TestEconomicAnalysisRealFunctionality:
         # Realistic lunar mission cash flows
         initial_investment = 200e6  # $200M initial investment
         annual_costs = [20e6, 25e6, 30e6, 25e6, 20e6]  # Operations costs
-        annual_revenues = [0, 0, 40e6, 60e6, 80e6]    # Revenue ramp-up
+        annual_revenues = [0, 0, 40e6, 60e6, 80e6]  # Revenue ramp-up
         discount_rate = 0.08
 
         # Calculate real NPV
@@ -349,7 +360,7 @@ class TestEconomicAnalysisRealFunctionality:
         """Test real mission cost estimation."""
         # Realistic mission parameters
         spacecraft_mass = 5000  # kg
-        mission_duration = 5    # years
+        mission_duration = 5  # years
 
         # Cost estimation model based on historical data
         base_cost_per_kg = 50000  # $50k per kg
@@ -369,7 +380,9 @@ class TestEconomicAnalysisRealFunctionality:
         assert total_cost == 1.125e9
 
         # Test cost scaling
-        heavy_mission_cost = (spacecraft_mass * 2) * base_cost_per_kg * (1 + development_multiplier)
+        heavy_mission_cost = (
+            (spacecraft_mass * 2) * base_cost_per_kg * (1 + development_multiplier)
+        )
         assert heavy_mission_cost > spacecraft_cost * (1 + development_multiplier)
 
 
@@ -387,7 +400,7 @@ class TestIntegrationRealFunctionality:
                     launch_cost_per_kg=10000.0,
                     operations_cost_per_day=100000.0,
                     development_cost=1e9,
-                    contingency_percentage=20.0
+                    contingency_percentage=20.0,
                 )
 
             def fitness(self, x):
@@ -406,11 +419,11 @@ class TestIntegrationRealFunctionality:
                 # More realistic delta-v calculation
                 if r2 > r1:  # Going higher
                     # Hohmann transfer approximation
-                    dv1 = np.sqrt(pk.MU_EARTH/r1) * (np.sqrt(2*r2/(r1+r2)) - 1)
-                    dv2 = np.sqrt(pk.MU_EARTH/r2) * (1 - np.sqrt(2*r1/(r1+r2)))
+                    dv1 = np.sqrt(pk.MU_EARTH / r1) * (np.sqrt(2 * r2 / (r1 + r2)) - 1)
+                    dv2 = np.sqrt(pk.MU_EARTH / r2) * (1 - np.sqrt(2 * r1 / (r1 + r2)))
                 else:  # Going lower
-                    dv1 = np.sqrt(pk.MU_EARTH/r1) * (1 - np.sqrt(2*r2/(r1+r2)))
-                    dv2 = np.sqrt(pk.MU_EARTH/r2) * (np.sqrt(2*r1/(r1+r2)) - 1)
+                    dv1 = np.sqrt(pk.MU_EARTH / r1) * (1 - np.sqrt(2 * r2 / (r1 + r2)))
+                    dv2 = np.sqrt(pk.MU_EARTH / r2) * (np.sqrt(2 * r1 / (r1 + r2)) - 1)
 
                 total_dv = abs(dv1) + abs(dv2)
 
@@ -418,7 +431,9 @@ class TestIntegrationRealFunctionality:
                 effective_dv = total_dv / fuel_eff
 
                 # Transfer time estimation (hours)
-                transfer_time = np.pi * np.sqrt((r1 + r2)**3 / (8 * pk.MU_EARTH)) / 3600
+                transfer_time = (
+                    np.pi * np.sqrt((r1 + r2) ** 3 / (8 * pk.MU_EARTH)) / 3600
+                )
 
                 # Cost calculation with more variation
                 fuel_cost = effective_dv * 100  # Cost per m/s
@@ -450,9 +465,9 @@ class TestIntegrationRealFunctionality:
         # Check all solutions are physically reasonable
         for fitness in fitnesses:
             delta_v, time, cost = fitness
-            assert 0 < delta_v < 20000    # Reasonable delta-v range
-            assert 0.1 <= time <= 1000    # Reasonable time range (hours)
-            assert cost > 0               # Positive cost
+            assert 0 < delta_v < 20000  # Reasonable delta-v range
+            assert 0.1 <= time <= 1000  # Reasonable time range (hours)
+            assert cost > 0  # Positive cost
 
         # Test Pareto front quality with realistic diversity requirements
         delta_vs = fitnesses[:, 0]
@@ -460,19 +475,19 @@ class TestIntegrationRealFunctionality:
         costs = fitnesses[:, 2]
 
         # Should show trade-offs (realistic thresholds based on actual ranges)
-        assert np.std(delta_vs) > 1     # At least 1 m/s variation
-        assert np.std(times) > 0.01     # At least 0.01 hour variation
-        assert np.std(costs) > 100      # At least $100 variation
+        assert np.std(delta_vs) > 1  # At least 1 m/s variation
+        assert np.std(times) > 0.01  # At least 0.01 hour variation
+        assert np.std(costs) > 100  # At least $100 variation
 
     def test_real_simplified_mission_analysis(self):
         """Test real simplified mission analysis workflow."""
 
         # Step 1: Mission requirements
         mission_params = {
-            "departure_orbit": 400,    # km
-            "target_orbit": 1000,     # km
+            "departure_orbit": 400,  # km
+            "target_orbit": 1000,  # km
             "spacecraft_mass": 2000,  # kg
-            "mission_duration": 3     # years
+            "mission_duration": 3,  # years
         }
 
         # Step 2: Simplified trajectory analysis
@@ -483,8 +498,8 @@ class TestIntegrationRealFunctionality:
         a_transfer = (r1 + r2) / 2
         v1_circ = np.sqrt(pk.MU_EARTH / r1)
         v2_circ = np.sqrt(pk.MU_EARTH / r2)
-        v1_transfer = np.sqrt(pk.MU_EARTH * (2/r1 - 1/a_transfer))
-        v2_transfer = np.sqrt(pk.MU_EARTH * (2/r2 - 1/a_transfer))
+        v1_transfer = np.sqrt(pk.MU_EARTH * (2 / r1 - 1 / a_transfer))
+        v2_transfer = np.sqrt(pk.MU_EARTH * (2 / r2 - 1 / a_transfer))
 
         dv1 = abs(v1_transfer - v1_circ)
         dv2 = abs(v2_circ - v2_transfer)
@@ -495,19 +510,24 @@ class TestIntegrationRealFunctionality:
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=100000.0,
             development_cost=1e9,
-            contingency_percentage=20.0
+            contingency_percentage=20.0,
         )
 
         # Launch cost
-        launch_cost = mission_params["spacecraft_mass"] * cost_factors.launch_cost_per_kg
+        launch_cost = (
+            mission_params["spacecraft_mass"] * cost_factors.launch_cost_per_kg
+        )
 
         # Fuel cost (assume 10% of spacecraft mass is fuel)
         fuel_mass = mission_params["spacecraft_mass"] * 0.1
         fuel_cost = fuel_mass * cost_factors.launch_cost_per_kg
 
         # Operations cost
-        ops_cost = (mission_params["mission_duration"] * 365 *
-                   cost_factors.operations_cost_per_day)
+        ops_cost = (
+            mission_params["mission_duration"]
+            * 365
+            * cost_factors.operations_cost_per_day
+        )
 
         total_mission_cost = launch_cost + fuel_cost + ops_cost
 
@@ -520,7 +540,9 @@ class TestIntegrationRealFunctionality:
         discount_rate = 0.08
         cash_flows = [-total_mission_cost]
         for _year in range(1, mission_params["mission_duration"] + 1):
-            cash_flows.append(annual_revenue - ops_cost/mission_params["mission_duration"])
+            cash_flows.append(
+                annual_revenue - ops_cost / mission_params["mission_duration"]
+            )
 
         npv = sum(cf / (1 + discount_rate) ** i for i, cf in enumerate(cash_flows))
 
@@ -537,7 +559,9 @@ class TestIntegrationRealFunctionality:
         assert len(cash_flows) == 4  # Initial + 3 years
 
         # Don't return anything to avoid pytest warning
-        print(f"Mission Analysis Complete: Δv={total_dv:.1f} m/s, Cost=${total_mission_cost/1e6:.1f}M")
+        print(
+            f"Mission Analysis Complete: Δv={total_dv:.1f} m/s, Cost=${total_mission_cost/1e6:.1f}M"
+        )
 
 
 def test_environment_setup():

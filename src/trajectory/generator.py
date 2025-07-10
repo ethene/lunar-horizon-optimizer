@@ -49,6 +49,7 @@ logger.setLevel(logging.DEBUG)
 EARTH_RADIUS = pk.EARTH_RADIUS  # m
 J2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)  # J2000 epoch
 
+
 def generate_lunar_transfer(
     departure_time: datetime,
     time_of_flight: float,
@@ -102,8 +103,8 @@ def generate_lunar_transfer(
         raise ValueError(msg)
 
     # Convert altitudes to meters
-    km_to_m(TD.EARTH_RADIUS/1000.0 + initial_orbit_alt)
-    km_to_m(TD.MOON_MEAN_RADIUS/1000.0 + final_orbit_alt)
+    km_to_m(TD.EARTH_RADIUS / 1000.0 + initial_orbit_alt)
+    km_to_m(TD.MOON_MEAN_RADIUS / 1000.0 + final_orbit_alt)
 
     # Initialize lunar transfer solver
     transfer = LunarTransfer()
@@ -150,7 +151,9 @@ def optimize_departure_time(
     best_departure = None
 
     for i in range(num_samples):
-        departure = reference_epoch + timedelta(days=(-search_window + i * sample_spacing))
+        departure = reference_epoch + timedelta(
+            days=(-search_window + i * sample_spacing)
+        )
         departure + timedelta(days=transfer_time)
 
         try:
@@ -164,7 +167,9 @@ def optimize_departure_time(
                 best_departure = departure
 
         except ValueError as e:
-            logger.debug(f"Skipping invalid trajectory at {departure.isoformat()}: {e!s}")
+            logger.debug(
+                f"Skipping invalid trajectory at {departure.isoformat()}: {e!s}"
+            )
             continue
 
     if best_departure is None:
@@ -175,6 +180,7 @@ def optimize_departure_time(
     logger.info(f"Minimum delta-v: {min_dv/1000:.2f} km/s")
 
     return best_departure
+
 
 def estimate_hohmann_transfer_dv(r1: float, r2: float) -> tuple[float, float, float]:
     """Calculate delta-v and time of flight for a Hohmann transfer orbit.
@@ -208,8 +214,8 @@ def estimate_hohmann_transfer_dv(r1: float, r2: float) -> tuple[float, float, fl
 
     # Calculate transfer orbit parameters
     a = (r1 + r2) / 2.0  # m
-    v1_trans = np.sqrt(pk.MU_EARTH * (2.0/r1 - 1.0/a))  # m/s
-    v2_trans = np.sqrt(pk.MU_EARTH * (2.0/r2 - 1.0/a))  # m/s
+    v1_trans = np.sqrt(pk.MU_EARTH * (2.0 / r1 - 1.0 / a))  # m/s
+    v2_trans = np.sqrt(pk.MU_EARTH * (2.0 / r2 - 1.0 / a))  # m/s
 
     # Calculate delta-v magnitudes (convert to km/s)
     dv1 = abs(v1_trans - v1_circ) / 1000.0  # km/s
@@ -220,7 +226,9 @@ def estimate_hohmann_transfer_dv(r1: float, r2: float) -> tuple[float, float, fl
 
     logger.debug(f"Initial circular velocity: {v1_circ/1000.0:.3f} km/s")
     logger.debug(f"Final circular velocity: {v2_circ/1000.0:.3f} km/s")
-    logger.debug(f"Transfer orbit velocities: {v1_trans/1000.0:.3f} km/s, {v2_trans/1000.0:.3f} km/s")
+    logger.debug(
+        f"Transfer orbit velocities: {v1_trans/1000.0:.3f} km/s, {v2_trans/1000.0:.3f} km/s"
+    )
     logger.debug(f"Delta-v values: {dv1:.3f} km/s, {dv2:.3f} km/s")
     logger.debug(f"Time of flight: {tof:.3f} days")
 

@@ -15,11 +15,9 @@ from src.trajectory.constants import PhysicalConstants
 logger = logging.getLogger(__name__)
 
 
-def validate_trajectory_constraints(r1: np.ndarray,
-                                 v1: np.ndarray,
-                                 r2: np.ndarray,
-                                 v2: np.ndarray,
-                                 tof: float) -> bool:
+def validate_trajectory_constraints(
+    r1: np.ndarray, v1: np.ndarray, r2: np.ndarray, v2: np.ndarray, tof: float
+) -> bool:
     """Validate physical constraints for the complete trajectory.
 
     Args:
@@ -89,8 +87,8 @@ def validate_trajectory_constraints(r1: np.ndarray,
         raise ValueError(msg)
 
     # Verify energy consistency with 15% tolerance for lunar effects
-    e1 = v1_mag**2/2 - PhysicalConstants.EARTH_MU/r1_mag
-    v2_mag**2/2 - PhysicalConstants.EARTH_MU/r2_mag
+    e1 = v1_mag**2 / 2 - PhysicalConstants.EARTH_MU / r1_mag
+    v2_mag**2 / 2 - PhysicalConstants.EARTH_MU / r2_mag
 
     # For lunar transfer, allow slightly positive energy
     if e1 > 1e4:
@@ -98,9 +96,13 @@ def validate_trajectory_constraints(r1: np.ndarray,
         raise ValueError(msg)
 
     # Verify minimum transfer time
-    min_time = np.pi * np.sqrt(min(r1_mag, r2_mag)**3 / (8 * PhysicalConstants.EARTH_MU))
+    min_time = np.pi * np.sqrt(
+        min(r1_mag, r2_mag) ** 3 / (8 * PhysicalConstants.EARTH_MU)
+    )
     if tof < 0.5 * min_time:
-        msg = f"Transfer time {tof:.1f}s is less than 50% of minimum time {min_time:.1f}s"
+        msg = (
+            f"Transfer time {tof:.1f}s is less than 50% of minimum time {min_time:.1f}s"
+        )
         raise ValueError(msg)
 
     # Check intermediate states for physical constraints
@@ -111,15 +113,19 @@ def validate_trajectory_constraints(r1: np.ndarray,
         v_mag = np.linalg.norm(v)
 
         # Check for extremely hyperbolic trajectory segments
-        e = v_mag**2/2 - PhysicalConstants.EARTH_MU/r_mag
+        e = v_mag**2 / 2 - PhysicalConstants.EARTH_MU / r_mag
         if e > 1e4:  # Same threshold as initial state
-            logging.warning(f"Highly hyperbolic trajectory detected at point {i} (e = {e:.2e} m²/s²)")
+            logging.warning(
+                f"Highly hyperbolic trajectory detected at point {i} (e = {e:.2e} m²/s²)"
+            )
             return False
 
         # Check velocity against escape velocity with lunar transfer allowance
         v_esc = np.sqrt(2 * PhysicalConstants.EARTH_MU / r_mag)
         if v_mag > 2.0 * v_esc:
-            logging.warning(f"Excessive velocity detected at point {i}: {v_mag/1000:.1f} km/s (escape velocity: {v_esc/1000:.1f} km/s)")
+            logging.warning(
+                f"Excessive velocity detected at point {i}: {v_mag/1000:.1f} km/s (escape velocity: {v_esc/1000:.1f} km/s)"
+            )
             return False
 
     return True

@@ -35,12 +35,17 @@ from datetime import datetime
 # Handle PyKEP import gracefully
 try:
     import pykep as pk
+
     PYKEP_AVAILABLE = True
 except ImportError:
     PYKEP_AVAILABLE = False
+
     # Create minimal pk interface for validation
-    class pk:
+    class _FallbackPK:
         EARTH_RADIUS = 6378137  # meters
+
+    pk = _FallbackPK()
+
 
 # Import constants (handle potential import issues gracefully)
 try:
@@ -48,28 +53,31 @@ try:
     from .defaults import TransferDefaults as TD
 except ImportError:
     # Fallback constants if import fails
-    class TransferDefaults:
+    class _FallbackTransferDefaults:
         MIN_TLI_DV = 2.0  # km/s
         MAX_TLI_DV = 4.0  # km/s
-        MIN_TOF = 2.0     # days
-        MAX_TOF = 7.0     # days
+        MIN_TOF = 2.0  # days
+        MAX_TOF = 7.0  # days
         MAX_REVOLUTIONS = 3
 
-    class EphemerisLimits:
+    class _FallbackEphemerisLimits:
         MIN_YEAR = 2020
         MAX_YEAR = 2050
 
-    TD = TransferDefaults()
+    EphemerisLimits = _FallbackEphemerisLimits  # type: ignore
+    TD = _FallbackTransferDefaults()  # type: ignore
 
 # Import models (handle potential import issues gracefully)
 try:
     from .models import OrbitState
 except ImportError:
     # Create minimal OrbitState interface if import fails
-    class OrbitState:
+    class _FallbackOrbitState:
         def __init__(self, *args, **kwargs) -> None:
             self.radius = kwargs.get("radius", 0)
             self.velocity = kwargs.get("velocity", 0)
+
+    OrbitState = _FallbackOrbitState  # type: ignore
 
 
 class TrajectoryValidator:
@@ -91,13 +99,15 @@ class TrajectoryValidator:
         max_transfer_time (float): Maximum transfer time [days]
     """
 
-    def __init__(self,
-                min_earth_alt: float = 200,
-                max_earth_alt: float = 1000,
-                min_moon_alt: float = 50,
-                max_moon_alt: float = 500,
-                min_transfer_time: float = 2.0,
-                max_transfer_time: float = 7.0) -> None:
+    def __init__(
+        self,
+        min_earth_alt: float = 200,
+        max_earth_alt: float = 1000,
+        min_moon_alt: float = 50,
+        max_moon_alt: float = 500,
+        min_transfer_time: float = 2.0,
+        max_transfer_time: float = 7.0,
+    ) -> None:
         """Initialize validator with constraints.
 
         Args:
@@ -118,10 +128,9 @@ class TrajectoryValidator:
         self.min_transfer_time = min_transfer_time
         self.max_transfer_time = max_transfer_time
 
-    def validate_inputs(self,
-                      earth_orbit_alt: float,
-                      moon_orbit_alt: float,
-                      transfer_time: float) -> None:
+    def validate_inputs(
+        self, earth_orbit_alt: float, moon_orbit_alt: float, transfer_time: float
+    ) -> None:
         """Validate input parameters for trajectory generation.
 
         Performs comprehensive validation of all input parameters including:
@@ -145,7 +154,7 @@ class TrajectoryValidator:
             msg = "Transfer time must be positive"
             raise ValueError(msg)
 
-        if not (self.min_moon_alt/1000 <= moon_orbit_alt <= self.max_moon_alt/1000):
+        if not (self.min_moon_alt / 1000 <= moon_orbit_alt <= self.max_moon_alt / 1000):
             msg = (
                 f"Moon orbit altitude must be between {self.min_moon_alt/1000:.1f} "
                 f"and {self.max_moon_alt/1000:.1f} km"
@@ -154,7 +163,9 @@ class TrajectoryValidator:
                 msg,
             )
 
-        if not (self.min_earth_alt/1000 <= earth_orbit_alt <= self.max_earth_alt/1000):
+        if not (
+            self.min_earth_alt / 1000 <= earth_orbit_alt <= self.max_earth_alt / 1000
+        ):
             msg = (
                 f"Earth orbit altitude must be between {self.min_earth_alt/1000:.1f} "
                 f"and {self.max_earth_alt/1000:.1f} km"
@@ -213,7 +224,12 @@ class TrajectoryValidator:
         """
         validate_epoch(dt, allow_none)
 
-    def validate_orbit_altitude(self, altitude: float, min_alt: float | None = None, max_alt: float | None = None) -> None:
+    def validate_orbit_altitude(
+        self,
+        altitude: float,
+        min_alt: float | None = None,
+        max_alt: float | None = None,
+    ) -> None:
         """Validate orbit altitude is within reasonable range.
 
         Args:
@@ -321,10 +337,7 @@ def validate_transfer_parameters(
         raise TypeError(msg)
 
     if tof_days <= TD.MIN_TOF or tof_days > TD.MAX_TOF:
-        msg = (
-            f"Time of flight must be between {TD.MIN_TOF} "
-            f"and {TD.MAX_TOF} days"
-        )
+        msg = f"Time of flight must be between {TD.MIN_TOF} " f"and {TD.MAX_TOF} days"
         raise ValueError(
             msg,
         )

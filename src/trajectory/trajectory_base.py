@@ -19,6 +19,7 @@ from .trajectory_physics import propagate_orbit
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 @dataclass
 class Trajectory(ABC):
     """Base class for orbital trajectories.
@@ -36,7 +37,9 @@ class Trajectory(ABC):
     maneuvers: list[Maneuver] = field(default_factory=list)
     start_epoch: datetime = field(init=False)
     end_epoch: datetime | None = None
-    propagated_states: dict[datetime, OrbitState] = field(default_factory=dict, init=False)
+    propagated_states: dict[datetime, OrbitState] = field(
+        default_factory=dict, init=False
+    )
 
     def __post_init__(self):
         """Initialize derived attributes and validate inputs."""
@@ -92,7 +95,9 @@ class Trajectory(ABC):
             return self.propagated_states[target_epoch]
 
         # Find last known state and maneuvers to apply
-        last_epoch = max(epoch for epoch in self.propagated_states if epoch <= target_epoch)
+        last_epoch = max(
+            epoch for epoch in self.propagated_states if epoch <= target_epoch
+        )
         last_state = self.propagated_states[last_epoch]
 
         # Apply maneuvers and propagate segments
@@ -100,7 +105,9 @@ class Trajectory(ABC):
         for maneuver in sorted(self.maneuvers, key=lambda m: m.epoch):
             if last_epoch < maneuver.epoch <= target_epoch:
                 # Propagate to maneuver
-                pre_maneuver_state = self._propagate_segment(current_state, maneuver.epoch)
+                pre_maneuver_state = self._propagate_segment(
+                    current_state, maneuver.epoch
+                )
                 self.propagated_states[maneuver.epoch] = pre_maneuver_state
 
                 # Apply maneuver
@@ -116,7 +123,9 @@ class Trajectory(ABC):
         self.propagated_states[target_epoch] = final_state
         return final_state
 
-    def _propagate_segment(self, state: OrbitState, target_epoch: datetime) -> OrbitState:
+    def _propagate_segment(
+        self, state: OrbitState, target_epoch: datetime
+    ) -> OrbitState:
         """Propagate a single trajectory segment without maneuvers.
 
         Args:
@@ -186,7 +195,8 @@ class Trajectory(ABC):
         self.maneuvers.append(maneuver)
         # Clear cached states after maneuver epoch
         self.propagated_states = {
-            epoch: state for epoch, state in self.propagated_states.items()
+            epoch: state
+            for epoch, state in self.propagated_states.items()
             if epoch <= maneuver.epoch
         }
 
@@ -201,7 +211,11 @@ class Trajectory(ABC):
 
     def __str__(self) -> str:
         """String representation of the trajectory."""
-        duration = (self.end_epoch - self.start_epoch).total_seconds() if self.end_epoch else "undefined"
+        duration = (
+            (self.end_epoch - self.start_epoch).total_seconds()
+            if self.end_epoch
+            else "undefined"
+        )
         return (
             f"Trajectory from {self.start_epoch.isoformat()} "
             f"(duration: {duration}s, "

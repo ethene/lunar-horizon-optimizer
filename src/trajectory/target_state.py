@@ -14,6 +14,7 @@ from .constants import PhysicalConstants as PC
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 def calculate_target_state(
     moon_pos: np.ndarray,
     moon_vel: np.ndarray,
@@ -37,8 +38,12 @@ def calculate_target_state(
         ValueError: If inputs are invalid
     """
     # Log input values with more detail
-    logger.debug(f"Input moon_pos [m]: {moon_pos}, magnitude: {np.linalg.norm(moon_pos):.2f}")
-    logger.debug(f"Input moon_vel [m/s]: {moon_vel}, magnitude: {np.linalg.norm(moon_vel):.2f}")
+    logger.debug(
+        f"Input moon_pos [m]: {moon_pos}, magnitude: {np.linalg.norm(moon_pos):.2f}"
+    )
+    logger.debug(
+        f"Input moon_vel [m/s]: {moon_vel}, magnitude: {np.linalg.norm(moon_vel):.2f}"
+    )
     logger.debug(f"Input orbit_radius [m]: {orbit_radius}")
 
     # Convert inputs to numpy arrays and validate
@@ -101,7 +106,9 @@ def calculate_target_state(
     logger.debug(f"Target-Moon distance [m]: {target_moon_dist}")
 
     if not np.isclose(target_moon_dist, orbit_radius, rtol=1e-6):
-        logger.error(f"Target position is not at requested orbit radius: {target_moon_dist/1000:.1f} km vs {orbit_radius/1000:.1f} km")
+        logger.error(
+            f"Target position is not at requested orbit radius: {target_moon_dist/1000:.1f} km vs {orbit_radius/1000:.1f} km"
+        )
 
     # Log velocity difference components
     vel_diff = target_vel - moon_vel
@@ -110,13 +117,18 @@ def calculate_target_state(
     vel_diff_normal = np.dot(vel_diff, orbit_normal)
     vel_diff_tangential = np.dot(vel_diff, np.cross(orbit_normal, target_radial))
 
-    logger.debug(f"Velocity difference components [m/s]: radial={vel_diff_radial:.2f}, normal={vel_diff_normal:.2f}, tangential={vel_diff_tangential:.2f}")
+    logger.debug(
+        f"Velocity difference components [m/s]: radial={vel_diff_radial:.2f}, normal={vel_diff_normal:.2f}, tangential={vel_diff_tangential:.2f}"
+    )
     logger.debug(f"Total velocity difference [m/s]: {vel_diff_mag:.2f}")
 
     if vel_diff_mag > 100:
-        logger.warning(f"Target velocity differs from Moon velocity by {vel_diff_mag:.1f} m/s (> 100 m/s)")
+        logger.warning(
+            f"Target velocity differs from Moon velocity by {vel_diff_mag:.1f} m/s (> 100 m/s)"
+        )
 
     return target_pos, target_vel
+
 
 def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
     """Create rotation matrix for rotating around axis by angle.
@@ -135,8 +147,8 @@ def _rotation_matrix(axis: np.ndarray, angle: float) -> np.ndarray:
     axis = axis / np.linalg.norm(axis)
 
     # Rodriguez rotation formula
-    K = np.array([[0, -axis[2], axis[1]],
-                  [axis[2], 0, -axis[0]],
-                  [-axis[1], axis[0], 0]])
+    K = np.array(
+        [[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]]
+    )
     I = np.eye(3)
     return I + np.sin(angle) * K + (1 - np.cos(angle)) * (K @ K)

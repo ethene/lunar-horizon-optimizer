@@ -23,17 +23,21 @@ import numpy as np
 import logging
 from src.trajectory.lunar_transfer import LunarTransfer
 from src.trajectory.constants import PhysicalConstants as PC
-from src.trajectory.trajectory_physics import calculate_circular_velocity, validate_solution_physics
+from src.trajectory.trajectory_physics import (
+    calculate_circular_velocity,
+    validate_solution_physics,
+)
 from src.trajectory.target_state import calculate_target_state
 from src.trajectory.phase_optimization import (
     calculate_initial_position,
     evaluate_transfer_solution,
-    find_optimal_phase
+    find_optimal_phase,
 )
 
 # Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestBasicPhysics:
     """Test basic physics calculations and vector operations."""
@@ -72,8 +76,8 @@ class TestBasicPhysics:
         assert np.isclose(np.linalg.norm(h), h_expected, rtol=1e-12)
 
         # Test specific orbital energy
-        energy = v_circ**2/2 - PC.EARTH_MU/r
-        energy_expected = -PC.EARTH_MU/(2*r)  # Circular orbit energy
+        energy = v_circ**2 / 2 - PC.EARTH_MU / r
+        energy_expected = -PC.EARTH_MU / (2 * r)  # Circular orbit energy
         assert np.isclose(energy, energy_expected, rtol=1e-12)
 
         # Test orbital period
@@ -91,9 +95,9 @@ class TestBasicPhysics:
         assert np.isclose(v_esc / v_circ, np.sqrt(2), rtol=1e-12)
 
         # Test energy at escape velocity (use relative tolerance for large numbers)
-        energy = v_esc**2/2 - PC.EARTH_MU/r
-        energy_scale = PC.EARTH_MU/r  # Use orbital energy scale for comparison
-        assert np.isclose(energy/energy_scale, 0.0, rtol=1e-12)
+        energy = v_esc**2 / 2 - PC.EARTH_MU / r
+        energy_scale = PC.EARTH_MU / r  # Use orbital energy scale for comparison
+        assert np.isclose(energy / energy_scale, 0.0, rtol=1e-12)
 
     def test_hohmann_transfer(self):
         """Test basic Hohmann transfer calculations."""
@@ -106,8 +110,8 @@ class TestBasicPhysics:
         v_circ2 = np.sqrt(PC.EARTH_MU / r2)
 
         # Calculate transfer velocities
-        v1_transfer = np.sqrt(PC.EARTH_MU * (2/r1 - 1/a_transfer))
-        v2_transfer = np.sqrt(PC.EARTH_MU * (2/r2 - 1/a_transfer))
+        v1_transfer = np.sqrt(PC.EARTH_MU * (2 / r1 - 1 / a_transfer))
+        v2_transfer = np.sqrt(PC.EARTH_MU * (2 / r2 - 1 / a_transfer))
 
         # Delta-v calculations
         dv1 = abs(v1_transfer - v_circ1)
@@ -120,7 +124,9 @@ class TestBasicPhysics:
         # Verify transfer orbit is elliptical
         assert v1_transfer > v_circ1  # Velocity at perigee should be higher
         assert v2_transfer < v_circ2  # Velocity at apogee should be lower
-        assert transfer_time > np.pi * np.sqrt(r1**3 / PC.EARTH_MU)  # Longer than initial orbit period
+        assert transfer_time > np.pi * np.sqrt(
+            r1**3 / PC.EARTH_MU
+        )  # Longer than initial orbit period
 
     def test_basic_perturbation(self):
         """Test basic perturbation calculations."""
@@ -135,7 +141,7 @@ class TestBasicPhysics:
 
         # Calculate new orbital elements
         h_new = np.cross(r_vec, v_perturbed)
-        e_vec = np.cross(v_perturbed, h_new)/PC.EARTH_MU - r_vec/r
+        e_vec = np.cross(v_perturbed, h_new) / PC.EARTH_MU - r_vec / r
         e = np.linalg.norm(e_vec)
 
         # Verify orbit is now slightly elliptical
@@ -143,8 +149,8 @@ class TestBasicPhysics:
         assert e < 0.1  # Small eccentricity for small perturbation
 
         # Energy should be higher than circular orbit
-        energy_new = np.linalg.norm(v_perturbed)**2/2 - PC.EARTH_MU/r
-        energy_circ = v_circ**2/2 - PC.EARTH_MU/r
+        energy_new = np.linalg.norm(v_perturbed) ** 2 / 2 - PC.EARTH_MU / r
+        energy_circ = v_circ**2 / 2 - PC.EARTH_MU / r
         assert energy_new > energy_circ
 
     def test_physical_constants(self):
@@ -192,8 +198,8 @@ class TestBasicPhysics:
 
         # Hohmann transfer parameters
         a_transfer = (r1 + r2) / 2
-        v1_transfer = np.sqrt(PC.EARTH_MU * (2/r1 - 1/a_transfer))
-        v2_transfer = np.sqrt(PC.EARTH_MU * (2/r2 - 1/a_transfer))
+        v1_transfer = np.sqrt(PC.EARTH_MU * (2 / r1 - 1 / a_transfer))
+        v2_transfer = np.sqrt(PC.EARTH_MU * (2 / r2 - 1 / a_transfer))
 
         # Initial and final circular velocities
         v1_circ = np.sqrt(PC.EARTH_MU / r1)
@@ -212,6 +218,7 @@ class TestBasicPhysics:
         # Transfer time
         transfer_time = np.pi * np.sqrt(a_transfer**3 / PC.EARTH_MU)
         assert 4 * 86400 < transfer_time < 5 * 86400  # Should be ~4.5 days
+
 
 class TestLunarTransfer:
     """Test lunar transfer trajectory generation."""
@@ -234,10 +241,12 @@ class TestLunarTransfer:
     def test_target_state_basic(self):
         """Test basic target state calculation."""
         moon_pos = np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
-        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU/PC.MOON_SEMI_MAJOR_AXIS), 0])
+        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU / PC.MOON_SEMI_MAJOR_AXIS), 0])
         orbit_radius = PC.MOON_RADIUS + 100_000  # 100 km orbit
 
-        target_pos, target_vel = calculate_target_state(moon_pos, moon_vel, orbit_radius)
+        target_pos, target_vel = calculate_target_state(
+            moon_pos, moon_vel, orbit_radius
+        )
 
         # Verify distance from Moon center
         moon_dist = np.linalg.norm(target_pos - moon_pos)
@@ -250,7 +259,10 @@ class TestLunarTransfer:
         # Verify target orbit plane aligns with Moon's orbit
         h_moon = np.cross(moon_pos, moon_vel)
         h_target = np.cross(target_pos - moon_pos, target_vel - moon_vel)
-        angle = np.arccos(np.dot(h_moon, h_target) / (np.linalg.norm(h_moon) * np.linalg.norm(h_target)))
+        angle = np.arccos(
+            np.dot(h_moon, h_target)
+            / (np.linalg.norm(h_moon) * np.linalg.norm(h_target))
+        )
         assert np.abs(angle) < np.deg2rad(5)  # Within 5 degrees
 
     def test_target_state_velocity_matching(self):
@@ -281,7 +293,7 @@ class TestLunarTransfer:
         """Test optimal phase finding with simple circular orbit."""
         r_park = PC.EARTH_RADIUS + 400_000  # 400 km orbit
         moon_pos = np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
-        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU/PC.MOON_SEMI_MAJOR_AXIS), 0])
+        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU / PC.MOON_SEMI_MAJOR_AXIS), 0])
         transfer_time = 3.0 * 86400  # 3 days in seconds
         orbit_radius = PC.MOON_RADIUS + 100_000  # 100 km orbit
 
@@ -290,7 +302,7 @@ class TestLunarTransfer:
             moon_pos=moon_pos,
             moon_vel=moon_vel,
             transfer_time=transfer_time,
-            orbit_radius=orbit_radius
+            orbit_radius=orbit_radius,
         )
 
         # Verify initial position magnitude
@@ -309,14 +321,14 @@ class TestLunarTransfer:
             moon_pos=moon_pos,
             moon_vel=moon_vel,
             transfer_time=transfer_time,
-            orbit_radius=orbit_radius
+            orbit_radius=orbit_radius,
         )
 
         # Calculate velocity at r1
         v_circ = calculate_circular_velocity(r_park, PC.EARTH_MU)
         h_unit = np.cross(moon_pos, moon_vel)
         h_unit = h_unit / np.linalg.norm(h_unit)
-        v_dir = np.cross(h_unit, r1/np.linalg.norm(r1))
+        v_dir = np.cross(h_unit, r1 / np.linalg.norm(r1))
         v_dir = v_dir / np.linalg.norm(v_dir)
         v1 = v_circ * v_dir
 
@@ -334,10 +346,12 @@ class TestLunarTransfer:
 
         # Test target state
         moon_pos = np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
-        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU/PC.MOON_SEMI_MAJOR_AXIS), 0])
+        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU / PC.MOON_SEMI_MAJOR_AXIS), 0])
         r_moon_orbit = PC.MOON_RADIUS + self.moon_orbit_alt * 1000
 
-        target_pos, target_vel = calculate_target_state(moon_pos, moon_vel, r_moon_orbit)
+        target_pos, target_vel = calculate_target_state(
+            moon_pos, moon_vel, r_moon_orbit
+        )
 
         # Verify target state
         assert np.isclose(np.linalg.norm(target_pos), r_moon_orbit, rtol=1e-10)
@@ -348,11 +362,13 @@ class TestLunarTransfer:
         """Test lunar orbit insertion delta-v calculation."""
         # Setup simple test case
         moon_pos = np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
-        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU/PC.MOON_SEMI_MAJOR_AXIS), 0])
+        moon_vel = np.array([0, np.sqrt(PC.EARTH_MU / PC.MOON_SEMI_MAJOR_AXIS), 0])
         r_moon_orbit = PC.MOON_RADIUS + 100_000  # 100 km orbit
 
         # Get target state
-        target_pos, target_vel = calculate_target_state(moon_pos, moon_vel, r_moon_orbit)
+        target_pos, target_vel = calculate_target_state(
+            moon_pos, moon_vel, r_moon_orbit
+        )
 
         # Calculate approach velocity (hyperbolic)
         v_inf = 800.0  # Typical excess velocity ~800 m/s
@@ -363,22 +379,21 @@ class TestLunarTransfer:
         loi_dv_mag = np.linalg.norm(loi_dv)
 
         # Verify LOI delta-v is reasonable
-        assert 500 < loi_dv_mag < 1500, f"LOI delta-v {loi_dv_mag} m/s outside expected range"
+        assert (
+            500 < loi_dv_mag < 1500
+        ), f"LOI delta-v {loi_dv_mag} m/s outside expected range"
 
         # Verify final orbit velocity
         final_vel_rel_moon = target_vel - moon_vel
         final_vel_mag = np.linalg.norm(final_vel_rel_moon)
-        expected_vel = np.sqrt(PC.MOON_MU/r_moon_orbit)
+        expected_vel = np.sqrt(PC.MOON_MU / r_moon_orbit)
         assert np.isclose(final_vel_mag, expected_vel, rtol=0.1)
 
     def test_transfer_orbit_energy(self):
         """Test energy of transfer orbit relative to Earth."""
         # Generate simple transfer
         trajectory, total_dv = self.transfer.generate_transfer(
-            self.epoch,
-            self.earth_orbit_alt,
-            self.moon_orbit_alt,
-            self.transfer_time
+            self.epoch, self.earth_orbit_alt, self.moon_orbit_alt, self.transfer_time
         )
 
         # Get initial velocity after TLI
@@ -390,34 +405,31 @@ class TestLunarTransfer:
         # Calculate specific orbital energy
         r1_mag = np.linalg.norm(r1)
         v1_mag = np.linalg.norm(v1_after_tli)
-        energy = v1_mag**2/2 - PC.EARTH_MU/r1_mag
+        energy = v1_mag**2 / 2 - PC.EARTH_MU / r1_mag
 
         # Energy should be positive (hyperbolic) but not too high
         assert energy > 0, "Transfer orbit should be hyperbolic"
         assert energy < 1e6, "Transfer orbit energy too high"
 
         # Calculate characteristic energy (C3)
-        c3 = v1_mag**2 - 2*PC.EARTH_MU/r1_mag
+        c3 = v1_mag**2 - 2 * PC.EARTH_MU / r1_mag
         assert -2e6 < c3 < 2e6, f"C3 energy {c3} outside expected range"
 
     def test_intermediate_states(self):
         """Test intermediate states during transfer."""
         trajectory, _ = self.transfer.generate_transfer(
-            self.epoch,
-            self.earth_orbit_alt,
-            self.moon_orbit_alt,
-            self.transfer_time
+            self.epoch, self.earth_orbit_alt, self.moon_orbit_alt, self.transfer_time
         )
 
         # Sample points along trajectory
-        times = np.linspace(0, self.transfer_time*86400, 10)
+        times = np.linspace(0, self.transfer_time * 86400, 10)
         for t in times:
             # Get state at time t
             r, v = trajectory.get_state_at_time(t)
 
             # Verify position magnitude is reasonable
             r_mag = np.linalg.norm(r)
-            assert PC.EARTH_RADIUS < r_mag < 1.1*PC.MOON_SEMI_MAJOR_AXIS
+            assert PC.EARTH_RADIUS < r_mag < 1.1 * PC.MOON_SEMI_MAJOR_AXIS
 
             # Verify velocity magnitude is reasonable
             v_mag = np.linalg.norm(v)
@@ -431,10 +443,7 @@ class TestLunarTransfer:
     def test_lunar_transfer_generation(self):
         """Test complete lunar transfer trajectory generation."""
         trajectory, total_dv = self.transfer.generate_transfer(
-            self.epoch,
-            self.earth_orbit_alt,
-            self.moon_orbit_alt,
-            self.transfer_time
+            self.epoch, self.earth_orbit_alt, self.moon_orbit_alt, self.transfer_time
         )
 
         # Verify trajectory properties
@@ -453,7 +462,7 @@ class TestLunarTransfer:
             earth_orbit_alt=self.earth_orbit_alt,
             moon_orbit_alt=self.moon_orbit_alt,
             transfer_time=self.transfer_time,
-            max_revolutions=0
+            max_revolutions=0,
         )
 
         # Generate multi-rev trajectory
@@ -462,7 +471,7 @@ class TestLunarTransfer:
             earth_orbit_alt=self.earth_orbit_alt,
             moon_orbit_alt=self.moon_orbit_alt,
             transfer_time=self.transfer_time,
-            max_revolutions=1
+            max_revolutions=1,
         )
 
         # Multi-rev should have lower or equal delta-v
@@ -471,7 +480,7 @@ class TestLunarTransfer:
     def test_edge_case_phase_angles(self):
         """Test transfer generation with edge case phase angles."""
         # Test with phase angles near 0, π/2, π, 3π/2
-        critical_phases = [0.0, np.pi/2, np.pi, 3*np.pi/2]
+        critical_phases = [0.0, np.pi / 2, np.pi, 3 * np.pi / 2]
         r_park = PC.EARTH_RADIUS + 400_000  # 400 km orbit
         np.array([PC.MOON_SEMI_MAJOR_AXIS, 0, 0])
         moon_h_unit = np.array([0, 0, 1])
@@ -485,7 +494,7 @@ class TestLunarTransfer:
             # Verify position components
             if np.isclose(phase, 0.0):
                 assert np.isclose(r1[0], r_park, rtol=1e-10)
-            elif np.isclose(phase, np.pi/2):
+            elif np.isclose(phase, np.pi / 2):
                 assert np.isclose(r1[1], r_park, rtol=1e-10)
 
     def test_solution_physics_validation(self):
@@ -502,7 +511,7 @@ class TestLunarTransfer:
         assert validate_solution_physics(r1, v1, r2, v2, transfer_time)
 
         # Test case 2: Hyperbolic orbit (should fail)
-        v1_hyper = np.array([0, 2*v_circ, 0])  # Double the circular velocity
+        v1_hyper = np.array([0, 2 * v_circ, 0])  # Double the circular velocity
         assert not validate_solution_physics(r1, v1_hyper, r2, v2, transfer_time)
 
         # Test case 3: Angular momentum mismatch (should fail)
@@ -525,7 +534,7 @@ class TestLunarTransfer:
             moon_pos=moon_pos,
             moon_vel=moon_vel,
             transfer_time=transfer_time,
-            orbit_radius=orbit_radius
+            orbit_radius=orbit_radius,
         )
 
         # Check results
@@ -549,7 +558,7 @@ class TestLunarTransfer:
             epoch=self.epoch,
             earth_orbit_alt=200.0,  # Minimum allowed
             moon_orbit_alt=self.moon_orbit_alt,
-            transfer_time=self.transfer_time
+            transfer_time=self.transfer_time,
         )
 
         assert dv < 5000  # Verify reasonable delta-v
@@ -559,7 +568,7 @@ class TestLunarTransfer:
             epoch=self.epoch,
             earth_orbit_alt=self.earth_orbit_alt,
             moon_orbit_alt=50.0,  # Minimum allowed
-            transfer_time=self.transfer_time
+            transfer_time=self.transfer_time,
         )
 
         assert dv < 5000
@@ -569,7 +578,7 @@ class TestLunarTransfer:
             epoch=self.epoch,
             earth_orbit_alt=self.earth_orbit_alt,
             moon_orbit_alt=self.moon_orbit_alt,
-            transfer_time=2.0  # Minimum allowed
+            transfer_time=2.0,  # Minimum allowed
         )
 
         assert dv < 6000  # Allow higher delta-v for faster transfer
@@ -584,7 +593,7 @@ class TestLunarTransfer:
                 earth_orbit_alt=self.earth_orbit_alt,
                 moon_orbit_alt=self.moon_orbit_alt,
                 transfer_time=5.0,  # Longer time to allow multiple revs
-                max_revolutions=max_rev
+                max_revolutions=max_rev,
             )
             results.append(dv)
 

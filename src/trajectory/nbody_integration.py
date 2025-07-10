@@ -17,7 +17,11 @@ from scipy.integrate import solve_ivp
 
 from .celestial_bodies import CelestialBody
 from .constants import PhysicalConstants as PC
-from .models import Trajectory
+
+# Removed unused imports
+
+# Type alias for trajectory data
+TrajectoryData = dict[str, Any]
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -30,10 +34,9 @@ class NumericalIntegrator:
     calculations, including Runge-Kutta and specialized orbital integrators.
     """
 
-    def __init__(self,
-                 method: str = "DOP853",
-                 rtol: float = 1e-12,
-                 atol: float = 1e-15) -> None:
+    def __init__(
+        self, method: str = "DOP853", rtol: float = 1e-12, atol: float = 1e-15
+    ) -> None:
         """Initialize numerical integrator.
 
         Args:
@@ -49,15 +52,19 @@ class NumericalIntegrator:
         self.scipy_methods = ["RK45", "DOP853", "Radau", "RK23", "BDF", "LSODA"]
         self.custom_methods = ["RK4", "Verlet", "LeapFrog"]
 
-        logger.info(f"Initialized numerical integrator: {method}, "
-                   f"rtol={rtol:.1e}, atol={atol:.1e}")
+        logger.info(
+            f"Initialized numerical integrator: {method}, "
+            f"rtol={rtol:.1e}, atol={atol:.1e}"
+        )
 
-    def integrate_trajectory(self,
-                           dynamics_function: Callable,
-                           initial_state: np.ndarray,
-                           time_span: tuple[float, float],
-                           num_points: int = 1000,
-                           **kwargs) -> tuple[np.ndarray, np.ndarray]:
+    def integrate_trajectory(
+        self,
+        dynamics_function: Callable,
+        initial_state: np.ndarray,
+        time_span: tuple[float, float],
+        num_points: int = 1000,
+        **kwargs,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Integrate trajectory using specified method.
 
         Args:
@@ -71,28 +78,40 @@ class NumericalIntegrator:
         -------
             Tuple of (time_array, state_history)
         """
-        logger.debug(f"Integrating trajectory: {time_span[0]:.1f}s to {time_span[1]:.1f}s")
+        logger.debug(
+            f"Integrating trajectory: {time_span[0]:.1f}s to {time_span[1]:.1f}s"
+        )
 
         # Time evaluation points
         t_eval = np.linspace(time_span[0], time_span[1], num_points)
 
         if self.method in self.scipy_methods:
             return self._integrate_scipy(
-                dynamics_function, initial_state, time_span, t_eval, **kwargs,
+                dynamics_function,
+                initial_state,
+                time_span,
+                t_eval,
+                **kwargs,
             )
         if self.method in self.custom_methods:
             return self._integrate_custom(
-                dynamics_function, initial_state, time_span, num_points, **kwargs,
+                dynamics_function,
+                initial_state,
+                time_span,
+                num_points,
+                **kwargs,
             )
         msg = f"Unknown integration method: {self.method}"
         raise ValueError(msg)
 
-    def _integrate_scipy(self,
-                        dynamics_function: Callable,
-                        initial_state: np.ndarray,
-                        time_span: tuple[float, float],
-                        t_eval: np.ndarray,
-                        **kwargs) -> tuple[np.ndarray, np.ndarray]:
+    def _integrate_scipy(
+        self,
+        dynamics_function: Callable,
+        initial_state: np.ndarray,
+        time_span: tuple[float, float],
+        t_eval: np.ndarray,
+        **kwargs,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Integrate using SciPy solve_ivp."""
         solution = solve_ivp(
             fun=lambda t, y: dynamics_function(t, y, **kwargs),
@@ -111,30 +130,42 @@ class NumericalIntegrator:
 
         return solution.t, solution.y
 
-    def _integrate_custom(self,
-                         dynamics_function: Callable,
-                         initial_state: np.ndarray,
-                         time_span: tuple[float, float],
-                         num_points: int,
-                         **kwargs) -> tuple[np.ndarray, np.ndarray]:
+    def _integrate_custom(
+        self,
+        dynamics_function: Callable,
+        initial_state: np.ndarray,
+        time_span: tuple[float, float],
+        num_points: int,
+        **kwargs,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Integrate using custom methods."""
         if self.method == "RK4":
             return self._integrate_rk4(
-                dynamics_function, initial_state, time_span, num_points, **kwargs,
+                dynamics_function,
+                initial_state,
+                time_span,
+                num_points,
+                **kwargs,
             )
         if self.method == "Verlet":
             return self._integrate_verlet(
-                dynamics_function, initial_state, time_span, num_points, **kwargs,
+                dynamics_function,
+                initial_state,
+                time_span,
+                num_points,
+                **kwargs,
             )
         msg = f"Custom method {self.method} not implemented"
         raise NotImplementedError(msg)
 
-    def _integrate_rk4(self,
-                      dynamics_function: Callable,
-                      initial_state: np.ndarray,
-                      time_span: tuple[float, float],
-                      num_points: int,
-                      **kwargs) -> tuple[np.ndarray, np.ndarray]:
+    def _integrate_rk4(
+        self,
+        dynamics_function: Callable,
+        initial_state: np.ndarray,
+        time_span: tuple[float, float],
+        num_points: int,
+        **kwargs,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Fourth-order Runge-Kutta integration."""
         t_start, t_end = time_span
         dt = (t_end - t_start) / (num_points - 1)
@@ -150,20 +181,22 @@ class NumericalIntegrator:
             y = states[:, i]
 
             k1 = dt * dynamics_function(t, y, **kwargs)
-            k2 = dt * dynamics_function(t + dt/2, y + k1/2, **kwargs)
-            k3 = dt * dynamics_function(t + dt/2, y + k2/2, **kwargs)
+            k2 = dt * dynamics_function(t + dt / 2, y + k1 / 2, **kwargs)
+            k3 = dt * dynamics_function(t + dt / 2, y + k2 / 2, **kwargs)
             k4 = dt * dynamics_function(t + dt, y + k3, **kwargs)
 
-            states[:, i+1] = y + (k1 + 2*k2 + 2*k3 + k4) / 6
+            states[:, i + 1] = y + (k1 + 2 * k2 + 2 * k3 + k4) / 6
 
         return times, states
 
-    def _integrate_verlet(self,
-                         dynamics_function: Callable,
-                         initial_state: np.ndarray,
-                         time_span: tuple[float, float],
-                         num_points: int,
-                         **kwargs) -> tuple[np.ndarray, np.ndarray]:
+    def _integrate_verlet(
+        self,
+        dynamics_function: Callable,
+        initial_state: np.ndarray,
+        time_span: tuple[float, float],
+        num_points: int,
+        **kwargs,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Verlet integration (for position/velocity problems)."""
         # Note: This is a simplified Verlet implementation
         # For orbital mechanics, consider specialized symplectic integrators
@@ -194,15 +227,17 @@ class NumericalIntegrator:
             t = times[i]
 
             # Update position
-            positions[:, i+1] = positions[:, i] + velocities[:, i] * dt + 0.5 * acc * dt**2
+            positions[:, i + 1] = (
+                positions[:, i] + velocities[:, i] * dt + 0.5 * acc * dt**2
+            )
 
             # Calculate new acceleration
-            state = np.concatenate([positions[:, i+1], velocities[:, i]])
+            state = np.concatenate([positions[:, i + 1], velocities[:, i]])
             derivatives = dynamics_function(t + dt, state, **kwargs)
             new_acc = derivatives[n_dim:]
 
             # Update velocity
-            velocities[:, i+1] = velocities[:, i] + 0.5 * (acc + new_acc) * dt
+            velocities[:, i + 1] = velocities[:, i] + 0.5 * (acc + new_acc) * dt
 
             acc = new_acc
 
@@ -219,10 +254,12 @@ class EarthMoonNBodyPropagator:
     system dynamics, including perturbations from Sun and other effects.
     """
 
-    def __init__(self,
-                 include_sun: bool = True,
-                 include_perturbations: bool = False,
-                 integrator_method: str = "DOP853") -> None:
+    def __init__(
+        self,
+        include_sun: bool = True,
+        include_perturbations: bool = False,
+        integrator_method: str = "DOP853",
+    ) -> None:
         """Initialize Earth-Moon n-body propagator.
 
         Args:
@@ -242,15 +279,19 @@ class EarthMoonNBodyPropagator:
             "sun": PC.SUN_MU,
         }
 
-        logger.info(f"Initialized Earth-Moon n-body propagator "
-                   f"(Sun: {include_sun}, Perturbations: {include_perturbations})")
+        logger.info(
+            f"Initialized Earth-Moon n-body propagator "
+            f"(Sun: {include_sun}, Perturbations: {include_perturbations})"
+        )
 
-    def propagate_spacecraft(self,
-                           initial_position: np.ndarray,
-                           initial_velocity: np.ndarray,
-                           reference_epoch: float,
-                           propagation_time: float,
-                           num_points: int = 1000) -> dict[str, np.ndarray]:
+    def propagate_spacecraft(
+        self,
+        initial_position: np.ndarray,
+        initial_velocity: np.ndarray,
+        reference_epoch: float,
+        propagation_time: float,
+        num_points: int = 1000,
+    ) -> dict[str, np.ndarray]:
         """Propagate spacecraft trajectory in Earth-Moon system.
 
         Args:
@@ -310,7 +351,9 @@ class EarthMoonNBodyPropagator:
         logger.info(f"Propagation completed: {len(times)} points generated")
         return result
 
-    def _nbody_dynamics(self, t: float, state: np.ndarray, reference_epoch: float) -> np.ndarray:
+    def _nbody_dynamics(
+        self, t: float, state: np.ndarray, reference_epoch: float
+    ) -> np.ndarray:
         """Compute n-body dynamics for Earth-Moon-Sun system.
 
         Args:
@@ -339,7 +382,9 @@ class EarthMoonNBodyPropagator:
 
         # Moon gravity
         try:
-            moon_pos, moon_vel = self.celestial.get_moon_state_earth_centered(current_epoch)
+            moon_pos, moon_vel = self.celestial.get_moon_state_earth_centered(
+                current_epoch
+            )
             r_moon_sc = r - moon_pos  # Spacecraft position relative to Moon
             r_moon_sc_mag = np.linalg.norm(r_moon_sc)
 
@@ -379,7 +424,9 @@ class EarthMoonNBodyPropagator:
         # Return state derivatives
         return np.concatenate([v, acceleration])
 
-    def _calculate_perturbations(self, position: np.ndarray, velocity: np.ndarray, epoch: float) -> np.ndarray:
+    def _calculate_perturbations(
+        self, position: np.ndarray, velocity: np.ndarray, epoch: float
+    ) -> np.ndarray:
         """Calculate additional perturbations (simplified).
 
         Args:
@@ -403,10 +450,12 @@ class EarthMoonNBodyPropagator:
 
         return perturbation
 
-    def compare_with_twobody(self,
-                           initial_position: np.ndarray,
-                           initial_velocity: np.ndarray,
-                           propagation_time: float) -> dict[str, Any]:
+    def compare_with_twobody(
+        self,
+        initial_position: np.ndarray,
+        initial_velocity: np.ndarray,
+        propagation_time: float,
+    ) -> dict[str, Any]:
         """Compare n-body propagation with two-body propagation.
 
         Args:
@@ -422,12 +471,17 @@ class EarthMoonNBodyPropagator:
 
         # N-body propagation
         nbody_result = self.propagate_spacecraft(
-            initial_position, initial_velocity, 10000.0, propagation_time,
+            initial_position,
+            initial_velocity,
+            10000.0,
+            propagation_time,
         )
 
         # Two-body propagation using Kepler's laws
         twobody_result = self._propagate_twobody(
-            initial_position, initial_velocity, propagation_time,
+            initial_position,
+            initial_velocity,
+            propagation_time,
         )
 
         # Calculate differences
@@ -449,13 +503,17 @@ class EarthMoonNBodyPropagator:
             "propagation_time": propagation_time,
         }
 
-        logger.info(f"Comparison complete: max position error = {np.max(pos_error)/1000:.1f} km")
+        logger.info(
+            f"Comparison complete: max position error = {np.max(pos_error)/1000:.1f} km"
+        )
         return comparison
 
-    def _propagate_twobody(self,
-                          initial_position: np.ndarray,
-                          initial_velocity: np.ndarray,
-                          propagation_time: float) -> dict[str, np.ndarray]:
+    def _propagate_twobody(
+        self,
+        initial_position: np.ndarray,
+        initial_velocity: np.ndarray,
+        propagation_time: float,
+    ) -> dict[str, np.ndarray]:
         """Propagate using two-body dynamics for comparison."""
 
         def twobody_dynamics(t: float, state: np.ndarray) -> np.ndarray:
@@ -500,13 +558,17 @@ class TrajectoryIO:
         # Supported file formats
         self.formats = ["json", "pickle", "npz", "csv"]
 
-        logger.info(f"Initialized TrajectoryIO with base directory: {self.base_directory}")
+        logger.info(
+            f"Initialized TrajectoryIO with base directory: {self.base_directory}"
+        )
 
-    def save_trajectory(self,
-                       trajectory: Trajectory,
-                       filename: str,
-                       format: str = "json",
-                       metadata: dict[str, Any] | None = None) -> Path:
+    def save_trajectory(
+        self,
+        trajectory: TrajectoryData,
+        filename: str,
+        format: str = "json",
+        metadata: dict[str, Any] | None = None,
+    ) -> Path:
         """Save trajectory to file.
 
         Args:
@@ -545,7 +607,7 @@ class TrajectoryIO:
         logger.info(f"Trajectory saved successfully to {filepath}")
         return filepath
 
-    def load_trajectory(self, filepath: Path) -> tuple[Trajectory, dict[str, Any]]:
+    def load_trajectory(self, filepath: Path) -> tuple[TrajectoryData, dict[str, Any]]:
         """Load trajectory from file.
 
         Args:
@@ -582,10 +644,9 @@ class TrajectoryIO:
         logger.info(f"Trajectory loaded successfully from {filepath}")
         return trajectory, metadata
 
-    def save_propagation_result(self,
-                              result: dict[str, np.ndarray],
-                              filename: str,
-                              format: str = "npz") -> Path:
+    def save_propagation_result(
+        self, result: dict[str, np.ndarray], filename: str, format: str = "npz"
+    ) -> Path:
         """Save propagation result to file.
 
         Args:
@@ -668,7 +729,7 @@ class TrajectoryIO:
 
         return sorted(trajectories, key=lambda x: x.get("save_timestamp", ""))
 
-    def _trajectory_to_dict(self, trajectory: Trajectory) -> dict[str, Any]:
+    def _trajectory_to_dict(self, trajectory: TrajectoryData) -> dict[str, Any]:
         """Convert trajectory object to dictionary."""
         return {
             "departure_epoch": trajectory.departure_epoch,
@@ -682,32 +743,28 @@ class TrajectoryIO:
                     "epoch": m.epoch,
                     "delta_v": m.delta_v,
                     "name": m.name,
-                } for m in trajectory.maneuvers
+                }
+                for m in trajectory.maneuvers
             ],
         }
 
-    def _dict_to_trajectory(self, data: dict[str, Any]) -> Trajectory:
+    def _dict_to_trajectory(self, data: dict[str, Any]) -> dict[str, Any]:
         """Convert dictionary to trajectory object."""
-        trajectory = Trajectory(
-            departure_epoch=data["departure_epoch"],
-            arrival_epoch=data["arrival_epoch"],
-            departure_pos=tuple(data["departure_pos"]),
-            departure_vel=tuple(data["departure_vel"]),
-            arrival_pos=tuple(data["arrival_pos"]),
-            arrival_vel=tuple(data["arrival_vel"]),
-        )
+        # Return the dictionary structure instead of abstract Trajectory class
+        result = {
+            "departure_epoch": data["departure_epoch"],
+            "arrival_epoch": data["arrival_epoch"],
+            "departure_pos": tuple(data["departure_pos"]),
+            "departure_vel": tuple(data["departure_vel"]),
+            "arrival_pos": tuple(data["arrival_pos"]),
+            "arrival_vel": tuple(data["arrival_vel"]),
+        }
 
         # Add maneuvers if present
-        for maneuver_data in data.get("maneuvers", []):
-            from .models import Maneuver
-            maneuver = Maneuver(
-                epoch=maneuver_data["epoch"],
-                delta_v=tuple(maneuver_data["delta_v"]),
-                name=maneuver_data["name"],
-            )
-            trajectory.add_maneuver(maneuver)
+        if "maneuvers" in data:
+            result["maneuvers"] = data["maneuvers"]
 
-        return trajectory
+        return result
 
     def _save_json(self, data: dict[str, Any], filepath: Path) -> None:
         """Save data to JSON file."""
@@ -767,11 +824,13 @@ class TrajectoryComparison:
         """Initialize trajectory comparison utility."""
         logger.info("Initialized TrajectoryComparison")
 
-    def compare_trajectories(self,
-                           trajectory1: Trajectory,
-                           trajectory2: Trajectory,
-                           label1: str = "Trajectory 1",
-                           label2: str = "Trajectory 2") -> dict[str, Any]:
+    def compare_trajectories(
+        self,
+        trajectory1: TrajectoryData,
+        trajectory2: TrajectoryData,
+        label1: str = "Trajectory 1",
+        label2: str = "Trajectory 2",
+    ) -> dict[str, Any]:
         """Compare two trajectory solutions.
 
         Args:
@@ -786,17 +845,31 @@ class TrajectoryComparison:
         """
         logger.info(f"Comparing trajectories: {label1} vs {label2}")
 
-        # Calculate delta-v for each trajectory
-        dv1 = sum(np.linalg.norm(m.delta_v) for m in trajectory1.maneuvers)
-        dv2 = sum(np.linalg.norm(m.delta_v) for m in trajectory2.maneuvers)
+        # Calculate delta-v for each trajectory (assuming dict structure)
+        maneuvers1 = trajectory1.get("maneuvers", [])
+        maneuvers2 = trajectory2.get("maneuvers", [])
+        dv1 = sum(
+            float(np.linalg.norm(m.get("delta_v", [0, 0, 0]))) for m in maneuvers1
+        )
+        dv2 = sum(
+            float(np.linalg.norm(m.get("delta_v", [0, 0, 0]))) for m in maneuvers2
+        )
 
         # Calculate transfer times
-        time1 = trajectory1.arrival_epoch - trajectory1.departure_epoch
-        time2 = trajectory2.arrival_epoch - trajectory2.departure_epoch
+        time1 = trajectory1.get("arrival_epoch", 0) - trajectory1.get(
+            "departure_epoch", 0
+        )
+        time2 = trajectory2.get("arrival_epoch", 0) - trajectory2.get(
+            "departure_epoch", 0
+        )
 
         # Position and velocity differences
-        dep_pos_diff = np.linalg.norm(np.array(trajectory1.departure_pos) - np.array(trajectory2.departure_pos))
-        arr_pos_diff = np.linalg.norm(np.array(trajectory1.arrival_pos) - np.array(trajectory2.arrival_pos))
+        dep_pos_diff = np.linalg.norm(
+            np.array(trajectory1.departure_pos) - np.array(trajectory2.departure_pos)
+        )
+        arr_pos_diff = np.linalg.norm(
+            np.array(trajectory1.arrival_pos) - np.array(trajectory2.arrival_pos)
+        )
 
         comparison = {
             "trajectories": {
@@ -825,12 +898,16 @@ class TrajectoryComparison:
             "best_time": label1 if time1 < time2 else label2,
         }
 
-        logger.info(f"Comparison complete: ΔV difference = {comparison['differences']['deltav_difference']:.1f} m/s")
+        # Get delta-v difference safely
+        deltav_diff = comparison.get("differences", {}).get("deltav_difference", 0)
+        logger.info(f"Comparison complete: ΔV difference = {deltav_diff:.1f} m/s")
         return comparison
 
-    def analyze_accuracy(self,
-                        computed_trajectory: dict[str, np.ndarray],
-                        reference_trajectory: dict[str, np.ndarray]) -> dict[str, float]:
+    def analyze_accuracy(
+        self,
+        computed_trajectory: dict[str, np.ndarray],
+        reference_trajectory: dict[str, np.ndarray],
+    ) -> dict[str, float]:
         """Analyze accuracy of computed trajectory vs reference.
 
         Args:
@@ -865,10 +942,10 @@ class TrajectoryComparison:
         }
 
 
-
 # Convenience functions
-def create_nbody_propagator(include_sun: bool = True,
-                          include_perturbations: bool = False) -> EarthMoonNBodyPropagator:
+def create_nbody_propagator(
+    include_sun: bool = True, include_perturbations: bool = False
+) -> EarthMoonNBodyPropagator:
     """Create Earth-Moon n-body propagator.
 
     Args:

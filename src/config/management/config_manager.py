@@ -32,8 +32,11 @@ class ConfigManager:
         _active_config (Optional[MissionConfig]): Currently active configuration
     """
 
-    def __init__(self, file_ops: FileOperations | None = None,
-                 template_manager: TemplateManager | None = None) -> None:
+    def __init__(
+        self,
+        file_ops: FileOperations | None = None,
+        template_manager: TemplateManager | None = None,
+    ) -> None:
         """Initialize the configuration manager.
 
         Args:

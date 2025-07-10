@@ -27,17 +27,28 @@ class SimpleTrajectory:
 class SimpleLunarTransfer:
     """Simplified LunarTransfer implementation for testing without PyKEP."""
 
-    def __init__(self, min_earth_alt=200, max_earth_alt=1000,
-                 min_moon_alt=50, max_moon_alt=500, **kwargs):
+    def __init__(
+        self,
+        min_earth_alt=200,
+        max_earth_alt=1000,
+        min_moon_alt=50,
+        max_moon_alt=500,
+        **kwargs,
+    ):
         """Initialize simplified lunar transfer."""
         self.min_earth_alt = min_earth_alt
         self.max_earth_alt = max_earth_alt
         self.min_moon_alt = min_moon_alt
         self.max_moon_alt = max_moon_alt
 
-    def generate_transfer(self, epoch: float, earth_orbit_alt: float,
-                         moon_orbit_alt: float, transfer_time: float,
-                         max_revolutions: int = 0) -> tuple[SimpleTrajectory, float]:
+    def generate_transfer(
+        self,
+        epoch: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+        transfer_time: float,
+        max_revolutions: int = 0,
+    ) -> tuple[SimpleTrajectory, float]:
         """Generate a simplified transfer trajectory.
 
         Returns realistic delta-v values based on typical lunar mission parameters.
@@ -58,8 +69,10 @@ class SimpleLunarTransfer:
         base_dv = 3200.0
 
         # Altitude penalties (lower orbits require more energy)
-        earth_penalty = max(0, (400 - earth_orbit_alt) * 2.0)  # 2 m/s per km below 400km
-        moon_penalty = max(0, (100 - moon_orbit_alt) * 5.0)    # 5 m/s per km below 100km
+        earth_penalty = max(
+            0, (400 - earth_orbit_alt) * 2.0
+        )  # 2 m/s per km below 400km
+        moon_penalty = max(0, (100 - moon_orbit_alt) * 5.0)  # 5 m/s per km below 100km
 
         # Transfer time penalties (faster transfers are less efficient)
         if transfer_time < 4.0:
@@ -112,7 +125,7 @@ class SimpleOptimizationProblem:
                 epoch=10000.0,
                 earth_orbit_alt=earth_alt,
                 moon_orbit_alt=moon_alt,
-                transfer_time=transfer_time
+                transfer_time=transfer_time,
             )
 
             # Calculate cost based on delta-v and time

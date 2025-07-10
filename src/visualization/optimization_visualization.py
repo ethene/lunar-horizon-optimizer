@@ -110,16 +110,25 @@ class OptimizationVisualizer:
 
         if n_objectives == 2:
             return self._create_2d_pareto_plot(
-                pareto_solutions, all_solutions, objective_names,
-                show_dominated, preference_weights,
+                pareto_solutions,
+                all_solutions,
+                objective_names,
+                show_dominated,
+                preference_weights,
             )
         if n_objectives == 3:
             return self._create_3d_pareto_plot(
-                pareto_solutions, all_solutions, objective_names,
-                show_dominated, preference_weights,
+                pareto_solutions,
+                all_solutions,
+                objective_names,
+                show_dominated,
+                preference_weights,
             )
         return self._create_parallel_coordinates_plot(
-            pareto_solutions, all_solutions, objective_names, preference_weights,
+            pareto_solutions,
+            all_solutions,
+            objective_names,
+            preference_weights,
         )
 
     def create_optimization_convergence_plot(
@@ -141,142 +150,20 @@ class OptimizationVisualizer:
         if not hasattr(optimization_result, "generation_history"):
             return self._create_empty_plot("No convergence data available")
 
-        generation_history = optimization_result.generation_history
-        n_generations = len(generation_history)
-        n_objectives = len(generation_history[0][0]["objectives"])
+        # Prepare convergence data
+        conv_data = self._prepare_convergence_data(optimization_result, objective_names)
 
-        if objective_names is None:
-            objective_names = [f"Objective {i+1}" for i in range(n_objectives)]
+        # Create subplot layout
+        fig = self._create_convergence_subplot_layout()
 
-        # Create subplots
-        fig = make_subplots(
-            rows=2, cols=2,
-            subplot_titles=[
-                "Best Solutions Evolution",
-                "Hypervolume Convergence",
-                "Solution Count per Generation",
-                "Objective Space Coverage",
-            ],
-            specs=[
-                [{"type": "scatter"}, {"type": "scatter"}],
-                [{"type": "bar"}, {"type": "scatter"}],
-            ],
-        )
+        # Add all convergence plots
+        self._add_best_solutions_evolution(fig, conv_data)
+        self._add_hypervolume_convergence(fig, conv_data)
+        self._add_solution_count_plot(fig, conv_data)
+        self._add_objective_space_coverage(fig, conv_data)
 
-        # Track best solutions per generation
-        generations = list(range(n_generations))
-        best_objectives: list[list[float]] = [[] for _ in range(n_objectives)]
-        hypervolumes = []
-        solution_counts = []
-
-        for _gen, solutions in enumerate(generation_history):
-            if solutions:
-                # Find best solution for each objective
-                for obj_idx in range(n_objectives):
-                    obj_values = [sol["objectives"][obj_idx] for sol in solutions]
-                    best_objectives[obj_idx].append(min(obj_values))
-
-                # Calculate hypervolume (simplified)
-                pareto_sols = self.pareto_analyzer.find_pareto_front(solutions)
-                if len(pareto_sols) > 1 and n_objectives <= 3:
-                    hv = self._calculate_hypervolume(pareto_sols, n_objectives)
-                    hypervolumes.append(hv)
-                else:
-                    hypervolumes.append(0)
-
-                solution_counts.append(len(solutions))
-            else:
-                for obj_idx in range(n_objectives):
-                    best_objectives[obj_idx].append(np.nan)
-                hypervolumes.append(0)
-                solution_counts.append(0)
-
-        # Plot 1: Best Solutions Evolution
-        colors = px.colors.qualitative.Set1[:n_objectives]
-        for _obj_idx, (values, name, color) in enumerate(zip(best_objectives, objective_names, colors, strict=False)):
-            fig.add_trace(
-                go.Scatter(
-                    x=generations,
-                    y=values,
-                    mode="lines+markers",
-                    name=f"Best {name}",
-                    line={"color": color, "width": 2},
-                    marker={"size": 6},
-                ),
-                row=1, col=1,
-            )
-
-        # Plot 2: Hypervolume Convergence
-        fig.add_trace(
-            go.Scatter(
-                x=generations,
-                y=hypervolumes,
-                mode="lines+markers",
-                name="Hypervolume",
-                line={"color": "purple", "width": 3},
-                marker={"size": 6},
-                showlegend=False,
-            ),
-            row=1, col=2,
-        )
-
-        # Plot 3: Solution Count per Generation
-        fig.add_trace(
-            go.Bar(
-                x=generations,
-                y=solution_counts,
-                name="Solution Count",
-                marker={"color": "lightblue"},
-                showlegend=False,
-            ),
-            row=2, col=1,
-        )
-
-        # Plot 4: Objective Space Coverage
-        if n_objectives >= 2:
-            # Use final generation solutions
-            final_solutions = generation_history[-1] if generation_history else []
-            if final_solutions:
-                obj1_vals = [sol["objectives"][0] for sol in final_solutions]
-                obj2_vals = [sol["objectives"][1] for sol in final_solutions]
-
-                fig.add_trace(
-                    go.Scatter(
-                        x=obj1_vals,
-                        y=obj2_vals,
-                        mode="markers",
-                        name="Final Generation",
-                        marker={
-                            "size": 6,
-                            "color": "red",
-                            "opacity": 0.7,
-                        },
-                        showlegend=False,
-                    ),
-                    row=2, col=2,
-                )
-
-        # Update layout
-        fig.update_xaxes(title_text="Generation", row=1, col=1)
-        fig.update_yaxes(title_text="Objective Value", row=1, col=1)
-
-        fig.update_xaxes(title_text="Generation", row=1, col=2)
-        fig.update_yaxes(title_text="Hypervolume", row=1, col=2)
-
-        fig.update_xaxes(title_text="Generation", row=2, col=1)
-        fig.update_yaxes(title_text="Count", row=2, col=1)
-
-        if n_objectives >= 2:
-            fig.update_xaxes(title_text=objective_names[0], row=2, col=2)
-            fig.update_yaxes(title_text=objective_names[1], row=2, col=2)
-
-        fig.update_layout(
-            title="Optimization Convergence Analysis",
-            template=self.config.theme,
-            height=800,
-            width=1400,
-            showlegend=True,
-        )
+        # Update axes and layout
+        self._update_convergence_layout(fig, conv_data["objective_names"])
 
         return fig
 
@@ -303,20 +190,246 @@ class OptimizationVisualizer:
         if not solutions:
             return self._create_empty_plot("No solutions provided for comparison")
 
+        # Prepare data and labels
+        comp_data = self._prepare_comparison_data(
+            solutions, solution_labels, objective_names, parameter_names
+        )
+
+        # Create subplot layout
+        fig = self._create_comparison_subplot_layout()
+
+        # Add all subplot components
+        self._add_objective_comparison(fig, comp_data)
+        self._add_parameter_comparison(fig, comp_data)
+        self._add_ranking_table(fig, comp_data)
+        self._add_tradeoff_analysis(fig, comp_data)
+
+        # Apply final layout
+        fig.update_layout(
+            title="Solution Comparison Analysis",
+            template=self.config.theme,
+            height=1000,
+            width=1400,
+            showlegend=True,
+        )
+
+        return fig
+
+    def _prepare_convergence_data(
+        self, optimization_result: OptimizationResult, objective_names: list[str] | None
+    ) -> dict[str, Any]:
+        """Prepare data for convergence analysis plots."""
+        generation_history = optimization_result.generation_history
+        n_generations = len(generation_history)
+        n_objectives = len(generation_history[0][0]["objectives"])
+
+        if objective_names is None:
+            objective_names = [f"Objective {i+1}" for i in range(n_objectives)]
+
+        # Extract convergence metrics
+        generations = list(range(n_generations))
+        best_objectives, hypervolumes, solution_counts = (
+            self._extract_convergence_metrics(generation_history, n_objectives)
+        )
+
+        return {
+            "generation_history": generation_history,
+            "generations": generations,
+            "best_objectives": best_objectives,
+            "hypervolumes": hypervolumes,
+            "solution_counts": solution_counts,
+            "objective_names": objective_names,
+            "n_objectives": n_objectives,
+        }
+
+    def _extract_convergence_metrics(
+        self, generation_history: list, n_objectives: int
+    ) -> tuple[list[list[float]], list[float], list[int]]:
+        """Extract convergence metrics from generation history."""
+        best_objectives: list[list[float]] = [[] for _ in range(n_objectives)]
+        hypervolumes = []
+        solution_counts = []
+
+        for _gen, solutions in enumerate(generation_history):
+            if solutions:
+                # Find best solution for each objective
+                for obj_idx in range(n_objectives):
+                    obj_values = [sol["objectives"][obj_idx] for sol in solutions]
+                    best_objectives[obj_idx].append(min(obj_values))
+
+                # Calculate hypervolume (simplified)
+                pareto_sols = self.pareto_analyzer.find_pareto_front(solutions)
+                hv = (
+                    self._calculate_hypervolume(pareto_sols, n_objectives)
+                    if len(pareto_sols) > 1 and n_objectives <= 3
+                    else 0
+                )
+                hypervolumes.append(hv)
+                solution_counts.append(len(solutions))
+            else:
+                for obj_idx in range(n_objectives):
+                    best_objectives[obj_idx].append(np.nan)
+                hypervolumes.append(0)
+                solution_counts.append(0)
+
+        return best_objectives, hypervolumes, solution_counts
+
+    def _create_convergence_subplot_layout(self) -> go.Figure:
+        """Create subplot layout for convergence analysis."""
+        return make_subplots(
+            rows=2,
+            cols=2,
+            subplot_titles=[
+                "Best Solutions Evolution",
+                "Hypervolume Convergence",
+                "Solution Count per Generation",
+                "Objective Space Coverage",
+            ],
+            specs=[
+                [{"type": "scatter"}, {"type": "scatter"}],
+                [{"type": "bar"}, {"type": "scatter"}],
+            ],
+        )
+
+    def _add_best_solutions_evolution(
+        self, fig: go.Figure, conv_data: dict[str, Any]
+    ) -> None:
+        """Add best solutions evolution subplot."""
+        colors = px.colors.qualitative.Set1[: conv_data["n_objectives"]]
+        for _obj_idx, (values, name, color) in enumerate(
+            zip(
+                conv_data["best_objectives"],
+                conv_data["objective_names"],
+                colors,
+                strict=False,
+            )
+        ):
+            fig.add_trace(
+                go.Scatter(
+                    x=conv_data["generations"],
+                    y=values,
+                    mode="lines+markers",
+                    name=f"Best {name}",
+                    line={"color": color, "width": 2},
+                    marker={"size": 6},
+                ),
+                row=1,
+                col=1,
+            )
+
+    def _add_hypervolume_convergence(
+        self, fig: go.Figure, conv_data: dict[str, Any]
+    ) -> None:
+        """Add hypervolume convergence subplot."""
+        fig.add_trace(
+            go.Scatter(
+                x=conv_data["generations"],
+                y=conv_data["hypervolumes"],
+                mode="lines+markers",
+                name="Hypervolume",
+                line={"color": "purple", "width": 3},
+                marker={"size": 6},
+                showlegend=False,
+            ),
+            row=1,
+            col=2,
+        )
+
+    def _add_solution_count_plot(
+        self, fig: go.Figure, conv_data: dict[str, Any]
+    ) -> None:
+        """Add solution count per generation subplot."""
+        fig.add_trace(
+            go.Bar(
+                x=conv_data["generations"],
+                y=conv_data["solution_counts"],
+                name="Solution Count",
+                marker={"color": "lightblue"},
+                showlegend=False,
+            ),
+            row=2,
+            col=1,
+        )
+
+    def _add_objective_space_coverage(
+        self, fig: go.Figure, conv_data: dict[str, Any]
+    ) -> None:
+        """Add objective space coverage subplot if applicable."""
+        if conv_data["n_objectives"] >= 2:
+            generation_history = conv_data["generation_history"]
+            final_solutions = generation_history[-1] if generation_history else []
+            if final_solutions:
+                obj1_vals = [sol["objectives"][0] for sol in final_solutions]
+                obj2_vals = [sol["objectives"][1] for sol in final_solutions]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=obj1_vals,
+                        y=obj2_vals,
+                        mode="markers",
+                        name="Final Generation",
+                        marker={"size": 6, "color": "red", "opacity": 0.7},
+                        showlegend=False,
+                    ),
+                    row=2,
+                    col=2,
+                )
+
+    def _update_convergence_layout(
+        self, fig: go.Figure, objective_names: list[str]
+    ) -> None:
+        """Update axes labels and overall layout for convergence plot."""
+        # Update axes
+        fig.update_xaxes(title_text="Generation", row=1, col=1)
+        fig.update_yaxes(title_text="Objective Value", row=1, col=1)
+        fig.update_xaxes(title_text="Generation", row=1, col=2)
+        fig.update_yaxes(title_text="Hypervolume", row=1, col=2)
+        fig.update_xaxes(title_text="Generation", row=2, col=1)
+        fig.update_yaxes(title_text="Count", row=2, col=1)
+
+        if len(objective_names) >= 2:
+            fig.update_xaxes(title_text=objective_names[0], row=2, col=2)
+            fig.update_yaxes(title_text=objective_names[1], row=2, col=2)
+
+        # Update overall layout
+        fig.update_layout(
+            title="Optimization Convergence Analysis",
+            template=self.config.theme,
+            height=800,
+            width=1400,
+            showlegend=True,
+        )
+
+    def _prepare_comparison_data(
+        self,
+        solutions: list[dict[str, Any]],
+        solution_labels: list[str] | None,
+        objective_names: list[str] | None,
+        parameter_names: list[str] | None,
+    ) -> dict[str, Any]:
+        """Prepare data for solution comparison plots."""
         n_solutions = len(solutions)
         n_objectives = len(solutions[0]["objectives"])
         n_parameters = len(solutions[0]["parameters"])
 
-        if solution_labels is None:
-            solution_labels = [f"Solution {i+1}" for i in range(n_solutions)]
-        if objective_names is None:
-            objective_names = [f"Objective {i+1}" for i in range(n_objectives)]
-        if parameter_names is None:
-            parameter_names = [f"Parameter {i+1}" for i in range(n_parameters)]
+        return {
+            "solutions": solutions,
+            "solution_labels": solution_labels
+            or [f"Solution {i+1}" for i in range(n_solutions)],
+            "objective_names": objective_names
+            or [f"Objective {i+1}" for i in range(n_objectives)],
+            "parameter_names": parameter_names
+            or [f"Parameter {i+1}" for i in range(n_parameters)],
+            "n_solutions": n_solutions,
+            "n_objectives": n_objectives,
+            "n_parameters": n_parameters,
+        }
 
-        # Create subplot layout
-        fig = make_subplots(
-            rows=2, cols=2,
+    def _create_comparison_subplot_layout(self) -> go.Figure:
+        """Create subplot layout for solution comparison."""
+        return make_subplots(
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Objective Values Comparison",
                 "Parameter Values Comparison",
@@ -329,56 +442,52 @@ class OptimizationVisualizer:
             ],
         )
 
-        # Plot 1: Objective Values Comparison
-        px.colors.qualitative.Set1[:n_solutions]
-
-        for obj_idx, obj_name in enumerate(objective_names):
-            values = [sol["objectives"][obj_idx] for sol in solutions]
-
+    def _add_objective_comparison(
+        self, fig: go.Figure, comp_data: dict[str, Any]
+    ) -> None:
+        """Add objective values comparison subplot."""
+        for obj_idx, obj_name in enumerate(comp_data["objective_names"]):
+            values = [sol["objectives"][obj_idx] for sol in comp_data["solutions"]]
             fig.add_trace(
                 go.Bar(
-                    x=solution_labels,
+                    x=comp_data["solution_labels"],
                     y=values,
                     name=obj_name,
                     text=[f"{v:.2e}" for v in values],
                     textposition="auto",
                 ),
-                row=1, col=1,
+                row=1,
+                col=1,
             )
 
-        # Plot 2: Parameter Values Comparison
-        for param_idx, param_name in enumerate(parameter_names):
-            values = [sol["parameters"][param_idx] for sol in solutions]
-
+    def _add_parameter_comparison(
+        self, fig: go.Figure, comp_data: dict[str, Any]
+    ) -> None:
+        """Add parameter values comparison subplot."""
+        for param_idx, param_name in enumerate(comp_data["parameter_names"]):
+            values = [sol["parameters"][param_idx] for sol in comp_data["solutions"]]
             fig.add_trace(
                 go.Bar(
-                    x=solution_labels,
+                    x=comp_data["solution_labels"],
                     y=values,
                     name=param_name,
                     text=[f"{v:.2f}" for v in values],
                     textposition="auto",
                     showlegend=False,
                 ),
-                row=1, col=2,
+                row=1,
+                col=2,
             )
 
-        # Plot 3: Solution Ranking Table
-        ranking_data = []
-        for i, (sol, label) in enumerate(zip(solutions, solution_labels, strict=False)):
-            ranking_data.append([
-                label,
-                f"{sol['objectives'][0]:.2e}",
-                f"{sol['objectives'][1] if n_objectives > 1 else 'N/A'}",
-                f"{sol['objectives'][2] if n_objectives > 2 else 'N/A'}",
-                f"Rank {i+1}",
-            ])
+    def _add_ranking_table(self, fig: go.Figure, comp_data: dict[str, Any]) -> None:
+        """Add solution ranking table subplot."""
+        ranking_data = self._build_ranking_data(comp_data)
+        header_values = self._build_table_headers(comp_data["objective_names"])
 
         fig.add_trace(
             go.Table(
                 header={
-                    "values": ["Solution", obj_names[0] if len(obj_names := objective_names) > 0 else "Obj1",
-                           obj_names[1] if len(obj_names) > 1 else "Obj2",
-                           obj_names[2] if len(obj_names) > 2 else "Obj3", "Ranking"],
+                    "values": header_values,
                     "fill_color": "lightblue",
                     "align": "center",
                     "font": {"size": 12},
@@ -390,24 +499,61 @@ class OptimizationVisualizer:
                     "font": {"size": 11},
                 },
             ),
-            row=2, col=1,
+            row=2,
+            col=1,
         )
 
-        # Plot 4: Trade-off Analysis (if >=2 objectives)
-        if n_objectives >= 2:
-            obj1_vals = [sol["objectives"][0] for sol in solutions]
-            obj2_vals = [sol["objectives"][1] for sol in solutions]
+    def _build_ranking_data(self, comp_data: dict[str, Any]) -> list[list[str]]:
+        """Build ranking data for table display."""
+        ranking_data = []
+        for i, (sol, label) in enumerate(
+            zip(comp_data["solutions"], comp_data["solution_labels"], strict=False)
+        ):
+            ranking_data.append(
+                [
+                    label,
+                    f"{sol['objectives'][0]:.2e}",
+                    (
+                        f"{sol['objectives'][1]:.2e}"
+                        if comp_data["n_objectives"] > 1
+                        else "N/A"
+                    ),
+                    (
+                        f"{sol['objectives'][2]:.2e}"
+                        if comp_data["n_objectives"] > 2
+                        else "N/A"
+                    ),
+                    f"Rank {i+1}",
+                ]
+            )
+        return ranking_data
+
+    def _build_table_headers(self, objective_names: list[str]) -> list[str]:
+        """Build table header values."""
+        return [
+            "Solution",
+            objective_names[0] if len(objective_names) > 0 else "Obj1",
+            objective_names[1] if len(objective_names) > 1 else "Obj2",
+            objective_names[2] if len(objective_names) > 2 else "Obj3",
+            "Ranking",
+        ]
+
+    def _add_tradeoff_analysis(self, fig: go.Figure, comp_data: dict[str, Any]) -> None:
+        """Add trade-off analysis subplot if applicable."""
+        if comp_data["n_objectives"] >= 2:
+            obj1_vals = [sol["objectives"][0] for sol in comp_data["solutions"]]
+            obj2_vals = [sol["objectives"][1] for sol in comp_data["solutions"]]
 
             fig.add_trace(
                 go.Scatter(
                     x=obj1_vals,
                     y=obj2_vals,
                     mode="markers+text",
-                    text=solution_labels,
+                    text=comp_data["solution_labels"],
                     textposition="top center",
                     marker={
                         "size": 12,
-                        "color": list(range(n_solutions)),
+                        "color": list(range(comp_data["n_solutions"])),
                         "colorscale": "Viridis",
                         "showscale": True,
                         "colorbar": {"title": "Solution Index", "x": 1.0},
@@ -415,19 +561,9 @@ class OptimizationVisualizer:
                     name="Solutions",
                     showlegend=False,
                 ),
-                row=2, col=2,
+                row=2,
+                col=2,
             )
-
-        # Update layout
-        fig.update_layout(
-            title="Solution Comparison Analysis",
-            template=self.config.theme,
-            height=1000,
-            width=1400,
-            showlegend=True,
-        )
-
-        return fig
 
     def create_preference_analysis_plot(
         self,
@@ -457,12 +593,14 @@ class OptimizationVisualizer:
 
         # Rank solutions by preference
         ranked_solutions = self.pareto_analyzer.rank_solutions_by_preference(
-            pareto_solutions, preference_weights,
+            pareto_solutions,
+            preference_weights,
         )
 
         # Create visualization
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[
                 "Preference-Based Ranking",
                 "Weighted Objective Values",
@@ -490,12 +628,15 @@ class OptimizationVisualizer:
                 text=[f"{s:.3f}" for s in scores],
                 textposition="auto",
             ),
-            row=1, col=1,
+            row=1,
+            col=1,
         )
 
         # Plot 2: Weighted Objective Values
         colors = px.colors.qualitative.Set1[:n_objectives]
-        for obj_idx, (obj_name, weight, color) in enumerate(zip(objective_names, preference_weights, colors, strict=False)):
+        for obj_idx, (obj_name, weight, color) in enumerate(
+            zip(objective_names, preference_weights, colors, strict=False)
+        ):
             weighted_values = []
             for _, solution in ranked_solutions:
                 obj_val = solution["objectives"][obj_idx]
@@ -512,13 +653,15 @@ class OptimizationVisualizer:
                     line={"color": color, "width": 2},
                     marker={"size": 6},
                 ),
-                row=1, col=2,
+                row=1,
+                col=2,
             )
 
         # Plot 3: Preference Sensitivity Analysis
         # Vary weights slightly and show impact
         sensitivity_data = self._calculate_preference_sensitivity(
-            pareto_solutions, preference_weights,
+            pareto_solutions,
+            preference_weights,
         )
 
         weight_variations = sensitivity_data["weight_variations"]
@@ -534,7 +677,8 @@ class OptimizationVisualizer:
                 showscale=True,
                 colorbar={"title": "Rank Change", "x": 1.0},
             ),
-            row=2, col=1,
+            row=2,
+            col=1,
         )
 
         # Plot 4: Top Solutions Comparison
@@ -552,7 +696,8 @@ class OptimizationVisualizer:
                     name=f"Top {obj_name}",
                     showlegend=False,
                 ),
-                row=2, col=2,
+                row=2,
+                col=2,
             )
 
         # Update layout
@@ -578,8 +723,9 @@ class OptimizationVisualizer:
 
         # Plot dominated solutions
         if show_dominated and all_solutions:
-            dominated_sols = [sol for sol in all_solutions
-                            if sol not in pareto_solutions]
+            dominated_sols = [
+                sol for sol in all_solutions if sol not in pareto_solutions
+            ]
             if dominated_sols:
                 obj1_dom = [sol["objectives"][0] for sol in dominated_sols]
                 obj2_dom = [sol["objectives"][1] for sol in dominated_sols]
@@ -605,7 +751,8 @@ class OptimizationVisualizer:
         # Color by preference if weights provided
         if preference_weights:
             ranked_solutions = self.pareto_analyzer.rank_solutions_by_preference(
-                pareto_solutions, preference_weights,
+                pareto_solutions,
+                preference_weights,
             )
             [score for score, _ in ranked_solutions]
             # Map back to original order
@@ -667,8 +814,9 @@ class OptimizationVisualizer:
 
         # Plot dominated solutions
         if show_dominated and all_solutions:
-            dominated_sols = [sol for sol in all_solutions
-                            if sol not in pareto_solutions]
+            dominated_sols = [
+                sol for sol in all_solutions if sol not in pareto_solutions
+            ]
             if dominated_sols:
                 obj1_dom = [sol["objectives"][0] for sol in dominated_sols]
                 obj2_dom = [sol["objectives"][1] for sol in dominated_sols]
@@ -775,8 +923,11 @@ class OptimizationVisualizer:
         fig = go.Figure()
         fig.add_annotation(
             text=message,
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 16, "color": self.config.text_color},
         )
         return fig
@@ -816,7 +967,8 @@ class OptimizationVisualizer:
 
         # Get base ranking
         base_ranking = self.pareto_analyzer.rank_solutions_by_preference(
-            pareto_solutions, base_weights,
+            pareto_solutions,
+            base_weights,
         )
         base_order = [id(sol) for _, sol in base_ranking]
 
@@ -828,14 +980,15 @@ class OptimizationVisualizer:
             for variation in weight_variations:
                 # Increase weight for this objective
                 varied_weights = base_weights.copy()
-                varied_weights[obj_idx] *= (1 + variation)
+                varied_weights[obj_idx] *= 1 + variation
                 # Normalize
                 total = sum(varied_weights)
-                varied_weights = [w/total for w in varied_weights]
+                varied_weights = [w / total for w in varied_weights]
 
                 # Get new ranking
                 new_ranking = self.pareto_analyzer.rank_solutions_by_preference(
-                    pareto_solutions, varied_weights,
+                    pareto_solutions,
+                    varied_weights,
                 )
                 new_order = [id(sol) for _, sol in new_ranking]
 
@@ -843,7 +996,11 @@ class OptimizationVisualizer:
                 rank_change = 0
                 for i, sol_id in enumerate(base_order):
                     old_rank = i
-                    new_rank = new_order.index(sol_id) if sol_id in new_order else len(new_order)
+                    new_rank = (
+                        new_order.index(sol_id)
+                        if sol_id in new_order
+                        else len(new_order)
+                    )
                     rank_change += abs(new_rank - old_rank)
 
                 obj_changes.append(rank_change / len(base_order))
@@ -888,14 +1045,24 @@ def create_quick_pareto_plot(
                     pareto_solutions.append(sol)
                 else:
                     # Assume it's a list [objectives, parameters]
-                    pareto_solutions.append({
-                        "objectives": sol[0] if isinstance(sol, list | tuple) else sol,
-                        "parameters": sol[1] if isinstance(sol, list | tuple) and len(sol) > 1 else [],
-                    })
+                    pareto_solutions.append(
+                        {
+                            "objectives": (
+                                sol[0] if isinstance(sol, list | tuple) else sol
+                            ),
+                            "parameters": (
+                                sol[1]
+                                if isinstance(sol, list | tuple) and len(sol) > 1
+                                else []
+                            ),
+                        }
+                    )
 
             opt_result = OptimizationResult(
                 pareto_solutions=pareto_solutions,
-                all_solutions=optimization_result.get("all_solutions", pareto_solutions),
+                all_solutions=optimization_result.get(
+                    "all_solutions", pareto_solutions
+                ),
                 optimization_stats=optimization_result.get("stats", {}),
                 generation_history=optimization_result.get("generation_history", []),
             )
@@ -912,8 +1079,11 @@ def create_quick_pareto_plot(
         fig = go.Figure()
         fig.add_annotation(
             text=f"Visualization failed: {e!s}",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font={"size": 16, "color": "red"},
         )
         return fig

@@ -22,19 +22,21 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 # Test imports with graceful fallbacks
 try:
     import pykep as pk
+
     PYKEP_AVAILABLE = True
 except ImportError:
     PYKEP_AVAILABLE = False
 
 try:
     import pygmo as pg
+
     PYGMO_AVAILABLE = True
 except ImportError:
     PYGMO_AVAILABLE = False
 
 # Test constants
-EARTH_RADIUS = 6378137.0   # m
-MOON_RADIUS = 1737400.0    # m
+EARTH_RADIUS = 6378137.0  # m
+MOON_RADIUS = 1737400.0  # m
 EARTH_MU = 3.986004418e14  # m³/s²
 
 
@@ -46,7 +48,10 @@ class TestTask3Task4Integration:
         try:
             # Try to import modules
             from trajectory.lunar_transfer import LunarTransfer
-            from optimization.global_optimizer import LunarMissionProblem, GlobalOptimizer
+            from optimization.global_optimizer import (
+                LunarMissionProblem,
+                GlobalOptimizer,
+            )
             from config.costs import CostFactors
 
             self.LunarTransfer = LunarTransfer
@@ -58,7 +63,7 @@ class TestTask3Task4Integration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
         except ImportError as e:
@@ -73,7 +78,7 @@ class TestTask3Task4Integration:
                 min_earth_alt=200,
                 max_earth_alt=1000,
                 min_moon_alt=50,
-                max_moon_alt=500
+                max_moon_alt=500,
             )
 
             # Test fitness evaluation with real trajectory generation
@@ -84,11 +89,13 @@ class TestTask3Task4Integration:
             assert len(fitness) == 3  # delta_v, time, cost
             assert all(isinstance(f, int | float) for f in fitness)
             assert all(f > 0 for f in fitness)
-            
+
             # Verify realistic values
             delta_v, time_seconds, cost = fitness
             time_days = time_seconds / 86400  # Convert seconds to days
-            assert 2000 < delta_v < 50000  # Reasonable delta-v range for lunar transfer (m/s)
+            assert (
+                2000 < delta_v < 50000
+            )  # Reasonable delta-v range for lunar transfer (m/s)
             assert 3 < time_days < 10  # Reasonable transfer time range (days)
             assert 50e6 < cost < 5e9  # Reasonable cost range
 
@@ -112,7 +119,7 @@ class TestTask3Task4Integration:
             assert len(fitness) == 3  # delta_v, time, cost
             assert all(isinstance(f, int | float) for f in fitness)
             assert all(f > 0 for f in fitness)
-            
+
             # Verify the time parameter is reflected in the fitness
             delta_v, time_seconds, cost = fitness
             time_days = time_seconds / 86400  # Convert seconds to days
@@ -131,7 +138,7 @@ class TestTask3Task4Integration:
             optimizer = self.GlobalOptimizer(
                 problem=problem,
                 population_size=8,  # Multiple of 4 for NSGA-II
-                num_generations=3  # Reduced for faster testing
+                num_generations=3,  # Reduced for faster testing
             )
 
             results = optimizer.optimize(verbose=False)
@@ -151,10 +158,12 @@ class TestTask3Task4Integration:
                     delta_v = solution["objectives"][0]
                     time_obj = solution["objectives"][1]
                     cost_obj = solution["objectives"][2]
-                
-                assert 2000 < delta_v < 50000  # Reasonable delta-v range for lunar transfer
-                
-                # Check that all objectives are reasonable  
+
+                assert (
+                    2000 < delta_v < 50000
+                )  # Reasonable delta-v range for lunar transfer
+
+                # Check that all objectives are reasonable
                 time_days = time_obj / 86400  # Convert seconds to days
                 assert 3 < time_days < 10  # Days
                 assert 50e6 < cost_obj < 5e9  # Cost in dollars
@@ -170,7 +179,11 @@ class TestTask3Task5Integration:
         """Setup test fixtures."""
         try:
             from trajectory.lunar_transfer import LunarTransfer
-            from economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
+            from economics.financial_models import (
+                CashFlowModel,
+                NPVAnalyzer,
+                FinancialParameters,
+            )
             from economics.cost_models import MissionCostModel
 
             self.LunarTransfer = LunarTransfer
@@ -192,7 +205,7 @@ class TestTask3Task5Integration:
                 earth_orbit_alt=400.0,
                 moon_orbit_alt=100.0,
                 transfer_time=4.5,
-                max_revolutions=0
+                max_revolutions=0,
             )
 
             # Use trajectory data for cost calculation
@@ -203,7 +216,7 @@ class TestTask3Task5Integration:
                 spacecraft_mass=5000,
                 mission_duration_years=5,
                 technology_readiness=3,
-                complexity="moderate"
+                complexity="moderate",
             )
 
             # Verify cost calculation uses trajectory data appropriately
@@ -223,10 +236,10 @@ class TestTask3Task5Integration:
 
             # Simulate trajectory-derived mission parameters
             trajectory_params = {
-                "total_dv": 3200.0,      # m/s
-                "transfer_time": 4.5,    # days
+                "total_dv": 3200.0,  # m/s
+                "transfer_time": 4.5,  # days
                 "earth_orbit_alt": 400,  # km
-                "moon_orbit_alt": 100    # km
+                "moon_orbit_alt": 100,  # km
             }
 
             # Create mission cash flows based on trajectory
@@ -242,7 +255,9 @@ class TestTask3Task5Integration:
 
             # Operations cost scales with transfer time
             ops_cost = 5e6 * trajectory_params["transfer_time"] / 4.0
-            cash_model.add_operational_costs(ops_cost, start_date + timedelta(days=730), 36)
+            cash_model.add_operational_costs(
+                ops_cost, start_date + timedelta(days=730), 36
+            )
 
             # Calculate NPV
             npv_analyzer = self.NPVAnalyzer(params)
@@ -260,9 +275,24 @@ class TestTask3Task5Integration:
         try:
             # Test different trajectory scenarios
             trajectory_scenarios = [
-                {"time": 3.5, "earth_alt": 350, "moon_alt": 80, "description": "efficient"},
-                {"time": 4.5, "earth_alt": 400, "moon_alt": 100, "description": "nominal"},
-                {"time": 6.0, "earth_alt": 500, "moon_alt": 150, "description": "conservative"}
+                {
+                    "time": 3.5,
+                    "earth_alt": 350,
+                    "moon_alt": 80,
+                    "description": "efficient",
+                },
+                {
+                    "time": 4.5,
+                    "earth_alt": 400,
+                    "moon_alt": 100,
+                    "description": "nominal",
+                },
+                {
+                    "time": 6.0,
+                    "earth_alt": 500,
+                    "moon_alt": 150,
+                    "description": "conservative",
+                },
             ]
 
             npvs = []
@@ -275,7 +305,7 @@ class TestTask3Task5Integration:
                     earth_orbit_alt=scenario["earth_alt"],
                     moon_orbit_alt=scenario["moon_alt"],
                     transfer_time=scenario["time"],
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
 
                 # Calculate economics for this scenario
@@ -289,7 +319,9 @@ class TestTask3Task5Integration:
                 ops_cost = 5e6 * scenario["time"] / 4.5
 
                 cash_model.add_development_costs(dev_cost, start_date, 24)
-                cash_model.add_operational_costs(ops_cost, start_date + timedelta(days=730), 36)
+                cash_model.add_operational_costs(
+                    ops_cost, start_date + timedelta(days=730), 36
+                )
                 cash_model.add_revenue_stream(8e6, start_date + timedelta(days=760), 36)
 
                 npv_analyzer = self.NPVAnalyzer(params)
@@ -313,7 +345,10 @@ class TestTask4Task5Integration:
     def setup_method(self):
         """Setup test fixtures."""
         try:
-            from optimization.global_optimizer import LunarMissionProblem, GlobalOptimizer
+            from optimization.global_optimizer import (
+                LunarMissionProblem,
+                GlobalOptimizer,
+            )
             from optimization.cost_integration import CostCalculator
             from economics.financial_models import NPVAnalyzer, FinancialParameters
             from economics.cost_models import MissionCostModel
@@ -327,11 +362,11 @@ class TestTask4Task5Integration:
             self.MissionCostModel = MissionCostModel
 
             self.cost_factors = CostFactors(
-            launch_cost_per_kg=10000.0,
-            operations_cost_per_day=100000.0,
-            development_cost=1e9,
-            contingency_percentage=20.0
-        )
+                launch_cost_per_kg=10000.0,
+                operations_cost_per_day=100000.0,
+                development_cost=1e9,
+                contingency_percentage=20.0,
+            )
 
         except ImportError as e:
             pytest.skip(f"Required modules not available: {e}")
@@ -345,7 +380,7 @@ class TestTask4Task5Integration:
                 min_earth_alt=200,
                 max_earth_alt=800,
                 min_moon_alt=50,
-                max_moon_alt=300
+                max_moon_alt=300,
             )
 
             # Test that fitness evaluation includes economic cost
@@ -380,15 +415,14 @@ class TestTask4Task5Integration:
                 "total_dv": 3200,
                 "transfer_time": 4.5,
                 "earth_orbit_alt": 400,
-                "moon_orbit_alt": 100
+                "moon_orbit_alt": 100,
             }
-
 
             total_cost = cost_calculator.calculate_mission_cost(
                 total_dv=trajectory_params["total_dv"],
                 transfer_time=trajectory_params["transfer_time"],
                 earth_orbit_alt=trajectory_params["earth_orbit_alt"],
-                moon_orbit_alt=trajectory_params["moon_orbit_alt"]
+                moon_orbit_alt=trajectory_params["moon_orbit_alt"],
             )
 
             # Verify cost calculation
@@ -409,7 +443,7 @@ class TestTask4Task5Integration:
             optimizer = self.GlobalOptimizer(
                 problem=problem,
                 population_size=8,  # Multiple of 4, >= 5 for NSGA-II
-                num_generations=5  # Reduced for faster testing
+                num_generations=5,  # Reduced for faster testing
             )
 
             results = optimizer.optimize(verbose=False)
@@ -442,9 +476,16 @@ class TestFullSystemIntegration:
             # Import all required modules
             from trajectory.lunar_transfer import LunarTransfer
             from trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
-            from optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
+            from optimization.global_optimizer import (
+                GlobalOptimizer,
+                LunarMissionProblem,
+            )
             from optimization.pareto_analysis import ParetoAnalyzer
-            from economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
+            from economics.financial_models import (
+                CashFlowModel,
+                NPVAnalyzer,
+                FinancialParameters,
+            )
             from economics.cost_models import MissionCostModel
             from economics.reporting import EconomicReporter, FinancialSummary
             from config.costs import CostFactors
@@ -479,7 +520,7 @@ class TestFullSystemIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             # Step 2: Multi-objective Optimization (Task 4)
@@ -488,10 +529,12 @@ class TestFullSystemIntegration:
                 min_earth_alt=200,
                 max_earth_alt=800,
                 min_moon_alt=50,
-                max_moon_alt=300
+                max_moon_alt=300,
             )
 
-            optimizer = self.GlobalOptimizer(problem, population_size=8, num_generations=3)
+            optimizer = self.GlobalOptimizer(
+                problem, population_size=8, num_generations=3
+            )
             optimization_results = optimizer.optimize(verbose=False)
 
             # Step 3: Verify optimization results
@@ -499,7 +542,9 @@ class TestFullSystemIntegration:
             assert len(optimization_results["pareto_solutions"]) > 0
 
             # Step 4: Economic Analysis (Task 5)
-            best_solutions = optimization_results["pareto_solutions"][:3]  # Get first 3 solutions
+            best_solutions = optimization_results["pareto_solutions"][
+                :3
+            ]  # Get first 3 solutions
 
             economic_analyses = []
             for solution in best_solutions:
@@ -523,7 +568,9 @@ class TestFullSystemIntegration:
 
                 cash_model.add_development_costs(dev_cost, start_date, 24)
                 cash_model.add_launch_costs(50e6, [start_date + timedelta(days=730)])
-                cash_model.add_operational_costs(5e6, start_date + timedelta(days=730), 36)
+                cash_model.add_operational_costs(
+                    5e6, start_date + timedelta(days=730), 36
+                )
                 cash_model.add_revenue_stream(8e6, start_date + timedelta(days=760), 36)
 
                 # Calculate NPV
@@ -531,11 +578,7 @@ class TestFullSystemIntegration:
                 npv = npv_analyzer.calculate_npv(cash_model)
                 irr = npv_analyzer.calculate_irr(cash_model)
 
-                economic_analyses.append({
-                    "solution": solution,
-                    "npv": npv,
-                    "irr": irr
-                })
+                economic_analyses.append({"solution": solution, "npv": npv, "irr": irr})
 
             # Step 5: Reporting
             temp_dir = tempfile.mkdtemp()
@@ -546,7 +589,7 @@ class TestFullSystemIntegration:
                 total_investment=200e6,
                 net_present_value=best_analysis["npv"],
                 internal_rate_of_return=best_analysis["irr"],
-                payback_period_years=6.5
+                payback_period_years=6.5,
             )
 
             exec_summary = reporter.generate_executive_summary(summary)
@@ -573,7 +616,7 @@ class TestFullSystemIntegration:
                 "total_dv": 3200.0,
                 "transfer_time": 4.5,
                 "earth_orbit_alt": 400.0,
-                "moon_orbit_alt": 100.0
+                "moon_orbit_alt": 100.0,
             }
 
             # Should be usable by optimization
@@ -582,7 +625,7 @@ class TestFullSystemIntegration:
             # 2. Optimization results → Economic analysis
             optimization_result = {
                 "parameters": [400.0, 100.0, 4.5],
-                "objectives": [3200.0, 4.5*86400, 150e6]
+                "objectives": [3200.0, 4.5 * 86400, 150e6],
             }
 
             # Should be usable by economic analysis
@@ -593,7 +636,7 @@ class TestFullSystemIntegration:
             financial_summary = self.FinancialSummary(
                 total_investment=200e6,
                 net_present_value=75e6,
-                internal_rate_of_return=0.15
+                internal_rate_of_return=0.15,
             )
 
             # Should be serializable for reporting
@@ -613,7 +656,7 @@ class TestFullSystemIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
             problem = self.LunarMissionProblem(cost_factors=cost_factors)
 
@@ -630,10 +673,14 @@ class TestFullSystemIntegration:
                 pass
 
             # 2. Invalid economic parameters should be handled
-            financial_params = self.FinancialParameters(discount_rate=-0.1)  # Invalid rate
+            financial_params = self.FinancialParameters(
+                discount_rate=-0.1
+            )  # Invalid rate
 
             # Should handle invalid parameters gracefully
-            assert financial_params.discount_rate != -0.1 or hasattr(financial_params, "_validate")
+            assert financial_params.discount_rate != -0.1 or hasattr(
+                financial_params, "_validate"
+            )
 
         except Exception as e:
             pytest.skip(f"Error propagation test failed: {e}")
@@ -651,7 +698,7 @@ class TestFullSystemIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             # Financial analysis
@@ -712,6 +759,7 @@ def test_integration_environment():
         import trajectory
         import optimization
         import economics
+
         print("✓ All main modules can be imported")
     except ImportError as e:
         print(f"⚠ Module import issue: {e}")
@@ -734,7 +782,7 @@ def test_integration_module_imports():
         "economics.sensitivity_analysis",
         "economics.reporting",
         # Configuration
-        "config.costs"
+        "config.costs",
     ]
 
     successful_imports = 0
@@ -751,7 +799,9 @@ def test_integration_module_imports():
     print(f"Integration module import success rate: {success_rate:.1%}")
 
     # Require at least 70% success for integration testing
-    assert success_rate >= 0.7, f"Only {success_rate:.1%} of modules imported successfully"
+    assert (
+        success_rate >= 0.7
+    ), f"Only {success_rate:.1%} of modules imported successfully"
 
 
 if __name__ == "__main__":

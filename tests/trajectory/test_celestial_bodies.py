@@ -17,6 +17,7 @@ from datetime import datetime, UTC
 from src.trajectory.celestial_bodies import CelestialBody
 from src.utils.unit_conversions import datetime_to_j2000
 
+
 class TestCelestialBodies:
     """
     Tests for celestial body state calculations using SPICE.
@@ -51,15 +52,21 @@ class TestCelestialBodies:
 
         # Test position magnitude (approximately 1 AU)
         r_mag = np.linalg.norm(r)
-        assert 1.4e11 < r_mag < 1.6e11, f"Earth position magnitude {r_mag/1e11:.2f} AU outside expected range"
+        assert (
+            1.4e11 < r_mag < 1.6e11
+        ), f"Earth position magnitude {r_mag/1e11:.2f} AU outside expected range"
 
         # Test velocity magnitude (approximately 29.8 km/s)
         v_mag = np.linalg.norm(v)
-        assert 28000 < v_mag < 31000, f"Earth velocity magnitude {v_mag/1000:.1f} km/s outside expected range"
+        assert (
+            28000 < v_mag < 31000
+        ), f"Earth velocity magnitude {v_mag/1000:.1f} km/s outside expected range"
 
         # Verify orbital motion (r⋅v should be small compared to |r||v|)
         r_dot_v = np.dot(r, v)
-        assert abs(r_dot_v) < 0.1 * r_mag * v_mag, "Earth's position and velocity not perpendicular"
+        assert (
+            abs(r_dot_v) < 0.1 * r_mag * v_mag
+        ), "Earth's position and velocity not perpendicular"
 
     def test_moon_state_heliocentric(self):
         """
@@ -78,11 +85,15 @@ class TestCelestialBodies:
 
         # Test position magnitude (approximately 1 AU)
         r_mag = np.linalg.norm(r)
-        assert 1.4e11 < r_mag < 1.6e11, f"Moon position magnitude {r_mag/1e11:.2f} AU outside expected range"
+        assert (
+            1.4e11 < r_mag < 1.6e11
+        ), f"Moon position magnitude {r_mag/1e11:.2f} AU outside expected range"
 
         # Test velocity magnitude (approximately 29.8 km/s)
         v_mag = np.linalg.norm(v)
-        assert 28000 < v_mag < 31000, f"Moon velocity magnitude {v_mag/1000:.1f} km/s outside expected range"
+        assert (
+            28000 < v_mag < 31000
+        ), f"Moon velocity magnitude {v_mag/1000:.1f} km/s outside expected range"
 
     def test_moon_state_earth_centered(self):
         """
@@ -102,18 +113,22 @@ class TestCelestialBodies:
         # Test position magnitude (approximately 384,400 km = 384.4e6 m)
         r_mag = np.linalg.norm(r)
         expected_distance = 384.4e6  # meters
-        assert 0.9 * expected_distance < r_mag < 1.1 * expected_distance, \
-            f"Moon-Earth distance {r_mag/1000:.0f} km outside expected range"
+        assert (
+            0.9 * expected_distance < r_mag < 1.1 * expected_distance
+        ), f"Moon-Earth distance {r_mag/1000:.0f} km outside expected range"
 
         # Test velocity magnitude (approximately 1.022 km/s = 1022 m/s)
         v_mag = np.linalg.norm(v)
         expected_velocity = 1022  # m/s
-        assert 0.9 * expected_velocity < v_mag < 1.1 * expected_velocity, \
-            f"Moon relative velocity {v_mag:.1f} m/s outside expected range"
+        assert (
+            0.9 * expected_velocity < v_mag < 1.1 * expected_velocity
+        ), f"Moon relative velocity {v_mag:.1f} m/s outside expected range"
 
         # Verify orbital motion
         r_dot_v = np.dot(r, v)
-        assert abs(r_dot_v) < 0.1 * r_mag * v_mag, "Moon's position and velocity not perpendicular"
+        assert (
+            abs(r_dot_v) < 0.1 * r_mag * v_mag
+        ), "Moon's position and velocity not perpendicular"
 
     def test_invalid_epoch(self):
         """
@@ -164,11 +179,23 @@ class TestCelestialBodies:
         x_hat, y_hat, z_hat = CelestialBody.create_local_frame(r_rel, v_rel)
 
         # Verify orthonormality
-        assert np.allclose(np.dot(x_hat, y_hat), 0, atol=1e-10), "x and y axes not orthogonal"
-        assert np.allclose(np.dot(y_hat, z_hat), 0, atol=1e-10), "y and z axes not orthogonal"
-        assert np.allclose(np.dot(z_hat, x_hat), 0, atol=1e-10), "z and x axes not orthogonal"
+        assert np.allclose(
+            np.dot(x_hat, y_hat), 0, atol=1e-10
+        ), "x and y axes not orthogonal"
+        assert np.allclose(
+            np.dot(y_hat, z_hat), 0, atol=1e-10
+        ), "y and z axes not orthogonal"
+        assert np.allclose(
+            np.dot(z_hat, x_hat), 0, atol=1e-10
+        ), "z and x axes not orthogonal"
 
         # Verify unit vectors
-        assert np.allclose(np.linalg.norm(x_hat), 1, atol=1e-10), "x axis not normalized"
-        assert np.allclose(np.linalg.norm(y_hat), 1, atol=1e-10), "y axis not normalized"
-        assert np.allclose(np.linalg.norm(z_hat), 1, atol=1e-10), "z axis not normalized"
+        assert np.allclose(
+            np.linalg.norm(x_hat), 1, atol=1e-10
+        ), "x axis not normalized"
+        assert np.allclose(
+            np.linalg.norm(y_hat), 1, atol=1e-10
+        ), "y axis not normalized"
+        assert np.allclose(
+            np.linalg.norm(z_hat), 1, atol=1e-10
+        ), "z axis not normalized"

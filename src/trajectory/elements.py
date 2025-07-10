@@ -26,6 +26,7 @@ def orbital_period(semi_major_axis: float, mu: float = pk.MU_EARTH) -> float:
     a = semi_major_axis * 1000  # Convert to meters
     return float(2 * np.pi * np.sqrt(a**3 / mu))
 
+
 def velocity_at_point(
     semi_major_axis: float,
     eccentricity: float,
@@ -56,11 +57,12 @@ def velocity_at_point(
     p = a * (1 - eccentricity**2)
 
     # Calculate velocity components
-    v_r = np.sqrt(mu/p) * eccentricity * np.sin(nu)
-    v_t = np.sqrt(mu/p) * (1 + eccentricity * np.cos(nu))
+    v_r = np.sqrt(mu / p) * eccentricity * np.sin(nu)
+    v_t = np.sqrt(mu / p) * (1 + eccentricity * np.cos(nu))
 
     # Convert back to km/s
-    return v_r/1000, v_t/1000
+    return v_r / 1000, v_t / 1000
+
 
 def mean_to_true_anomaly(mean_anomaly: float, eccentricity: float) -> float:
     """Convert mean anomaly to true anomaly using iterative solver.
@@ -90,8 +92,9 @@ def mean_to_true_anomaly(mean_anomaly: float, eccentricity: float) -> float:
             break
 
     # Convert eccentric anomaly to true anomaly
-    nu = 2 * np.arctan(np.sqrt((1 + eccentricity)/(1 - eccentricity)) * np.tan(E/2))
+    nu = 2 * np.arctan(np.sqrt((1 + eccentricity) / (1 - eccentricity)) * np.tan(E / 2))
     return float(np.degrees(nu) % 360)
+
 
 def true_to_mean_anomaly(true_anomaly: float, eccentricity: float) -> float:
     """Convert true anomaly to mean anomaly.
@@ -111,7 +114,7 @@ def true_to_mean_anomaly(true_anomaly: float, eccentricity: float) -> float:
     nu = np.radians(true_anomaly)
 
     # Calculate eccentric anomaly
-    E = 2 * np.arctan(np.sqrt((1 - eccentricity)/(1 + eccentricity)) * np.tan(nu/2))
+    E = 2 * np.arctan(np.sqrt((1 - eccentricity) / (1 + eccentricity)) * np.tan(nu / 2))
 
     # Calculate mean anomaly
     M = E - eccentricity * np.sin(E)

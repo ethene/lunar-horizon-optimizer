@@ -18,6 +18,7 @@ from .trajectory_physics import validate_delta_v
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 @dataclass
 class Maneuver:
     """Represents an impulsive orbital maneuver.
@@ -35,7 +36,10 @@ class Maneuver:
 
     def __post_init__(self):
         """Validate maneuver parameters after initialization."""
-        if not isinstance(self.delta_v, tuple | list | np.ndarray) or len(self.delta_v) != 3:
+        if (
+            not isinstance(self.delta_v, tuple | list | np.ndarray)
+            or len(self.delta_v) != 3
+        ):
             msg = "delta_v must be a 3D vector"
             raise ValueError(msg)
 
@@ -102,7 +106,9 @@ class Maneuver:
         return Maneuver(
             delta_v=tuple(self.delta_v * factor),
             epoch=self.epoch,
-            description=f"{self.description} (scaled by {factor})" if self.description else None,
+            description=(
+                f"{self.description} (scaled by {factor})" if self.description else None
+            ),
         )
 
     def reverse(self) -> "Maneuver":

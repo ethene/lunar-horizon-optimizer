@@ -17,6 +17,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+
 class WorkingTestRunner:
     """Test runner for validated working tests."""
 
@@ -45,13 +46,22 @@ class WorkingTestRunner:
             env["PYTHONPATH"] = str(self.project_root / "src")
 
             # Run pytest with verbose output and capture results
-            result = subprocess.run([
-                sys.executable, "-m", "pytest",
-                str(test_path),
-                "-v",
-                "--tb=short",
-                "--disable-warnings"
-            ], check=False, capture_output=True, text=True, timeout=300, env=env)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    str(test_path),
+                    "-v",
+                    "--tb=short",
+                    "--disable-warnings",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=300,
+                env=env,
+            )
 
             end_time = time.time()
             execution_time = end_time - start_time
@@ -79,13 +89,15 @@ class WorkingTestRunner:
                 "skipped": skipped_count,
                 "errors": error_count,
                 "output": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
 
             # Print summary
             status = "✅ PASSED" if success else "❌ FAILED"
             print(f"\n{status} - {suite_name}")
-            print(f"Tests: {total_tests} total, {passed_count} passed, {failed_count} failed, {skipped_count} skipped")
+            print(
+                f"Tests: {total_tests} total, {passed_count} passed, {failed_count} failed, {skipped_count} skipped"
+            )
             print(f"Execution time: {execution_time:.2f}s")
 
             if failed_count > 0 or error_count > 0:
@@ -101,7 +113,7 @@ class WorkingTestRunner:
             self.results[suite_name] = {
                 "success": False,
                 "error": "timeout",
-                "execution_time": 300
+                "execution_time": 300,
             }
             return False
 
@@ -110,7 +122,7 @@ class WorkingTestRunner:
             self.results[suite_name] = {
                 "success": False,
                 "error": str(e),
-                "execution_time": 0
+                "execution_time": 0,
             }
             return False
 
@@ -144,7 +156,9 @@ class WorkingTestRunner:
             tests = result.get("total_tests", 0)
             passed = result.get("passed", 0)
             time_taken = result.get("execution_time", 0)
-            print(f"  {status} {suite_name}: {passed}/{tests} passed ({time_taken:.2f}s)")
+            print(
+                f"  {status} {suite_name}: {passed}/{tests} passed ({time_taken:.2f}s)"
+            )
 
         # Overall assessment
         all_passed = all(r.get("success", False) for r in self.results.values())
@@ -170,9 +184,9 @@ class WorkingTestRunner:
                 "total_skipped": total_skipped,
                 "pass_rate": pass_rate,
                 "total_time": total_time,
-                "all_passed": all_passed
+                "all_passed": all_passed,
             },
-            "results": self.results
+            "results": self.results,
         }
 
     def run_all_tests(self):
@@ -191,7 +205,10 @@ class WorkingTestRunner:
 
         # Optional: Run individual task tests if they work
         optional_suites = [
-            ("test_task_5_economic_analysis.py", "Task 5: Economic Analysis (Detailed)"),
+            (
+                "test_task_5_economic_analysis.py",
+                "Task 5: Economic Analysis (Detailed)",
+            ),
         ]
 
         # Run primary test suite

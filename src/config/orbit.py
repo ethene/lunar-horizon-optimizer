@@ -93,7 +93,7 @@ class OrbitParameters(BaseModel):
         rp = self.semi_major_axis * (1 - self.eccentricity)
         ra = self.semi_major_axis * (1 + self.eccentricity)
 
-        vp = np.sqrt(mu * (2/rp - 1/self.semi_major_axis))
-        va = np.sqrt(mu * (2/ra - 1/self.semi_major_axis))
+        vp = np.sqrt(mu * (2 / rp - 1 / self.semi_major_axis))
+        va = np.sqrt(mu * (2 / ra - 1 / self.semi_major_axis))
 
         return vp, va

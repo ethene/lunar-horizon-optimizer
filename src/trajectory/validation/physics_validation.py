@@ -41,10 +41,10 @@ def validate_basic_orbital_mechanics(r: np.ndarray, v: np.ndarray, mu: float) ->
     h_mag = np.linalg.norm(h)
 
     # Specific orbital energy
-    energy = v_mag**2/2 - mu/r_mag
+    energy = v_mag**2 / 2 - mu / r_mag
 
     # Eccentricity vector
-    e_vec = np.cross(v, h)/mu - r/r_mag
+    e_vec = np.cross(v, h) / mu - r / r_mag
     e = np.linalg.norm(e_vec)
 
     logger.debug("Calculated orbital elements:")
@@ -60,18 +60,22 @@ def validate_basic_orbital_mechanics(r: np.ndarray, v: np.ndarray, mu: float) ->
         return False
 
     # Check if velocity is reasonable compared to circular velocity
-    v_circ = np.sqrt(mu/r_mag)
-    v_ratio = v_mag/v_circ
+    v_circ = np.sqrt(mu / r_mag)
+    v_ratio = v_mag / v_circ
     logger.debug(f"  v/v_circ = {v_ratio:.3f}")
 
     if v_ratio > 2.0:
-        logger.error(f"Velocity {v_mag:.1f} m/s exceeds 2x circular velocity {v_circ:.1f} m/s")
+        logger.error(
+            f"Velocity {v_mag:.1f} m/s exceeds 2x circular velocity {v_circ:.1f} m/s"
+        )
         return False
 
     return True
 
 
-def validate_transfer_time(r1: np.ndarray, r2: np.ndarray, tof: float, mu: float) -> bool:
+def validate_transfer_time(
+    r1: np.ndarray, r2: np.ndarray, tof: float, mu: float
+) -> bool:
     """
     Validate if transfer time is physically reasonable.
 
@@ -91,8 +95,8 @@ def validate_transfer_time(r1: np.ndarray, r2: np.ndarray, tof: float, mu: float
     r2_mag = np.linalg.norm(r2)
 
     # Calculate various characteristic times
-    t_hohmann = np.pi * np.sqrt((r1_mag + r2_mag)**3 / (8 * mu))
-    t_min = np.pi * np.sqrt(min(r1_mag, r2_mag)**3 / (8 * mu))
+    t_hohmann = np.pi * np.sqrt((r1_mag + r2_mag) ** 3 / (8 * mu))
+    t_min = np.pi * np.sqrt(min(r1_mag, r2_mag) ** 3 / (8 * mu))
     t_max = 4 * t_hohmann  # Allow up to 4x Hohmann transfer time
 
     logger.debug("Transfer time analysis:")
@@ -149,26 +153,38 @@ def validate_solution_physics(r1, v1, r2, v2, transfer_time) -> bool:
     logger.debug("\nStarting solution physics validation:")
 
     # Validate vector units with expected ranges
-    r_range = (PhysicalConstants.EARTH_RADIUS, 2 * PhysicalConstants.MOON_SEMI_MAJOR_AXIS)
-    v_range = (0, 1.5 * PhysicalConstants.EARTH_ESCAPE_VELOCITY)  # Allow up to 1.5x escape velocity
+    r_range = (
+        PhysicalConstants.EARTH_RADIUS,
+        2 * PhysicalConstants.MOON_SEMI_MAJOR_AXIS,
+    )
+    v_range = (
+        0,
+        1.5 * PhysicalConstants.EARTH_ESCAPE_VELOCITY,
+    )  # Allow up to 1.5x escape velocity
 
     # Check position magnitudes
     r1_mag = np.linalg.norm(r1)
     r2_mag = np.linalg.norm(r2)
     if not (r_range[0] <= r1_mag <= r_range[1] and r_range[0] <= r2_mag <= r_range[1]):
-        logger.warning(f"Position magnitudes outside valid range: r1={r1_mag:.1f} m, r2={r2_mag:.1f} m")
+        logger.warning(
+            f"Position magnitudes outside valid range: r1={r1_mag:.1f} m, r2={r2_mag:.1f} m"
+        )
         return False
 
     # Check velocity magnitudes with more generous limits for lunar transfer
     v1_mag = np.linalg.norm(v1)
     v2_mag = np.linalg.norm(v2)
     if not (v_range[0] <= v1_mag <= v_range[1]):
-        logger.warning(f"Initial velocity magnitude outside valid range: {v1_mag:.1f} m/s")
+        logger.warning(
+            f"Initial velocity magnitude outside valid range: {v1_mag:.1f} m/s"
+        )
         return False
 
     # For final velocity, allow up to 2x Moon's orbital velocity for capture
     if not (v_range[0] <= v2_mag <= 2.0 * PhysicalConstants.MOON_ORBITAL_VELOCITY):
-        logger.warning(f"Final velocity magnitude outside valid range: {v2_mag:.1f} m/s")
+        logger.warning(
+            f"Final velocity magnitude outside valid range: {v2_mag:.1f} m/s"
+        )
         return False
 
     # Calculate and check angular momentum (allow 10% variation due to lunar effects)
@@ -206,7 +222,9 @@ def validate_solution_physics(r1, v1, r2, v2, transfer_time) -> bool:
     t_min = 0.5 * np.pi * np.sqrt(a_transfer**3 / PhysicalConstants.EARTH_MU)
 
     if transfer_time < 0.5 * t_min:
-        logger.warning(f"Transfer time too short: {transfer_time:.1f} s < {0.5 * t_min:.1f} s")
+        logger.warning(
+            f"Transfer time too short: {transfer_time:.1f} s < {0.5 * t_min:.1f} s"
+        )
         return False
 
     logger.debug("All physics checks passed")

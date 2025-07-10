@@ -11,8 +11,15 @@ Unit Conventions (PyKEP Native):
     - Gravitational Parameter: m³/s²
 """
 
+from typing import Union
+
 import numpy as np
 import pykep as pk
+from numpy.typing import NDArray
+
+# Type aliases for cleaner annotations
+Float64Array = NDArray[np.float64]
+VelocityPair = tuple[Float64Array, Float64Array]
 
 
 def get_num_solutions(max_revolutions: int) -> int:
@@ -29,15 +36,16 @@ def get_num_solutions(max_revolutions: int) -> int:
         return 1
     return 2 * max_revolutions + 1
 
+
 def solve_lambert(
-    r1: np.ndarray[np.float64, np.dtype[np.float64]],
-    r2: np.ndarray[np.float64, np.dtype[np.float64]],
+    r1: Float64Array,
+    r2: Float64Array,
     tof: float,
     mu: float,
     max_revolutions: int = 0,
     prograde: bool = True,
     solution_index: int | None = None,
-) -> tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]] | list[tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]]:
+) -> Union[VelocityPair, list[VelocityPair]]:
     """Solve Lambert's problem using PyKEP.
 
     Args:
@@ -65,90 +73,29 @@ def solve_lambert(
         ValueError: If no solution found, input parameters invalid, or solution_index out of range
         TypeError: If input vectors are not numpy arrays or have wrong shape
     """
-    # Validate input types and shapes
-    if not isinstance(r1, np.ndarray) or not isinstance(r2, np.ndarray):
-        msg = "Position vectors must be numpy arrays"
-        raise TypeError(msg)
-    if r1.shape != (3,) or r2.shape != (3,):
-        msg = "Position vectors must have shape (3,)"
-        raise ValueError(msg)
+    # Validate all inputs
+    _validate_lambert_inputs(r1, r2, tof, mu)
 
-    # Convert inputs to PyKEP format and ensure float type
-    r1 = np.array(r1, dtype=float)
-    r2 = np.array(r2, dtype=float)
+    # Prepare inputs for PyKEP
+    r1_prep, r2_prep = _prepare_position_vectors(r1, r2)
 
-    # Validate inputs
-    if np.allclose(r1, r2):
-        msg = "Initial and final positions are the same"
-        raise ValueError(msg)
-    if tof <= 0:
-        msg = "Time of flight must be positive"
-        raise ValueError(msg)
-    if mu <= 0:
-        msg = "Gravitational parameter must be positive"
-        raise ValueError(msg)
+    # Solve Lambert problem
+    lambert = _solve_lambert_problem(
+        r1_prep, r2_prep, tof, mu, max_revolutions, prograde
+    )
 
-    # Check for zero magnitude position vectors with explicit tolerance
-    r1_norm = np.linalg.norm(r1)
-    r2_norm = np.linalg.norm(r2)
-    if r1_norm < 1e-10:  # 0.1 mm tolerance
-        msg = "Initial position vector has zero magnitude"
-        raise ValueError(msg)
-    if r2_norm < 1e-10:  # 0.1 mm tolerance
-        msg = "Final position vector has zero magnitude"
-        raise ValueError(msg)
+    # Extract and return solutions
+    return _extract_lambert_solutions(lambert, max_revolutions, solution_index)
 
-    # Create Lambert problem
-    try:
-        lambert = pk.lambert_problem(
-            r1=tuple(r1),
-            r2=tuple(r2),
-            tof=float(tof),  # Ensure float type
-            mu=float(mu),    # Ensure float type
-            max_revs=max_revolutions,
-            cw=(not prograde),
-        )
-    except RuntimeError as e:
-        msg = f"Failed to solve Lambert's problem: {e!s}"
-        raise ValueError(msg) from e
-    except Exception as e:
-        msg = f"Unexpected error in PyKEP Lambert solver: {e!s}"
-        raise ValueError(msg) from e
-
-    # Get all solutions
-    try:
-        v1_list = lambert.get_v1()
-        v2_list = lambert.get_v2()
-    except Exception as e:
-        msg = f"Failed to extract velocity vectors: {e!s}"
-        raise ValueError(msg) from e
-
-    if not v1_list or not v2_list:
-        msg = "No valid solutions found"
-        raise ValueError(msg)
-
-    # Return single solution if requested
-    if solution_index is not None:
-        if solution_index >= len(v1_list):
-            msg = f"Solution index {solution_index} out of range (0-{len(v1_list)-1})"
-            raise ValueError(msg)
-        return np.array(v1_list[solution_index]), np.array(v2_list[solution_index])
-
-    # Return single solution for zero revolutions
-    if max_revolutions == 0:
-        return np.array(v1_list[0]), np.array(v2_list[0])
-
-    # Return list of solutions for multiple revolutions
-    return [(np.array(v1), np.array(v2)) for v1, v2 in zip(v1_list, v2_list, strict=False)]
 
 def get_all_solutions(
-    r1: np.ndarray[np.float64, np.dtype[np.float64]],
-    r2: np.ndarray[np.float64, np.dtype[np.float64]],
+    r1: Float64Array,
+    r2: Float64Array,
     tof: float,
     mu: float,
     max_revolutions: int = 0,
     prograde: bool = True,
-) -> list[tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]]:
+) -> list[VelocityPair]:
     """Get all possible solutions for the Lambert problem.
 
     Args:
@@ -173,3 +120,98 @@ def get_all_solutions(
         solutions.append((v1, v2))
 
     return solutions
+
+
+def _validate_lambert_inputs(
+    r1: Float64Array, r2: Float64Array, tof: float, mu: float
+) -> None:
+    """Validate inputs for Lambert problem solver."""
+    # Type and shape validation
+    if not isinstance(r1, np.ndarray) or not isinstance(r2, np.ndarray):
+        msg = "Position vectors must be numpy arrays"
+        raise TypeError(msg)
+    if r1.shape != (3,) or r2.shape != (3,):
+        msg = "Position vectors must have shape (3,)"
+        raise ValueError(msg)
+
+    # Parameter validation
+    if np.allclose(r1, r2):
+        msg = "Initial and final positions are the same"
+        raise ValueError(msg)
+    if tof <= 0:
+        msg = "Time of flight must be positive"
+        raise ValueError(msg)
+    if mu <= 0:
+        msg = "Gravitational parameter must be positive"
+        raise ValueError(msg)
+
+    # Check for zero magnitude position vectors
+    if np.linalg.norm(r1) < 1e-10 or np.linalg.norm(r2) < 1e-10:
+        msg = "Position vectors cannot have zero magnitude"
+        raise ValueError(msg)
+
+
+def _prepare_position_vectors(
+    r1: Float64Array, r2: Float64Array
+) -> tuple[Float64Array, Float64Array]:
+    """Prepare position vectors for PyKEP format."""
+    return np.array(r1, dtype=float), np.array(r2, dtype=float)
+
+
+def _solve_lambert_problem(
+    r1: Float64Array,
+    r2: Float64Array,
+    tof: float,
+    mu: float,
+    max_revolutions: int,
+    prograde: bool,
+) -> pk.lambert_problem:
+    """Create and solve Lambert problem using PyKEP."""
+    try:
+        return pk.lambert_problem(
+            r1=tuple(r1),
+            r2=tuple(r2),
+            tof=float(tof),
+            mu=float(mu),
+            max_revs=max_revolutions,
+            cw=(not prograde),
+        )
+    except RuntimeError as e:
+        msg = f"Failed to solve Lambert's problem: {e!s}"
+        raise ValueError(msg) from e
+    except Exception as e:
+        msg = f"Unexpected error in PyKEP Lambert solver: {e!s}"
+        raise ValueError(msg) from e
+
+
+def _extract_lambert_solutions(
+    lambert: pk.lambert_problem, max_revolutions: int, solution_index: int | None
+) -> Union[VelocityPair, list[VelocityPair]]:
+    """Extract velocity solutions from Lambert problem."""
+    # Get velocity lists
+    try:
+        v1_list = lambert.get_v1()
+        v2_list = lambert.get_v2()
+    except Exception as e:
+        msg = f"Failed to extract velocity vectors: {e!s}"
+        raise ValueError(msg) from e
+
+    if not v1_list or not v2_list:
+        msg = "No valid solutions found"
+        raise ValueError(msg)
+
+    # Return specific solution if requested
+    if solution_index is not None:
+        if solution_index >= len(v1_list):
+            msg = f"Solution index {solution_index} out of range (0-{len(v1_list)-1})"
+            raise ValueError(msg)
+        return np.array(v1_list[solution_index]), np.array(v2_list[solution_index])
+
+    # Return single solution for zero revolutions
+    if max_revolutions == 0:
+        return np.array(v1_list[0]), np.array(v2_list[0])
+
+    # Return all solutions for multiple revolutions
+    return [
+        (np.array(v1), np.array(v2)) for v1, v2 in zip(v1_list, v2_list, strict=False)
+    ]

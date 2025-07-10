@@ -42,6 +42,7 @@ class ResourceExtractionRate(BaseModel):
         description="Power required per kg of resource extracted (kW/kg)",
     )
 
+
 class IsruCapabilities(BaseModel):
     """Defines the capabilities and parameters of an ISRU system."""
 
@@ -82,14 +83,18 @@ class IsruCapabilities(BaseModel):
 
     @validator("extraction_rates")
     @classmethod
-    def validate_extraction_rates(cls, v: dict[IsruResourceType, ResourceExtractionRate]) -> dict[IsruResourceType, ResourceExtractionRate]:
+    def validate_extraction_rates(
+        cls, v: dict[IsruResourceType, ResourceExtractionRate]
+    ) -> dict[IsruResourceType, ResourceExtractionRate]:
         """Validate that extraction rates are provided for supported resource types."""
         if not v:
             msg = "At least one resource extraction rate must be defined"
             raise ValueError(msg)
         return v
 
-    def calculate_power_consumption(self, active_resources: dict[IsruResourceType, float]) -> float:
+    def calculate_power_consumption(
+        self, active_resources: dict[IsruResourceType, float]
+    ) -> float:
         """Calculate total power consumption based on active resource extraction rates.
 
         Args:

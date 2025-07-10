@@ -5,6 +5,7 @@ Earth-Moon trajectory calculations, completing Task 3 requirements.
 """
 
 import logging
+from typing import Any
 
 import numpy as np
 import pykep as pk
@@ -20,10 +21,12 @@ logger = logging.getLogger(__name__)
 class NBodyPropagator:
     """N-body gravitational dynamics propagator for accurate trajectory calculation."""
 
-    def __init__(self,
-                 bodies: list[str] | None = None,
-                 include_sun: bool = True,
-                 include_moon: bool = True) -> None:
+    def __init__(
+        self,
+        bodies: list[str] | None = None,
+        include_sun: bool = True,
+        include_moon: bool = True,
+    ) -> None:
         """Initialize the N-body propagator.
 
         Args:
@@ -50,11 +53,13 @@ class NBodyPropagator:
 
         logger.info(f"Initialized N-body propagator with bodies: {self.bodies}")
 
-    def propagate_trajectory(self,
-                           initial_state: np.ndarray,
-                           time_span: tuple[float, float],
-                           num_points: int = 1000,
-                           method: str = "DOP853") -> tuple[np.ndarray, np.ndarray]:
+    def propagate_trajectory(
+        self,
+        initial_state: np.ndarray,
+        time_span: tuple[float, float],
+        num_points: int = 1000,
+        method: str = "DOP853",
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Propagate trajectory using n-body dynamics.
 
         Args:
@@ -71,7 +76,9 @@ class NBodyPropagator:
         ------
             ValueError: If propagation fails
         """
-        logger.debug(f"Propagating n-body trajectory from t={time_span[0]} to t={time_span[1]}")
+        logger.debug(
+            f"Propagating n-body trajectory from t={time_span[0]} to t={time_span[1]}"
+        )
 
         # Time evaluation points
         t_eval = np.linspace(time_span[0], time_span[1], num_points)
@@ -93,7 +100,9 @@ class NBodyPropagator:
                 msg = f"Integration failed: {solution.message}"
                 raise ValueError(msg)
 
-            logger.debug(f"N-body propagation completed successfully with {len(solution.t)} points")
+            logger.debug(
+                f"N-body propagation completed successfully with {len(solution.t)} points"
+            )
             return solution.t, solution.y
 
         except Exception as e:
@@ -137,7 +146,9 @@ class NBodyPropagator:
                 # Moon's gravity
                 try:
                     # Get moon position at current time
-                    moon_pos, _ = self.celestial.get_moon_state_earth_centered(epoch + dt_days)
+                    moon_pos, _ = self.celestial.get_moon_state_earth_centered(
+                        epoch + dt_days
+                    )
                     r_rel = r - moon_pos
                     r_mag = np.linalg.norm(r_rel)
 
@@ -168,9 +179,9 @@ class NBodyPropagator:
         # Return state derivatives
         return np.concatenate([v, acceleration])
 
-    def calculate_trajectory_accuracy(self,
-                                    nbody_trajectory: np.ndarray,
-                                    twobody_trajectory: np.ndarray) -> dict[str, float]:
+    def calculate_trajectory_accuracy(
+        self, nbody_trajectory: np.ndarray, twobody_trajectory: np.ndarray
+    ) -> dict[str, float]:
         """Calculate accuracy improvement of n-body vs two-body propagation.
 
         Args:
@@ -199,13 +210,12 @@ class NBodyPropagator:
         }
 
 
-
 class HighFidelityPropagator:
     """High-fidelity propagator combining PyKEP and n-body dynamics."""
 
-    def __init__(self,
-                 use_nbody: bool = True,
-                 nbody_threshold: float = 1e8) -> None:  # 100,000 km
+    def __init__(
+        self, use_nbody: bool = True, nbody_threshold: float = 1e8
+    ) -> None:  # 100,000 km
         """Initialize high-fidelity propagator.
 
         Args:
@@ -219,10 +229,12 @@ class HighFidelityPropagator:
 
         logger.info(f"Initialized high-fidelity propagator (n-body: {use_nbody})")
 
-    def propagate_adaptive(self,
-                          initial_position: np.ndarray,
-                          initial_velocity: np.ndarray,
-                          time_of_flight: float) -> tuple[np.ndarray, np.ndarray]:
+    def propagate_adaptive(
+        self,
+        initial_position: np.ndarray,
+        initial_velocity: np.ndarray,
+        time_of_flight: float,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Adaptive propagation switching between two-body and n-body.
 
         Args:
@@ -241,7 +253,10 @@ class HighFidelityPropagator:
             # Use PyKEP two-body propagation
             logger.debug("Using PyKEP two-body propagation")
             final_pos, final_vel = pk.propagate_lagrangian(
-                initial_position, initial_velocity, time_of_flight, PC.EARTH_MU,
+                initial_position,
+                initial_velocity,
+                time_of_flight,
+                PC.EARTH_MU,
             )
             return np.array(final_pos), np.array(final_vel)
 
@@ -251,7 +266,9 @@ class HighFidelityPropagator:
         time_span = (0.0, time_of_flight)
 
         _, trajectory = self.nbody_propagator.propagate_trajectory(
-            initial_state, time_span, num_points=100,
+            initial_state,
+            time_span,
+            num_points=100,
         )
 
         final_position = trajectory[:3, -1]
@@ -259,10 +276,12 @@ class HighFidelityPropagator:
 
         return final_position, final_velocity
 
-    def compare_propagation_methods(self,
-                                  initial_position: np.ndarray,
-                                  initial_velocity: np.ndarray,
-                                  time_of_flight: float) -> dict[str, any]:
+    def compare_propagation_methods(
+        self,
+        initial_position: np.ndarray,
+        initial_velocity: np.ndarray,
+        time_of_flight: float,
+    ) -> dict[str, Any]:
         """Compare different propagation methods.
 
         Args:
@@ -279,7 +298,10 @@ class HighFidelityPropagator:
         # PyKEP two-body
         try:
             pos_2body, vel_2body = pk.propagate_lagrangian(
-                initial_position, initial_velocity, time_of_flight, PC.EARTH_MU,
+                initial_position,
+                initial_velocity,
+                time_of_flight,
+                PC.EARTH_MU,
             )
             results["twobody"] = {
                 "position": np.array(pos_2body),
@@ -292,7 +314,9 @@ class HighFidelityPropagator:
         # N-body
         try:
             pos_nbody, vel_nbody = self.propagate_adaptive(
-                initial_position, initial_velocity, time_of_flight,
+                initial_position,
+                initial_velocity,
+                time_of_flight,
             )
             results["nbody"] = {
                 "position": pos_nbody,
@@ -303,9 +327,15 @@ class HighFidelityPropagator:
             results["nbody"] = {"success": False, "error": str(e)}
 
         # Calculate differences if both succeeded
-        if results.get("twobody", {}).get("success") and results.get("nbody", {}).get("success"):
-            pos_diff = np.linalg.norm(results["nbody"]["position"] - results["twobody"]["position"])
-            vel_diff = np.linalg.norm(results["nbody"]["velocity"] - results["twobody"]["velocity"])
+        if results.get("twobody", {}).get("success") and results.get("nbody", {}).get(
+            "success"
+        ):
+            pos_diff = np.linalg.norm(
+                results["nbody"]["position"] - results["twobody"]["position"]
+            )
+            vel_diff = np.linalg.norm(
+                results["nbody"]["velocity"] - results["twobody"]["velocity"]
+            )
 
             results["comparison"] = {
                 "position_difference_m": pos_diff,
@@ -317,10 +347,12 @@ class HighFidelityPropagator:
         return results
 
 
-def enhanced_trajectory_propagation(initial_position: np.ndarray,
-                                  initial_velocity: np.ndarray,
-                                  time_of_flight: float,
-                                  high_fidelity: bool = True) -> tuple[np.ndarray, np.ndarray]:
+def enhanced_trajectory_propagation(
+    initial_position: np.ndarray,
+    initial_velocity: np.ndarray,
+    time_of_flight: float,
+    high_fidelity: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
     """Enhanced trajectory propagation for Task 3 completion.
 
     Args:
@@ -336,10 +368,15 @@ def enhanced_trajectory_propagation(initial_position: np.ndarray,
     if high_fidelity:
         propagator = HighFidelityPropagator(use_nbody=True)
         return propagator.propagate_adaptive(
-            initial_position, initial_velocity, time_of_flight,
+            initial_position,
+            initial_velocity,
+            time_of_flight,
         )
     # Standard PyKEP propagation
     final_pos, final_vel = pk.propagate_lagrangian(
-        initial_position, initial_velocity, time_of_flight, PC.EARTH_MU,
+        initial_position,
+        initial_velocity,
+        time_of_flight,
+        PC.EARTH_MU,
     )
     return np.array(final_pos), np.array(final_vel)

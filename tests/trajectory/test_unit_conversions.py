@@ -38,12 +38,13 @@ from src.utils.unit_conversions import (
     km3s2_to_m3s2,
     m3s2_to_km3s2,
     days_to_seconds,
-    seconds_to_days
+    seconds_to_days,
 )
 
 # Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestBasicUnitConversions:
     """Test suite for basic unit conversions."""
@@ -172,6 +173,7 @@ class TestBasicUnitConversions:
         ly_m = km_to_m(ly_km)
         assert abs(m_to_km(ly_m) - ly_km) / ly_km < 1e-10
 
+
 class TestEpochConversions:
     """Test suite for epoch and time format conversions."""
 
@@ -203,11 +205,16 @@ class TestEpochConversions:
         pykep_epoch = datetime_to_pykep_epoch(test_date)
 
         mjd2000_days = datetime_to_mjd2000(test_date)
-        assert abs(pykep_epoch - mjd2000_days) < 1e-10, "PyKEP epoch should match MJD2000 days"
+        assert (
+            abs(pykep_epoch - mjd2000_days) < 1e-10
+        ), "PyKEP epoch should match MJD2000 days"
 
         # Verify relationship with J2000
         j2000_days = datetime_to_j2000(test_date)
-        assert abs(pykep_epoch - (j2000_days + 0.5)) < 1e-10, "PyKEP epoch (MJD2000) should be J2000 + 0.5 days"
+        assert (
+            abs(pykep_epoch - (j2000_days + 0.5)) < 1e-10
+        ), "PyKEP epoch (MJD2000) should be J2000 + 0.5 days"
+
 
 class TestTrajectoryUnitConversions:
     """Test unit conversions in trajectory generation components."""
@@ -222,7 +229,7 @@ class TestTrajectoryUnitConversions:
             raan=0.0,
             arg_periapsis=0.0,
             true_anomaly=0.0,
-            epoch=datetime.now(UTC)
+            epoch=datetime.now(UTC),
         )
 
         # Get state vectors with Earth's gravitational parameter
@@ -236,22 +243,25 @@ class TestTrajectoryUnitConversions:
         r_mag = np.linalg.norm(r_km)
         v_mag = np.linalg.norm(v_kms)
 
-        assert abs(r_mag - 6778.0) < 1.0, f"Position magnitude {r_mag:.1f} km doesn't match semi-major axis"
-        assert 7.5 < v_mag < 8.0, f"Velocity magnitude {v_mag:.2f} km/s outside expected range for LEO"
+        assert (
+            abs(r_mag - 6778.0) < 1.0
+        ), f"Position magnitude {r_mag:.1f} km doesn't match semi-major axis"
+        assert (
+            7.5 < v_mag < 8.0
+        ), f"Velocity magnitude {v_mag:.2f} km/s outside expected range for LEO"
 
     def test_maneuver_units(self):
         """Test unit conversions in Maneuver class."""
         dv_kms = np.array([3.1, 0.0, 0.0])  # 3.1 km/s delta-v in x direction
         epoch = datetime.now(UTC)
 
-        maneuver = Maneuver(
-            delta_v=dv_kms,
-            epoch=epoch
-        )
+        maneuver = Maneuver(delta_v=dv_kms, epoch=epoch)
 
         # Get delta-v in m/s and verify magnitude
         dv_ms = maneuver.get_delta_v_ms()
-        assert abs(np.linalg.norm(dv_ms) - 3100.0) < 1.0, f"Delta-v magnitude {np.linalg.norm(dv_ms):.1f} m/s incorrect"
+        assert (
+            abs(np.linalg.norm(dv_ms) - 3100.0) < 1.0
+        ), f"Delta-v magnitude {np.linalg.norm(dv_ms):.1f} m/s incorrect"
 
     def test_transfer_trajectory_units(self):
         """Test unit conversions in transfer trajectory generation."""
@@ -263,7 +273,7 @@ class TestTrajectoryUnitConversions:
             raan=0.0,
             arg_periapsis=0.0,
             true_anomaly=0.0,
-            epoch=datetime.now(UTC)
+            epoch=datetime.now(UTC),
         )
 
         # Target lunar orbit
@@ -274,7 +284,7 @@ class TestTrajectoryUnitConversions:
             raan=0.0,
             arg_periapsis=0.0,
             true_anomaly=0.0,
-            epoch=datetime.now(UTC)
+            epoch=datetime.now(UTC),
         )
 
         # Get state vectors with Earth's gravitational parameter
@@ -293,10 +303,18 @@ class TestTrajectoryUnitConversions:
         v1_mag = np.linalg.norm(v1_kms)
         v2_mag = np.linalg.norm(v2_kms)
 
-        assert abs(r1_mag - 6778.0) < 1.0, f"Initial position magnitude {r1_mag:.1f} km incorrect"
-        assert abs(r2_mag - 384400.0) < 100.0, f"Target position magnitude {r2_mag:.1f} km incorrect"
-        assert 7.5 < v1_mag < 8.0, f"Initial velocity {v1_mag:.2f} km/s outside expected range"
-        assert 0.8 < v2_mag < 1.2, f"Target velocity {v2_mag:.2f} km/s outside expected range"
+        assert (
+            abs(r1_mag - 6778.0) < 1.0
+        ), f"Initial position magnitude {r1_mag:.1f} km incorrect"
+        assert (
+            abs(r2_mag - 384400.0) < 100.0
+        ), f"Target position magnitude {r2_mag:.1f} km incorrect"
+        assert (
+            7.5 < v1_mag < 8.0
+        ), f"Initial velocity {v1_mag:.2f} km/s outside expected range"
+        assert (
+            0.8 < v2_mag < 1.2
+        ), f"Target velocity {v2_mag:.2f} km/s outside expected range"
 
     def test_hohmann_estimate_units(self):
         """Test unit handling in Hohmann transfer estimation."""
@@ -325,20 +343,21 @@ class TestTrajectoryUnitConversions:
 
             # Calculate velocities at periapsis and apoapsis of transfer orbit
             a_m = (r1_m + r2_m) / 2  # Semi-major axis of transfer orbit
-            vp_ms = np.sqrt(mu_m3s2 * (2/r1_m - 1/a_m))  # Velocity at periapsis
-            va_ms = np.sqrt(mu_m3s2 * (2/r2_m - 1/a_m))  # Velocity at apoapsis
+            vp_ms = np.sqrt(mu_m3s2 * (2 / r1_m - 1 / a_m))  # Velocity at periapsis
+            va_ms = np.sqrt(mu_m3s2 * (2 / r2_m - 1 / a_m))  # Velocity at apoapsis
 
             # Calculate total delta-v
             dv1_ms = abs(vp_ms - v1_ms)  # First burn
             dv2_ms = abs(v2_ms - va_ms)  # Second burn
             return dv1_ms + dv2_ms
 
-
         # Test with invalid inputs
         with pytest.raises(ValueError, match="Orbit radii must be positive"):
             estimate_hohmann_transfer_dv(-1.0, r2_m, pk.MU_EARTH)
 
-        with pytest.raises(ValueError, match="Gravitational parameter must be positive"):
+        with pytest.raises(
+            ValueError, match="Gravitational parameter must be positive"
+        ):
             estimate_hohmann_transfer_dv(r1_m, r2_m, -pk.MU_EARTH)
 
         # Calculate delta-v for valid inputs
@@ -346,4 +365,6 @@ class TestTrajectoryUnitConversions:
         dv_kms = mps_to_kmps(dv_ms)
 
         # Validate delta-v (should be around 3.9 km/s for Earth-Moon Hohmann)
-        assert 3.8 < dv_kms < 4.0, f"Hohmann transfer delta-v {dv_kms:.2f} km/s outside expected range"
+        assert (
+            3.8 < dv_kms < 4.0
+        ), f"Hohmann transfer delta-v {dv_kms:.2f} km/s outside expected range"

@@ -10,12 +10,16 @@ import diffrax
 import plotly.graph_objects as go
 from poliastro.bodies import Earth, Moon
 
+
 def test_scipy_version():
     """Verify SciPy version is compatible with PyKEP."""
     # PyKEP works with SciPy 1.13.1 or higher
-    version_parts = scipy.__version__.split('.')
+    version_parts = scipy.__version__.split(".")
     major, minor = int(version_parts[0]), int(version_parts[1])
-    assert major > 1 or (major == 1 and minor >= 13), f"SciPy version {scipy.__version__} must be >= 1.13.1 for PyKEP compatibility"
+    assert major > 1 or (
+        major == 1 and minor >= 13
+    ), f"SciPy version {scipy.__version__} must be >= 1.13.1 for PyKEP compatibility"
+
 
 def test_jax_configuration():
     """Verify JAX is properly configured."""
@@ -27,11 +31,13 @@ def test_jax_configuration():
     y = jax.grad(lambda x: jnp.sum(x**2))(x)
     assert y.shape == (3,), "JAX gradient computation failed"
 
+
 def test_pykep_basic():
     """Verify PyKEP basic functionality."""
     # Create a simple planet object
     earth = pykep.planet.jpl_lp("earth")
     assert earth.name == "earth", "PyKEP planet creation failed"
+
 
 def test_pygmo_basic():
     """Verify PyGMO basic functionality."""
@@ -42,8 +48,10 @@ def test_pygmo_basic():
     pop = algo.evolve(pop)
     assert len(pop) == 10, "PyGMO optimization test failed"
 
+
 def test_diffrax_basic():
     """Verify Diffrax basic functionality."""
+
     # Simple ODE: dy/dt = -y
     def f(t, y, args):
         return -y
@@ -53,20 +61,15 @@ def test_diffrax_basic():
     t0, t1 = 0.0, 1.0
     y0 = jnp.array([1.0])
 
-    solution = diffrax.diffeqsolve(
-        term,
-        solver,
-        t0=t0,
-        t1=t1,
-        dt0=0.1,
-        y0=y0
-    )
+    solution = diffrax.diffeqsolve(term, solver, t0=t0, t1=t1, dt0=0.1, y0=y0)
     assert solution.ts.shape[0] > 0, "Diffrax ODE solution failed"
+
 
 def test_plotly_basic():
     """Verify Plotly basic functionality."""
     fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[1, 2, 3]))
     assert isinstance(fig, go.Figure), "Plotly figure creation failed"
+
 
 def test_poliastro_basic():
     """Verify Poliastro basic functionality."""
@@ -74,6 +77,7 @@ def test_poliastro_basic():
     moon = Moon
     assert earth.name == "Earth", "Poliastro Earth object creation failed"
     assert moon.name == "Moon", "Poliastro Moon object creation failed"
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

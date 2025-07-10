@@ -81,11 +81,15 @@ class EconomicReporter:
         self.percent_format = "{:.1%}"
         self.number_format = "{:,.1f}"
 
-        logger.info(f"Initialized EconomicReporter with output directory: {self.output_dir}")
+        logger.info(
+            f"Initialized EconomicReporter with output directory: {self.output_dir}"
+        )
 
-    def generate_executive_summary(self,
-                                 financial_summary: FinancialSummary,
-                                 analysis_results: dict[str, Any] | None = None) -> str:
+    def generate_executive_summary(
+        self,
+        financial_summary: FinancialSummary,
+        analysis_results: dict[str, Any] | None = None,
+    ) -> str:
         """Generate executive summary report.
 
         Args:
@@ -152,11 +156,12 @@ Key Justification: {viability['justification']}
 {self._generate_key_insights(financial_summary, analysis_results)}
 """
 
-
-    def generate_detailed_financial_report(self,
-                                         analysis_results: dict[str, Any],
-                                         include_sensitivity: bool = True,
-                                         include_scenarios: bool = True) -> str:
+    def generate_detailed_financial_report(
+        self,
+        analysis_results: dict[str, Any],
+        include_sensitivity: bool = True,
+        include_scenarios: bool = True,
+    ) -> str:
         """Generate detailed financial analysis report.
 
         Args:
@@ -180,7 +185,9 @@ Analysis Timestamp: {datetime.now().isoformat()}
 
         # Cash flow analysis
         if "cash_flow_analysis" in analysis_results:
-            report += self._format_cash_flow_section(analysis_results["cash_flow_analysis"])
+            report += self._format_cash_flow_section(
+                analysis_results["cash_flow_analysis"]
+            )
 
         # NPV analysis
         if "npv_analysis" in analysis_results:
@@ -196,17 +203,23 @@ Analysis Timestamp: {datetime.now().isoformat()}
 
         # Sensitivity analysis
         if include_sensitivity and "sensitivity_analysis" in analysis_results:
-            report += self._format_sensitivity_section(analysis_results["sensitivity_analysis"])
+            report += self._format_sensitivity_section(
+                analysis_results["sensitivity_analysis"]
+            )
 
         # Scenario analysis
         if include_scenarios and "scenario_analysis" in analysis_results:
-            report += self._format_scenario_section(analysis_results["scenario_analysis"])
+            report += self._format_scenario_section(
+                analysis_results["scenario_analysis"]
+            )
 
         return report
 
-    def generate_comparison_report(self,
-                                 alternatives: dict[str, FinancialSummary],
-                                 criteria_weights: dict[str, float] | None = None) -> str:
+    def generate_comparison_report(
+        self,
+        alternatives: dict[str, FinancialSummary],
+        criteria_weights: dict[str, float] | None = None,
+    ) -> str:
         """Generate comparative analysis report for multiple alternatives.
 
         Args:
@@ -217,7 +230,9 @@ Analysis Timestamp: {datetime.now().isoformat()}
         -------
             Comparison report as formatted string
         """
-        logger.info(f"Generating comparison report for {len(alternatives)} alternatives")
+        logger.info(
+            f"Generating comparison report for {len(alternatives)} alternatives"
+        )
 
         if not alternatives:
             return "No alternatives provided for comparison."
@@ -247,32 +262,38 @@ ALTERNATIVE OVERVIEW
         report += self._create_comparison_table(alternatives)
 
         # Detailed comparison
-        report += "\nDETAILED COMPARISON\n" + "="*19 + "\n"
+        report += "\nDETAILED COMPARISON\n" + "=" * 19 + "\n"
 
         for name, summary in alternatives.items():
             report += f"\n{name.upper()}\n" + "-" * len(name) + "\n"
             report += f"NPV: {self.currency_format.format(summary.net_present_value)}\n"
-            report += f"ROI: {self.percent_format.format(summary.return_on_investment)}\n"
+            report += (
+                f"ROI: {self.percent_format.format(summary.return_on_investment)}\n"
+            )
             report += f"Payback: {summary.payback_period_years:.1f} years\n"
             report += f"Success Probability: {self.percent_format.format(summary.probability_of_success)}\n"
             report += f"Investment Required: {self.currency_format.format(summary.total_investment)}\n"
 
         # Ranking and recommendation
         ranking = self._rank_alternatives(alternatives, criteria_weights)
-        report += "\nRANKING AND RECOMMENDATION\n" + "="*27 + "\n"
+        report += "\nRANKING AND RECOMMENDATION\n" + "=" * 27 + "\n"
 
         for i, (name, score) in enumerate(ranking, 1):
             report += f"{i}. {name} (Score: {score:.2f})\n"
 
         best_alternative = ranking[0][0]
         report += f"\nRECOMMENDED ALTERNATIVE: {best_alternative}\n"
-        report += self._justify_recommendation(alternatives[best_alternative], alternatives)
+        report += self._justify_recommendation(
+            alternatives[best_alternative], alternatives
+        )
 
         return report
 
-    def export_to_csv(self,
-                     data: FinancialSummary | dict[str, Any] | list[dict[str, Any]],
-                     filename: str) -> Path:
+    def export_to_csv(
+        self,
+        data: FinancialSummary | dict[str, Any] | list[dict[str, Any]],
+        filename: str,
+    ) -> Path:
         """Export data to CSV format.
 
         Args:
@@ -308,7 +329,9 @@ ALTERNATIVE OVERVIEW
                                 flattened_data.append(row)
 
                         if flattened_data:
-                            writer = csv.DictWriter(csvfile, fieldnames=flattened_data[0].keys())
+                            writer = csv.DictWriter(
+                                csvfile, fieldnames=flattened_data[0].keys()
+                            )
                             writer.writeheader()
                             writer.writerows(flattened_data)
                     else:
@@ -328,10 +351,9 @@ ALTERNATIVE OVERVIEW
         logger.info(f"Data exported successfully to {filepath}")
         return filepath
 
-    def export_to_json(self,
-                      data: Any,
-                      filename: str,
-                      pretty_print: bool = True) -> Path:
+    def export_to_json(
+        self, data: Any, filename: str, pretty_print: bool = True
+    ) -> Path:
         """Export data to JSON format.
 
         Args:
@@ -359,9 +381,11 @@ ALTERNATIVE OVERVIEW
         logger.info(f"Data exported successfully to {filepath}")
         return filepath
 
-    def generate_dashboard_data(self,
-                              financial_summary: FinancialSummary,
-                              analysis_results: dict[str, Any] | None = None) -> dict[str, Any]:
+    def generate_dashboard_data(
+        self,
+        financial_summary: FinancialSummary,
+        analysis_results: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Generate data structure for economic dashboard visualization.
 
         Args:
@@ -421,13 +445,27 @@ ALTERNATIVE OVERVIEW
 
         return dashboard_data
 
-    def _assess_project_viability(self, summary: FinancialSummary) -> dict[str, str | float]:
+    def _assess_project_viability(
+        self, summary: FinancialSummary
+    ) -> dict[str, str | float]:
         """Assess overall project viability."""
         # Scoring based on financial metrics
         npv_score = 1 if summary.net_present_value > 0 else 0
-        roi_score = 1 if summary.return_on_investment > 0.15 else 0.5 if summary.return_on_investment > 0 else 0
-        payback_score = 1 if summary.payback_period_years < 7 else 0.5 if summary.payback_period_years < 10 else 0
-        risk_score = 1 if summary.probability_of_success > 0.7 else 0.5 if summary.probability_of_success > 0.5 else 0
+        roi_score = (
+            1
+            if summary.return_on_investment > 0.15
+            else 0.5 if summary.return_on_investment > 0 else 0
+        )
+        payback_score = (
+            1
+            if summary.payback_period_years < 7
+            else 0.5 if summary.payback_period_years < 10 else 0
+        )
+        risk_score = (
+            1
+            if summary.probability_of_success > 0.7
+            else 0.5 if summary.probability_of_success > 0.5 else 0
+        )
 
         total_score = (npv_score + roi_score + payback_score + risk_score) / 4
 
@@ -451,42 +489,58 @@ ALTERNATIVE OVERVIEW
             "score": total_score,
         }
 
-    def _generate_key_insights(self,
-                             summary: FinancialSummary,
-                             analysis_results: dict[str, Any] | None = None) -> str:
+    def _generate_key_insights(
+        self, summary: FinancialSummary, analysis_results: dict[str, Any] | None = None
+    ) -> str:
         """Generate key insights section."""
-        insights = ["KEY INSIGHTS", "="*12, ""]
+        insights = ["KEY INSIGHTS", "=" * 12, ""]
 
         # Financial insights
         if summary.net_present_value > 0:
-            insights.append(f"• Project creates {self.currency_format.format(summary.net_present_value)} in shareholder value")
+            insights.append(
+                f"• Project creates {self.currency_format.format(summary.net_present_value)} in shareholder value"
+            )
         else:
-            insights.append(f"• Project destroys {self.currency_format.format(abs(summary.net_present_value))} in shareholder value")
+            insights.append(
+                f"• Project destroys {self.currency_format.format(abs(summary.net_present_value))} in shareholder value"
+            )
 
         if summary.return_on_investment > 0.2:
-            insights.append(f"• High ROI of {self.percent_format.format(summary.return_on_investment)} indicates strong returns")
+            insights.append(
+                f"• High ROI of {self.percent_format.format(summary.return_on_investment)} indicates strong returns"
+            )
         elif summary.return_on_investment > 0.1:
-            insights.append(f"• Moderate ROI of {self.percent_format.format(summary.return_on_investment)} provides acceptable returns")
+            insights.append(
+                f"• Moderate ROI of {self.percent_format.format(summary.return_on_investment)} provides acceptable returns"
+            )
         else:
-            insights.append(f"• Low ROI of {self.percent_format.format(summary.return_on_investment)} may not justify investment")
+            insights.append(
+                f"• Low ROI of {self.percent_format.format(summary.return_on_investment)} may not justify investment"
+            )
 
         # Risk insights
         if summary.probability_of_success < 0.6:
             insights.append("• High execution risk requires careful risk management")
 
         # Cost insights
-        total_cost = summary.development_cost + summary.launch_cost + summary.operational_cost
+        total_cost = (
+            summary.development_cost + summary.launch_cost + summary.operational_cost
+        )
         if total_cost > 0:  # Avoid division by zero
             if summary.development_cost / total_cost > 0.6:
-                insights.append("• Development costs dominate - focus on controlling R&D expenses")
+                insights.append(
+                    "• Development costs dominate - focus on controlling R&D expenses"
+                )
             if summary.launch_cost / total_cost > 0.4:
-                insights.append("• Launch costs are significant - consider cost reduction strategies")
+                insights.append(
+                    "• Launch costs are significant - consider cost reduction strategies"
+                )
 
         return "\n".join(insights)
 
     def _format_cash_flow_section(self, cash_flow_data: dict[str, Any]) -> str:
         """Format cash flow analysis section."""
-        section = "\nCASH FLOW ANALYSIS\n" + "="*18 + "\n"
+        section = "\nCASH FLOW ANALYSIS\n" + "=" * 18 + "\n"
 
         if "annual_cash_flows" in cash_flow_data:
             section += "\nAnnual Cash Flows:\n"
@@ -497,7 +551,7 @@ ALTERNATIVE OVERVIEW
 
     def _format_npv_section(self, npv_data: dict[str, Any]) -> str:
         """Format NPV analysis section."""
-        section = "\nNET PRESENT VALUE ANALYSIS\n" + "="*26 + "\n"
+        section = "\nNET PRESENT VALUE ANALYSIS\n" + "=" * 26 + "\n"
 
         section += f"NPV: {self.currency_format.format(npv_data.get('npv', 0))}\n"
         section += f"IRR: {self.percent_format.format(npv_data.get('irr', 0))}\n"
@@ -507,7 +561,7 @@ ALTERNATIVE OVERVIEW
 
     def _format_cost_section(self, cost_data: dict[str, Any]) -> str:
         """Format cost analysis section."""
-        section = "\nCOST ANALYSIS\n" + "="*13 + "\n"
+        section = "\nCOST ANALYSIS\n" + "=" * 13 + "\n"
 
         if "cost_breakdown" in cost_data:
             for category, amount in cost_data["cost_breakdown"].items():
@@ -517,16 +571,18 @@ ALTERNATIVE OVERVIEW
 
     def _format_isru_section(self, isru_data: dict[str, Any]) -> str:
         """Format ISRU analysis section."""
-        section = "\nISRU BENEFITS ANALYSIS\n" + "="*22 + "\n"
+        section = "\nISRU BENEFITS ANALYSIS\n" + "=" * 22 + "\n"
 
         section += f"Total ISRU Value: {self.currency_format.format(isru_data.get('total_value', 0))}\n"
-        section += f"Break-even Production: {isru_data.get('break_even_kg', 0):,.0f} kg\n"
+        section += (
+            f"Break-even Production: {isru_data.get('break_even_kg', 0):,.0f} kg\n"
+        )
 
         return section
 
     def _format_sensitivity_section(self, sens_data: dict[str, Any]) -> str:
         """Format sensitivity analysis section."""
-        section = "\nSENSITIVITY ANALYSIS\n" + "="*20 + "\n"
+        section = "\nSENSITIVITY ANALYSIS\n" + "=" * 20 + "\n"
 
         if "ranking" in sens_data:
             section += "\nMost Sensitive Parameters:\n"
@@ -538,7 +594,7 @@ ALTERNATIVE OVERVIEW
 
     def _format_scenario_section(self, scenario_data: dict[str, Any]) -> str:
         """Format scenario analysis section."""
-        section = "\nSCENARIO ANALYSIS\n" + "="*17 + "\n"
+        section = "\nSCENARIO ANALYSIS\n" + "=" * 17 + "\n"
 
         if "scenarios" in scenario_data:
             for name, data in scenario_data["scenarios"].items():
@@ -547,7 +603,9 @@ ALTERNATIVE OVERVIEW
 
         return section
 
-    def _create_comparison_table(self, alternatives: dict[str, FinancialSummary]) -> str:
+    def _create_comparison_table(
+        self, alternatives: dict[str, FinancialSummary]
+    ) -> str:
         """Create comparison table for alternatives."""
         table = "\n"
         table += f"{'Alternative':<15} {'NPV ($M)':<12} {'ROI':<8} {'Payback':<10} {'Success %':<10}\n"
@@ -562,9 +620,9 @@ ALTERNATIVE OVERVIEW
 
         return table
 
-    def _rank_alternatives(self,
-                          alternatives: dict[str, FinancialSummary],
-                          weights: dict[str, float]) -> list[tuple[str, float]]:
+    def _rank_alternatives(
+        self, alternatives: dict[str, FinancialSummary], weights: dict[str, float]
+    ) -> list[tuple[str, float]]:
         """Rank alternatives using weighted scoring."""
         scores = {}
 
@@ -581,24 +639,46 @@ ALTERNATIVE OVERVIEW
 
         for name, summary in alternatives.items():
             # Normalize scores (0-1 scale)
-            npv_score = (summary.net_present_value - npv_min) / (npv_max - npv_min) if npv_max > npv_min else 0.5
-            roi_score = (summary.return_on_investment - roi_min) / (roi_max - roi_min) if roi_max > roi_min else 0.5
-            payback_score = 1 - (summary.payback_period_years - payback_min) / (payback_max - payback_min) if payback_max > payback_min else 0.5  # Lower is better
-            prob_score = (summary.probability_of_success - prob_min) / (prob_max - prob_min) if prob_max > prob_min else 0.5
+            npv_score = (
+                (summary.net_present_value - npv_min) / (npv_max - npv_min)
+                if npv_max > npv_min
+                else 0.5
+            )
+            roi_score = (
+                (summary.return_on_investment - roi_min) / (roi_max - roi_min)
+                if roi_max > roi_min
+                else 0.5
+            )
+            payback_score = (
+                1
+                - (summary.payback_period_years - payback_min)
+                / (payback_max - payback_min)
+                if payback_max > payback_min
+                else 0.5
+            )  # Lower is better
+            prob_score = (
+                (summary.probability_of_success - prob_min) / (prob_max - prob_min)
+                if prob_max > prob_min
+                else 0.5
+            )
 
             # Calculate weighted score
-            total_score = (npv_score * weights.get("npv", 0.25) +
-                          roi_score * weights.get("roi", 0.25) +
-                          payback_score * weights.get("payback", 0.25) +
-                          prob_score * weights.get("risk", 0.25))
+            total_score = (
+                npv_score * weights.get("npv", 0.25)
+                + roi_score * weights.get("roi", 0.25)
+                + payback_score * weights.get("payback", 0.25)
+                + prob_score * weights.get("risk", 0.25)
+            )
 
             scores[name] = total_score
 
         return sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-    def _justify_recommendation(self,
-                              best_alternative: FinancialSummary,
-                              all_alternatives: dict[str, FinancialSummary]) -> str:
+    def _justify_recommendation(
+        self,
+        best_alternative: FinancialSummary,
+        all_alternatives: dict[str, FinancialSummary],
+    ) -> str:
         """Justify the recommended alternative."""
         justification = "\nJUSTIFICATION:\n"
 
@@ -622,7 +702,9 @@ ALTERNATIVE OVERVIEW
         return justification
 
 
-def create_financial_summary_from_analysis(analysis_results: dict[str, Any]) -> FinancialSummary:
+def create_financial_summary_from_analysis(
+    analysis_results: dict[str, Any],
+) -> FinancialSummary:
     """Create FinancialSummary from analysis results.
 
     Args:
@@ -646,23 +728,18 @@ def create_financial_summary_from_analysis(analysis_results: dict[str, Any]) -> 
         internal_rate_of_return=npv_data.get("irr", 0),
         return_on_investment=npv_data.get("roi", 0),
         payback_period_years=npv_data.get("payback_period", 0),
-
         development_cost=cost_data.get("development_cost", 0),
         launch_cost=cost_data.get("launch_cost", 0),
         operational_cost=cost_data.get("operational_cost", 0),
         contingency_cost=cost_data.get("contingency_cost", 0),
-
         primary_revenue=revenue_data.get("primary_revenue", 0),
         secondary_revenue=revenue_data.get("secondary_revenue", 0),
         isru_benefits=revenue_data.get("isru_benefits", 0),
-
         probability_of_success=risk_data.get("probability_of_success", 0),
         value_at_risk_5_percent=risk_data.get("value_at_risk_5%", 0),
         expected_shortfall=risk_data.get("expected_shortfall", 0),
-
         mission_duration_years=mission_data.get("duration_years", 0),
         spacecraft_mass_kg=mission_data.get("spacecraft_mass", 0),
         launch_date=mission_data.get("launch_date", ""),
-
         confidence_level=analysis_results.get("confidence_level", 0.8),
     )

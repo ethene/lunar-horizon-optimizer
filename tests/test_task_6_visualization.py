@@ -23,14 +23,15 @@ from unittest.mock import patch, MagicMock
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # Test constants
-EARTH_RADIUS = 6378137.0   # m
-MOON_RADIUS = 1737400.0    # m
+EARTH_RADIUS = 6378137.0  # m
+MOON_RADIUS = 1737400.0  # m
 EARTH_MOON_DISTANCE = 384400000.0  # m
 
 # Try importing plotly - skip tests if not available
 try:
     import plotly.graph_objects as go
     import plotly.express as px
+
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
@@ -47,7 +48,9 @@ class TestTrajectoryVisualization:
 
         try:
             from visualization.trajectory_visualization import (
-                TrajectoryVisualizer, TrajectoryPlotConfig, create_quick_trajectory_plot
+                TrajectoryVisualizer,
+                TrajectoryPlotConfig,
+                create_quick_trajectory_plot,
             )
 
             self.TrajectoryVisualizer = TrajectoryVisualizer
@@ -56,9 +59,7 @@ class TestTrajectoryVisualization:
 
             # Create test configuration
             self.config = TrajectoryPlotConfig(
-                width=800,
-                height=600,
-                title="Test Trajectory"
+                width=800, height=600, title="Test Trajectory"
             )
 
             self.visualizer = TrajectoryVisualizer(self.config)
@@ -98,7 +99,7 @@ class TestTrajectoryVisualization:
         # Simulate Earth-Moon transfer trajectory
         # Start near Earth, end near Moon
         earth_pos = np.array([EARTH_RADIUS + 400000, 0, 0])  # 400 km altitude
-        moon_pos = np.array([EARTH_MOON_DISTANCE, 0, 0])     # Moon position
+        moon_pos = np.array([EARTH_MOON_DISTANCE, 0, 0])  # Moon position
 
         # Linear interpolation for simplicity (real trajectory would be curved)
         positions = np.zeros((3, n_points))
@@ -113,7 +114,7 @@ class TestTrajectoryVisualization:
         trajectory_data = {
             "positions": positions,
             "velocities": velocities,
-            "times": times
+            "times": times,
         }
 
         # Create plot
@@ -143,11 +144,11 @@ class TestTrajectoryVisualization:
         z_data = np.array(trajectory_trace.z)
 
         # Start point should be near Earth
-        start_distance = np.sqrt(x_data[0]**2 + y_data[0]**2 + z_data[0]**2)
+        start_distance = np.sqrt(x_data[0] ** 2 + y_data[0] ** 2 + z_data[0] ** 2)
         assert 6000 < start_distance < 8000  # 6000-8000 km from Earth center
 
         # End point should be near Moon distance
-        end_distance = np.sqrt(x_data[-1]**2 + y_data[-1]**2 + z_data[-1]**2)
+        end_distance = np.sqrt(x_data[-1] ** 2 + y_data[-1] ** 2 + z_data[-1] ** 2)
         assert 300000 < end_distance < 400000  # Near Moon distance
 
     def test_create_transfer_window_plot_with_mock_data(self):
@@ -156,21 +157,23 @@ class TestTrajectoryVisualization:
         end_date = datetime(2025, 7, 1)
 
         # Mock the window analyzer to return test data
-        with patch.object(self.visualizer.window_analyzer, "find_transfer_windows") as mock_windows:
+        with patch.object(
+            self.visualizer.window_analyzer, "find_transfer_windows"
+        ) as mock_windows:
             # Create realistic mock transfer windows
             mock_windows.return_value = [
                 MagicMock(
                     departure_date=start_date + timedelta(days=i),
-                    arrival_date=start_date + timedelta(days=i+4),
-                    total_dv=3000 + i*100,  # Realistic delta-v values
-                    c3_energy=10 + i*2,     # Realistic C3 energy
-                    transfer_time=4.0 + i*0.1
-                ) for i in range(10)
+                    arrival_date=start_date + timedelta(days=i + 4),
+                    total_dv=3000 + i * 100,  # Realistic delta-v values
+                    c3_energy=10 + i * 2,  # Realistic C3 energy
+                    transfer_time=4.0 + i * 0.1,
+                )
+                for i in range(10)
             ]
 
             fig = self.visualizer.create_transfer_window_plot(
-                start_date=start_date,
-                end_date=end_date
+                start_date=start_date, end_date=end_date
             )
 
             # Validate plot structure
@@ -185,9 +188,11 @@ class TestTrajectoryVisualization:
                 if hasattr(trace, "y") and len(trace.y) > 0:
                     y_values = np.array(trace.y)
                     if np.all(y_values > 1000):  # Delta-v values
-                        assert np.all(y_values < 10000)  # Reasonable delta-v upper bound
+                        assert np.all(
+                            y_values < 10000
+                        )  # Reasonable delta-v upper bound
                     elif np.all(y_values > 1):  # Transfer time values
-                        assert np.all(y_values < 20)    # Reasonable transfer time
+                        assert np.all(y_values < 20)  # Reasonable transfer time
 
     def test_orbital_elements_calculation_sanity(self):
         """Test orbital elements calculation with realistic data."""
@@ -218,7 +223,7 @@ class TestTrajectoryVisualization:
         trajectory_data = {
             "positions": positions,
             "velocities": velocities,
-            "times": times
+            "times": times,
         }
 
         fig = self.visualizer.create_orbital_elements_plot(trajectory_data)
@@ -227,7 +232,9 @@ class TestTrajectoryVisualization:
         assert isinstance(fig, go.Figure)
 
         # Test orbital elements calculation method directly
-        elements = self.visualizer._calculate_orbital_elements_evolution(positions, velocities)
+        elements = self.visualizer._calculate_orbital_elements_evolution(
+            positions, velocities
+        )
 
         # Validate orbital elements sanity for circular orbit
         if "a" in elements:
@@ -249,10 +256,10 @@ class TestTrajectoryVisualization:
         """Test quick trajectory plot creation function."""
         # Test with realistic mission parameters
         fig = self.create_quick_trajectory_plot(
-            earth_orbit_alt=400.0,   # km
-            moon_orbit_alt=100.0,    # km
-            transfer_time=4.5,       # days
-            departure_epoch=10000.0  # days since J2000
+            earth_orbit_alt=400.0,  # km
+            moon_orbit_alt=100.0,  # km
+            transfer_time=4.5,  # days
+            departure_epoch=10000.0,  # days since J2000
         )
 
         # Should return a valid figure (even if trajectory generation fails)
@@ -277,7 +284,9 @@ class TestOptimizationVisualization:
 
         try:
             from visualization.optimization_visualization import (
-                OptimizationVisualizer, ParetoPlotConfig, create_quick_pareto_plot
+                OptimizationVisualizer,
+                ParetoPlotConfig,
+                create_quick_pareto_plot,
             )
             from optimization.pareto_analysis import OptimizationResult
 
@@ -312,27 +321,33 @@ class TestOptimizationVisualization:
             # Cost scales with delta-v and complexity
             cost = 200e6 + delta_v * 50 + transfer_time * 10e6
 
-            pareto_solutions.append({
-                "objectives": [delta_v, transfer_time * 86400, cost],  # Convert time to seconds
-                "parameters": [400 + np.random.uniform(-200, 400),    # Earth altitude
-                              100 + np.random.uniform(-50, 200),     # Moon altitude
-                              transfer_time]                          # Transfer time
-            })
+            pareto_solutions.append(
+                {
+                    "objectives": [
+                        delta_v,
+                        transfer_time * 86400,
+                        cost,
+                    ],  # Convert time to seconds
+                    "parameters": [
+                        400 + np.random.uniform(-200, 400),  # Earth altitude
+                        100 + np.random.uniform(-50, 200),  # Moon altitude
+                        transfer_time,
+                    ],  # Transfer time
+                }
+            )
 
         # Create optimization result
         opt_result = self.OptimizationResult(
             pareto_solutions=pareto_solutions,
             all_solutions=pareto_solutions,
             optimization_stats={"generations": 100, "population_size": 50},
-            generation_history=[]
+            generation_history=[],
         )
 
         # Create plot
         objective_names = ["Delta-V (m/s)", "Transfer Time (s)", "Cost ($)"]
         fig = self.visualizer.create_pareto_front_plot(
-            opt_result,
-            objective_names=objective_names,
-            show_dominated=False
+            opt_result, objective_names=objective_names, show_dominated=False
         )
 
         # Validate plot structure
@@ -347,13 +362,13 @@ class TestOptimizationVisualization:
 
                 # Check delta-v range (assuming x-axis)
                 if np.min(x_data) > 1000:  # Delta-v values
-                    assert np.min(x_data) >= 2000   # Minimum realistic delta-v
+                    assert np.min(x_data) >= 2000  # Minimum realistic delta-v
                     assert np.max(x_data) <= 10000  # Maximum realistic delta-v
 
                 # Check time range (assuming y-axis in seconds)
                 if np.min(y_data) > 100000:  # Time in seconds
-                    assert np.min(y_data) >= 2 * 86400    # At least 2 days
-                    assert np.max(y_data) <= 15 * 86400   # At most 15 days
+                    assert np.min(y_data) >= 2 * 86400  # At least 2 days
+                    assert np.max(y_data) <= 15 * 86400  # At most 15 days
 
     def test_solution_comparison_plot(self):
         """Test solution comparison visualization."""
@@ -361,16 +376,16 @@ class TestOptimizationVisualization:
         solutions = [
             {
                 "objectives": [3200, 4.5 * 86400, 250e6],  # Conservative
-                "parameters": [400, 100, 4.5]
+                "parameters": [400, 100, 4.5],
             },
             {
                 "objectives": [4100, 3.2 * 86400, 280e6],  # Fast
-                "parameters": [600, 150, 3.2]
+                "parameters": [600, 150, 3.2],
             },
             {
                 "objectives": [2800, 6.1 * 86400, 230e6],  # Efficient
-                "parameters": [350, 80, 6.1]
-            }
+                "parameters": [350, 80, 6.1],
+            },
         ]
 
         solution_labels = ["Conservative", "Fast", "Efficient"]
@@ -381,7 +396,7 @@ class TestOptimizationVisualization:
             solutions=solutions,
             solution_labels=solution_labels,
             objective_names=objective_names,
-            parameter_names=parameter_names
+            parameter_names=parameter_names,
         )
 
         # Validate plot structure
@@ -412,7 +427,7 @@ class TestOptimizationVisualization:
         fig = self.visualizer.create_preference_analysis_plot(
             pareto_solutions=pareto_solutions,
             preference_weights=preference_weights,
-            objective_names=objective_names
+            objective_names=objective_names,
         )
 
         # Validate plot structure
@@ -428,16 +443,22 @@ class TestOptimizationVisualization:
         # Create mock optimization results
         mock_results = {
             "pareto_front": [
-                {"objectives": [3200, 4.5 * 86400, 250e6], "parameters": [400, 100, 4.5]},
-                {"objectives": [3800, 3.8 * 86400, 270e6], "parameters": [500, 120, 3.8]},
+                {
+                    "objectives": [3200, 4.5 * 86400, 250e6],
+                    "parameters": [400, 100, 4.5],
+                },
+                {
+                    "objectives": [3800, 3.8 * 86400, 270e6],
+                    "parameters": [500, 120, 3.8],
+                },
             ],
             "all_solutions": [],
-            "stats": {"generations": 50}
+            "stats": {"generations": 50},
         }
 
         fig = self.create_quick_pareto_plot(
             optimization_result=mock_results,
-            objective_names=["Delta-V", "Time", "Cost"]
+            objective_names=["Delta-V", "Time", "Cost"],
         )
 
         # Should return a valid figure
@@ -454,7 +475,9 @@ class TestEconomicVisualization:
 
         try:
             from visualization.economic_visualization import (
-                EconomicVisualizer, DashboardConfig, create_quick_financial_dashboard
+                EconomicVisualizer,
+                DashboardConfig,
+                create_quick_financial_dashboard,
             )
             from economics.financial_models import FinancialSummary
             from economics.cost_models import CostBreakdown
@@ -480,31 +503,31 @@ class TestEconomicVisualization:
         """Test financial dashboard with realistic lunar mission data."""
         # Create realistic financial summary
         financial_summary = self.FinancialSummary(
-            total_investment=500e6,      # $500M total investment
-            total_revenue=750e6,         # $750M total revenue
-            net_present_value=125e6,     # $125M NPV
-            internal_rate_of_return=0.18, # 18% IRR
-            return_on_investment=0.25,   # 25% ROI
-            payback_period_years=6.5,    # 6.5 year payback
-            mission_duration_years=8,    # 8 year mission
-            probability_of_success=0.75  # 75% success probability
+            total_investment=500e6,  # $500M total investment
+            total_revenue=750e6,  # $750M total revenue
+            net_present_value=125e6,  # $125M NPV
+            internal_rate_of_return=0.18,  # 18% IRR
+            return_on_investment=0.25,  # 25% ROI
+            payback_period_years=6.5,  # 6.5 year payback
+            mission_duration_years=8,  # 8 year mission
+            probability_of_success=0.75,  # 75% success probability
         )
 
         # Create realistic cost breakdown
         cost_breakdown = self.CostBreakdown(
-            development=200e6,    # $200M development
-            launch=150e6,         # $150M launch
-            spacecraft=100e6,     # $100M spacecraft
-            operations=80e6,      # $80M operations
+            development=200e6,  # $200M development
+            launch=150e6,  # $150M launch
+            spacecraft=100e6,  # $100M spacecraft
+            operations=80e6,  # $80M operations
             ground_systems=40e6,  # $40M ground systems
-            contingency=30e6,     # $30M contingency
-            total=600e6          # $600M total
+            contingency=30e6,  # $30M contingency
+            total=600e6,  # $600M total
         )
 
         fig = self.visualizer.create_financial_dashboard(
             financial_summary=financial_summary,
             cash_flow_model=None,  # Optional
-            cost_breakdown=cost_breakdown
+            cost_breakdown=cost_breakdown,
         )
 
         # Validate plot structure
@@ -532,12 +555,11 @@ class TestEconomicVisualization:
             operations=100e6,
             ground_systems=50e6,
             contingency=40e6,
-            total=740e6
+            total=740e6,
         )
 
         fig = self.visualizer.create_cost_analysis_dashboard(
-            cost_breakdown=cost_breakdown,
-            comparison_scenarios=None
+            cost_breakdown=cost_breakdown, comparison_scenarios=None
         )
 
         # Validate plot structure
@@ -556,28 +578,23 @@ class TestEconomicVisualization:
         """Test ISRU economic analysis dashboard."""
         # Create mock ISRU analysis data
         isru_analysis = {
-            "financial_metrics": {
-                "npv": 50e6,
-                "roi": 0.15,
-                "irr": 0.12
-            },
+            "financial_metrics": {"npv": 50e6, "roi": 0.15, "irr": 0.12},
             "production_profile": {
                 "monthly_production": [10, 15, 20, 25, 30] * 12  # 5 years
             },
             "break_even_analysis": {
                 "monthly_cash_flow": [-5e6] * 24 + [2e6] * 36,  # Break-even at 2 years
-                "payback_period_months": 24
+                "payback_period_months": 24,
             },
             "revenue_streams": {
                 "Water Sales": 30e6,
                 "Oxygen Sales": 15e6,
-                "Fuel Sales": 20e6
-            }
+                "Fuel Sales": 20e6,
+            },
         }
 
         fig = self.visualizer.create_isru_analysis_dashboard(
-            isru_analysis=isru_analysis,
-            resource_name="water_ice"
+            isru_analysis=isru_analysis, resource_name="water_ice"
         )
 
         # Validate plot structure
@@ -587,7 +604,7 @@ class TestEconomicVisualization:
         # Check that ISRU metrics are reasonable
         financial_metrics = isru_analysis["financial_metrics"]
         assert -100e6 < financial_metrics["npv"] < 200e6  # Reasonable NPV range
-        assert 0 <= financial_metrics["roi"] <= 1.0       # ROI should be percentage
+        assert 0 <= financial_metrics["roi"] <= 1.0  # ROI should be percentage
 
     def test_quick_financial_dashboard_function(self):
         """Test quick financial dashboard creation function."""
@@ -597,7 +614,7 @@ class TestEconomicVisualization:
             roi=0.20,
             payback_years=5.5,
             total_investment=400e6,
-            total_revenue=600e6
+            total_revenue=600e6,
         )
 
         # Should return a valid figure
@@ -615,8 +632,11 @@ class TestMissionVisualization:
 
         try:
             from visualization.mission_visualization import (
-                MissionVisualizer, TimelineConfig, MissionPhase, MissionMilestone,
-                create_sample_mission_timeline
+                MissionVisualizer,
+                TimelineConfig,
+                MissionPhase,
+                MissionMilestone,
+                create_sample_mission_timeline,
             )
 
             self.MissionVisualizer = MissionVisualizer
@@ -647,7 +667,7 @@ class TestMissionVisualization:
                 end_date=base_date + timedelta(days=365),
                 category="Development",
                 cost=50e6,
-                risk_level="Medium"
+                risk_level="Medium",
             ),
             self.MissionPhase(
                 name="Spacecraft Development",
@@ -656,7 +676,7 @@ class TestMissionVisualization:
                 category="Development",
                 dependencies=["Mission Design"],
                 cost=200e6,
-                risk_level="High"
+                risk_level="High",
             ),
             self.MissionPhase(
                 name="Launch Campaign",
@@ -665,8 +685,8 @@ class TestMissionVisualization:
                 category="Launch",
                 dependencies=["Spacecraft Development"],
                 cost=100e6,
-                risk_level="High"
-            )
+                risk_level="High",
+            ),
         ]
 
         # Create realistic milestones
@@ -675,14 +695,14 @@ class TestMissionVisualization:
                 name="PDR",
                 date=base_date + timedelta(days=120),
                 category="Design",
-                description="Preliminary Design Review"
+                description="Preliminary Design Review",
             ),
             self.MissionMilestone(
                 name="Launch",
                 date=base_date + timedelta(days=720),
                 category="Launch",
-                description="Mission Launch"
-            )
+                description="Mission Launch",
+            ),
         ]
 
         fig = self.visualizer.create_mission_timeline(phases, milestones)
@@ -698,7 +718,11 @@ class TestMissionVisualization:
                 assert start_time < end_time  # Start should be before end
 
                 # Check that times are reasonable (within project timeframe)
-                time_diff = (end_time - start_time).total_seconds() if hasattr(start_time, "total_seconds") else 0
+                time_diff = (
+                    (end_time - start_time).total_seconds()
+                    if hasattr(start_time, "total_seconds")
+                    else 0
+                )
                 if time_diff > 0:
                     assert time_diff < 5 * 365 * 86400  # Less than 5 years
 
@@ -713,15 +737,15 @@ class TestMissionVisualization:
                 start_date=base_date,
                 end_date=base_date + timedelta(days=100),
                 category="Development",
-                resources={"engineers": 10, "budget": 1e6}
+                resources={"engineers": 10, "budget": 1e6},
             ),
             self.MissionPhase(
                 name="Phase 2",
                 start_date=base_date + timedelta(days=50),
                 end_date=base_date + timedelta(days=150),
                 category="Testing",
-                resources={"engineers": 15, "budget": 2e6, "hardware": 5}
-            )
+                resources={"engineers": 15, "budget": 2e6, "hardware": 5},
+            ),
         ]
 
         fig = self.visualizer.create_resource_utilization_chart(phases)
@@ -735,7 +759,9 @@ class TestMissionVisualization:
             if hasattr(trace, "y"):
                 y_data = np.array(trace.y)
                 if len(y_data) > 0:
-                    assert np.all(y_data >= 0)  # Resource utilization should be non-negative
+                    assert np.all(
+                        y_data >= 0
+                    )  # Resource utilization should be non-negative
 
     def test_mission_dashboard(self):
         """Test comprehensive mission dashboard."""
@@ -749,7 +775,7 @@ class TestMissionVisualization:
                 start_date=base_date,
                 end_date=base_date + timedelta(days=365),
                 category="Development",
-                risk_level="Medium"
+                risk_level="Medium",
             )
         ]
 
@@ -757,7 +783,7 @@ class TestMissionVisualization:
             self.MissionMilestone(
                 name="Critical Review",
                 date=base_date + timedelta(days=300),
-                category="Review"
+                category="Review",
             )
         ]
 
@@ -790,8 +816,10 @@ class TestComprehensiveDashboard:
 
         try:
             from visualization.dashboard import (
-                ComprehensiveDashboard, DashboardTheme, MissionAnalysisData,
-                create_sample_dashboard
+                ComprehensiveDashboard,
+                DashboardTheme,
+                MissionAnalysisData,
+                create_sample_dashboard,
             )
             from economics.financial_models import FinancialSummary
 
@@ -825,13 +853,13 @@ class TestComprehensiveDashboard:
             return_on_investment=0.25,
             payback_period_years=6.5,
             mission_duration_years=8,
-            probability_of_success=0.75
+            probability_of_success=0.75,
         )
 
         mission_data = self.MissionAnalysisData(
             mission_name="Artemis Lunar Base",
             financial_summary=financial_summary,
-            analysis_date=datetime.now()
+            analysis_date=datetime.now(),
         )
 
         fig = self.dashboard.create_executive_dashboard(mission_data)
@@ -848,8 +876,7 @@ class TestComprehensiveDashboard:
     def test_technical_dashboard_creation(self):
         """Test technical dashboard creation."""
         mission_data = self.MissionAnalysisData(
-            mission_name="Technical Analysis Test",
-            analysis_date=datetime.now()
+            mission_name="Technical Analysis Test", analysis_date=datetime.now()
         )
 
         fig = self.dashboard.create_technical_dashboard(mission_data)
@@ -880,11 +907,16 @@ class TestVisualizationIntegration:
         """Test that all visualization modules can be imported."""
         try:
             from visualization import (
-                TrajectoryVisualizer, TrajectoryPlotConfig,
-                OptimizationVisualizer, ParetoPlotConfig,
-                EconomicVisualizer, DashboardConfig,
-                MissionVisualizer, TimelineConfig,
-                ComprehensiveDashboard, DashboardTheme
+                TrajectoryVisualizer,
+                TrajectoryPlotConfig,
+                OptimizationVisualizer,
+                ParetoPlotConfig,
+                EconomicVisualizer,
+                DashboardConfig,
+                MissionVisualizer,
+                TimelineConfig,
+                ComprehensiveDashboard,
+                DashboardTheme,
             )
 
             # All imports successful
@@ -897,14 +929,14 @@ class TestVisualizationIntegration:
         """Test that all visualizations handle realistic value ranges properly."""
         # Define realistic lunar mission parameter ranges
         realistic_ranges = {
-            "delta_v": (2000, 8000),          # m/s
-            "transfer_time": (3, 12),         # days
-            "mission_cost": (100e6, 2e9),     # dollars
-            "npv": (-500e6, 1e9),             # dollars
-            "irr": (-0.2, 0.5),               # fraction
-            "spacecraft_mass": (1000, 10000), # kg
-            "orbit_altitude": (200, 2000),    # km
-            "mission_duration": (1, 15)       # years
+            "delta_v": (2000, 8000),  # m/s
+            "transfer_time": (3, 12),  # days
+            "mission_cost": (100e6, 2e9),  # dollars
+            "npv": (-500e6, 1e9),  # dollars
+            "irr": (-0.2, 0.5),  # fraction
+            "spacecraft_mass": (1000, 10000),  # kg
+            "orbit_altitude": (200, 2000),  # km
+            "mission_duration": (1, 15),  # years
         }
 
         # Test that our constants are within realistic ranges
@@ -959,7 +991,7 @@ def test_orbit_altitude_range(altitude):
 
     # Sanity checks
     assert 6000 < orbital_velocity < 8000  # m/s - typical LEO velocities
-    assert orbit_radius > EARTH_RADIUS    # Must be above Earth surface
+    assert orbit_radius > EARTH_RADIUS  # Must be above Earth surface
 
 
 @pytest.mark.parametrize("transfer_time", [3.0, 4.5, 6.0, 8.5])

@@ -21,11 +21,8 @@ import numpy as np
 import pykep as pk
 from src.trajectory.models import OrbitState
 from src.trajectory.celestial_bodies import CelestialBody
-from src.utils.unit_conversions import (
-    km_to_m,
-    m_to_km,
-    mps_to_kmps
-)
+from src.utils.unit_conversions import km_to_m, m_to_km, mps_to_kmps
+
 
 class TestOrbitStateConversion:
     """Test suite for orbit state conversions."""
@@ -43,11 +40,11 @@ class TestOrbitStateConversion:
         # Create orbit with user-friendly units (km)
         orbit = OrbitState(
             semi_major_axis=6678.0,  # km (Earth radius + 300 km)
-            eccentricity=0.0,        # circular orbit
-            inclination=28.5,        # degrees (KSC latitude)
-            raan=0.0,               # degrees
-            arg_periapsis=0.0,      # degrees
-            true_anomaly=0.0        # degrees
+            eccentricity=0.0,  # circular orbit
+            inclination=28.5,  # degrees (KSC latitude)
+            raan=0.0,  # degrees
+            arg_periapsis=0.0,  # degrees
+            true_anomaly=0.0,  # degrees
         )
 
         # Convert to PyKEP planet (works in meters)
@@ -59,15 +56,17 @@ class TestOrbitStateConversion:
         # Position should match semi-major axis
         r_mag = np.linalg.norm(r)  # in meters
         expected_r = km_to_m(orbit.semi_major_axis)  # convert km to m
-        assert abs(r_mag - expected_r) < 1000.0, \
-            f"Position magnitude {m_to_km(r_mag):.1f} km doesn't match semi-major axis {orbit.semi_major_axis:.1f} km"
+        assert (
+            abs(r_mag - expected_r) < 1000.0
+        ), f"Position magnitude {m_to_km(r_mag):.1f} km doesn't match semi-major axis {orbit.semi_major_axis:.1f} km"
 
         # Velocity should match circular orbit velocity
         v_mag = np.linalg.norm(v)  # in m/s
         mu = pk.MU_EARTH  # m³/s²
         v_expected = np.sqrt(mu / r_mag)  # m/s
-        assert abs(v_mag - v_expected) < 100.0, \
-            f"Velocity magnitude {mps_to_kmps(v_mag):.3f} km/s doesn't match expected {mps_to_kmps(v_expected):.3f} km/s"
+        assert (
+            abs(v_mag - v_expected) < 100.0
+        ), f"Velocity magnitude {mps_to_kmps(v_mag):.3f} km/s doesn't match expected {mps_to_kmps(v_expected):.3f} km/s"
 
     def test_elliptical_orbit(self):
         """Test conversion of elliptical OrbitState to PyKEP planet.
@@ -82,11 +81,11 @@ class TestOrbitStateConversion:
         # Create orbit with user-friendly units (km)
         orbit = OrbitState(
             semi_major_axis=24521.0,  # km
-            eccentricity=0.7,         # highly elliptical
-            inclination=28.5,         # degrees
-            raan=45.0,                # degrees
-            arg_periapsis=90.0,       # degrees
-            true_anomaly=180.0        # degrees (at apoapsis)
+            eccentricity=0.7,  # highly elliptical
+            inclination=28.5,  # degrees
+            raan=45.0,  # degrees
+            arg_periapsis=90.0,  # degrees
+            true_anomaly=180.0,  # degrees (at apoapsis)
         )
 
         # Convert to PyKEP planet (works in meters)
@@ -97,16 +96,23 @@ class TestOrbitStateConversion:
 
         # Check apoapsis distance
         r_mag = np.linalg.norm(r)  # in meters
-        r_a = km_to_m(orbit.semi_major_axis * (1 + orbit.eccentricity))  # convert km to m
-        assert abs(r_mag - r_a) < 1000.0, \
-            f"Position magnitude at apoapsis {m_to_km(r_mag):.1f} km doesn't match expected {m_to_km(r_a):.1f} km"
+        r_a = km_to_m(
+            orbit.semi_major_axis * (1 + orbit.eccentricity)
+        )  # convert km to m
+        assert (
+            abs(r_mag - r_a) < 1000.0
+        ), f"Position magnitude at apoapsis {m_to_km(r_mag):.1f} km doesn't match expected {m_to_km(r_a):.1f} km"
 
         # Check velocity at apoapsis using vis-viva equation
         v_mag = np.linalg.norm(v)  # in m/s
         mu = pk.MU_EARTH  # m³/s²
-        v_expected = np.sqrt(mu * (2/r_mag - 1/km_to_m(orbit.semi_major_axis)))  # m/s
-        assert abs(v_mag - v_expected) < 100.0, \
-            f"Velocity magnitude {mps_to_kmps(v_mag):.3f} km/s doesn't match expected {mps_to_kmps(v_expected):.3f} km/s"
+        v_expected = np.sqrt(
+            mu * (2 / r_mag - 1 / km_to_m(orbit.semi_major_axis))
+        )  # m/s
+        assert (
+            abs(v_mag - v_expected) < 100.0
+        ), f"Velocity magnitude {mps_to_kmps(v_mag):.3f} km/s doesn't match expected {mps_to_kmps(v_expected):.3f} km/s"
+
 
 class TestCelestialBodyStates:
     """Test celestial body state calculations."""
@@ -126,14 +132,16 @@ class TestCelestialBodyStates:
         # Verify Earth-Moon distance (384,400 km ± 10%)
         r_mag = np.linalg.norm(moon_r)  # in meters
         expected_distance = 384400e3  # meters
-        assert 0.9 * expected_distance <= r_mag <= 1.1 * expected_distance, \
-            f"Earth-Moon distance {m_to_km(r_mag):.1f} km outside expected range"
+        assert (
+            0.9 * expected_distance <= r_mag <= 1.1 * expected_distance
+        ), f"Earth-Moon distance {m_to_km(r_mag):.1f} km outside expected range"
 
         # Verify Earth-centered velocity (~1.022 km/s ± 10%)
         v_mag = np.linalg.norm(moon_v)  # in m/s
         expected_velocity = 1022.0  # m/s
-        assert 0.9 * expected_velocity <= v_mag <= 1.1 * expected_velocity, \
-            f"Earth-centered velocity {mps_to_kmps(v_mag):.3f} km/s outside expected range"
+        assert (
+            0.9 * expected_velocity <= v_mag <= 1.1 * expected_velocity
+        ), f"Earth-centered velocity {mps_to_kmps(v_mag):.3f} km/s outside expected range"
 
         # Get heliocentric state for velocity check
         moon_r_helio, moon_v_helio = CelestialBody.get_moon_state(0.0)
@@ -141,8 +149,11 @@ class TestCelestialBodyStates:
         # Verify heliocentric velocity (~29.8 km/s ± 5%)
         v_helio_mag = np.linalg.norm(moon_v_helio)  # in m/s
         expected_helio_velocity = 29800.0  # m/s
-        assert 0.95 * expected_helio_velocity <= v_helio_mag <= 1.05 * expected_helio_velocity, \
-            f"Heliocentric velocity {mps_to_kmps(v_helio_mag):.3f} km/s outside expected range"
+        assert (
+            0.95 * expected_helio_velocity
+            <= v_helio_mag
+            <= 1.05 * expected_helio_velocity
+        ), f"Heliocentric velocity {mps_to_kmps(v_helio_mag):.3f} km/s outside expected range"
 
     def test_earth_state(self):
         """Test Earth state vector calculations.
@@ -158,11 +169,13 @@ class TestCelestialBodyStates:
         # Earth should be at ~1 AU from Sun (149.6e9 m ± 5%)
         r_mag = np.linalg.norm(r)  # in meters
         expected_distance = 149.6e9  # meters (1 AU)
-        assert 0.95 * expected_distance <= r_mag <= 1.05 * expected_distance, \
-            f"Earth distance from Sun {m_to_km(r_mag)/1e6:.2f} million km not near 1 AU"
+        assert (
+            0.95 * expected_distance <= r_mag <= 1.05 * expected_distance
+        ), f"Earth distance from Sun {m_to_km(r_mag)/1e6:.2f} million km not near 1 AU"
 
         # Earth's heliocentric orbital velocity should be ~29.8 km/s (± 5%)
         v_mag = np.linalg.norm(v)  # in m/s
         expected_velocity = 29800.0  # m/s
-        assert 0.95 * expected_velocity <= v_mag <= 1.05 * expected_velocity, \
-            f"Earth heliocentric velocity {mps_to_kmps(v_mag):.3f} km/s outside expected range"
+        assert (
+            0.95 * expected_velocity <= v_mag <= 1.05 * expected_velocity
+        ), f"Earth heliocentric velocity {mps_to_kmps(v_mag):.3f} km/s outside expected range"

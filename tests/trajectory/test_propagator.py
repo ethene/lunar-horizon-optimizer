@@ -10,17 +10,23 @@ from src.trajectory.propagator import TrajectoryPropagator
 from src.trajectory.celestial_bodies import CelestialBody
 from src.trajectory.constants import PhysicalConstants as PC
 
+
 @pytest.fixture
 def propagator():
     """Create a TrajectoryPropagator instance with Earth as the central body."""
-    celestial = CelestialBody("EARTH", PC.MU_EARTH)  # Initialize with Earth's parameters
+    celestial = CelestialBody(
+        "EARTH", PC.MU_EARTH
+    )  # Initialize with Earth's parameters
     return TrajectoryPropagator(celestial)
+
 
 def test_moon_gravity(propagator):
     """Test that Moon's gravity affects the trajectory."""
     # Initial state in Earth orbit (circular, 200km altitude)
     r0 = np.array([PC.EARTH_RADIUS + 200e3, 0, 0])  # 200km circular orbit
-    v0 = np.array([0, np.sqrt(PC.MU_EARTH/np.linalg.norm(r0)), 0])  # Circular orbit velocity
+    v0 = np.array(
+        [0, np.sqrt(PC.MU_EARTH / np.linalg.norm(r0)), 0]
+    )  # Circular orbit velocity
     tof = 24 * 3600  # 1 day propagation
 
     # Propagate trajectory
@@ -30,6 +36,7 @@ def test_moon_gravity(propagator):
     # due to Moon's gravity (approximate check)
     r1_norm = np.linalg.norm(r1)
     assert abs(r1_norm - np.linalg.norm(r0)) > 100  # At least 100m deviation
+
 
 def test_energy_conservation(propagator):
     """Test that energy is approximately conserved during propagation."""
@@ -42,12 +49,13 @@ def test_energy_conservation(propagator):
     r1, v1 = propagator.propagate_to_target(r0, v0, tof)
 
     # Calculate specific energy at start and end
-    e0 = np.linalg.norm(v0)**2/2 - PC.MU_EARTH/np.linalg.norm(r0)
-    e1 = np.linalg.norm(v1)**2/2 - PC.MU_EARTH/np.linalg.norm(r1)
+    e0 = np.linalg.norm(v0) ** 2 / 2 - PC.MU_EARTH / np.linalg.norm(r0)
+    e1 = np.linalg.norm(v1) ** 2 / 2 - PC.MU_EARTH / np.linalg.norm(r1)
 
     # Energy should be conserved to within numerical precision
-    relative_error = abs(e1 - e0)/abs(e0)
+    relative_error = abs(e1 - e0) / abs(e0)
     assert relative_error < 1e-8, f"Energy error {relative_error} exceeds tolerance"
+
 
 def test_invalid_inputs(propagator):
     """Test that invalid inputs raise appropriate exceptions."""

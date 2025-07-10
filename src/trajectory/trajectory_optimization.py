@@ -6,6 +6,7 @@ and constraint handling.
 """
 
 import logging
+from typing import Any
 
 import numpy as np
 from scipy.optimize import differential_evolution, minimize
@@ -20,11 +21,13 @@ logger = logging.getLogger(__name__)
 class TrajectoryOptimizer:
     """Advanced trajectory optimization for Earth-Moon transfers."""
 
-    def __init__(self,
-                 min_earth_alt: float = 200,
-                 max_earth_alt: float = 1000,
-                 min_moon_alt: float = 50,
-                 max_moon_alt: float = 500) -> None:
+    def __init__(
+        self,
+        min_earth_alt: float = 200,
+        max_earth_alt: float = 1000,
+        min_moon_alt: float = 50,
+        max_moon_alt: float = 500,
+    ) -> None:
         """Initialize trajectory optimizer.
 
         Args:
@@ -39,16 +42,21 @@ class TrajectoryOptimizer:
         self.max_moon_alt = max_moon_alt
 
         self.lunar_transfer = LunarTransfer(
-            min_earth_alt, max_earth_alt, min_moon_alt, max_moon_alt,
+            min_earth_alt,
+            max_earth_alt,
+            min_moon_alt,
+            max_moon_alt,
         )
 
         logger.info("Initialized TrajectoryOptimizer for multi-objective optimization")
 
-    def optimize_single_objective(self,
-                                 epoch: float,
-                                 objective: str = "delta_v",
-                                 bounds: dict[str, tuple[float, float]] | None = None,
-                                 method: str = "differential_evolution") -> dict[str, any]:
+    def optimize_single_objective(
+        self,
+        epoch: float,
+        objective: str = "delta_v",
+        bounds: dict[str, tuple[float, float]] | None = None,
+        method: str = "differential_evolution",
+    ) -> dict[str, Any]:
         """Optimize trajectory for a single objective.
 
         Args:
@@ -91,7 +99,7 @@ class TrajectoryOptimizer:
                     # Approximate C3 calculation
                     r_park = PC.EARTH_RADIUS + earth_alt * 1000
                     np.sqrt(PC.EARTH_MU / r_park)
-                    return (total_dv / 1000)**2  # Simplified C3
+                    return (total_dv / 1000) ** 2  # Simplified C3
                 return total_dv  # Default to delta-v
 
             except Exception as e:
@@ -156,10 +164,9 @@ class TrajectoryOptimizer:
         logger.info(f"Optimization completed: {objective} = {result.fun:.2f}")
         return optimization_result
 
-    def pareto_front_analysis(self,
-                            epoch: float,
-                            objectives: list[str] | None = None,
-                            num_solutions: int = 50) -> list[dict[str, any]]:
+    def pareto_front_analysis(
+        self, epoch: float, objectives: list[str] | None = None, num_solutions: int = 50
+    ) -> list[dict[str, Any]]:
         """Generate Pareto front for multi-objective optimization.
 
         Args:
@@ -180,7 +187,9 @@ class TrajectoryOptimizer:
         np.random.seed(42)
         n_samples = num_solutions * 10  # Oversample to ensure diversity
 
-        earth_alts = np.random.uniform(self.min_earth_alt, self.max_earth_alt, n_samples)
+        earth_alts = np.random.uniform(
+            self.min_earth_alt, self.max_earth_alt, n_samples
+        )
         moon_alts = np.random.uniform(self.min_moon_alt, self.max_moon_alt, n_samples)
         transfer_times = np.random.uniform(3.0, 7.0, n_samples)
 
@@ -203,7 +212,7 @@ class TrajectoryOptimizer:
                 if "time" in objectives:
                     obj_values["time"] = transfer_times[i] * 86400
                 if "c3_energy" in objectives:
-                    obj_values["c3_energy"] = (total_dv / 1000)**2
+                    obj_values["c3_energy"] = (total_dv / 1000) ** 2
 
                 solution = {
                     "parameters": {
@@ -228,10 +237,12 @@ class TrajectoryOptimizer:
         logger.info(f"Generated {len(pareto_solutions)} Pareto-optimal solutions")
         return pareto_solutions[:num_solutions]
 
-    def optimize_with_constraints(self,
-                                epoch: float,
-                                constraints: dict[str, float] | None = None,
-                                objective: str = "delta_v") -> dict[str, any]:
+    def optimize_with_constraints(
+        self,
+        epoch: float,
+        constraints: dict[str, float] | None = None,
+        objective: str = "delta_v",
+    ) -> dict[str, Any]:
         """Optimize trajectory with constraints.
 
         Args:
@@ -272,14 +283,20 @@ class TrajectoryOptimizer:
                 # Apply constraint penalties
                 penalty = 0
 
-                if "max_delta_v" in constraints and total_dv > constraints["max_delta_v"]:
+                if (
+                    "max_delta_v" in constraints
+                    and total_dv > constraints["max_delta_v"]
+                ):
                     penalty += (total_dv - constraints["max_delta_v"]) * 10
 
-                if "max_time" in constraints and transfer_time > constraints["max_time"]:
+                if (
+                    "max_time" in constraints
+                    and transfer_time > constraints["max_time"]
+                ):
                     penalty += (transfer_time - constraints["max_time"]) * 86400 * 100
 
                 if "min_c3" in constraints:
-                    c3 = (total_dv / 1000)**2
+                    c3 = (total_dv / 1000) ** 2
                     if c3 < constraints["min_c3"]:
                         penalty += (constraints["min_c3"] - c3) * 1000
 
@@ -325,10 +342,14 @@ class TrajectoryOptimizer:
             },
             "optimal_trajectory": optimal_trajectory,
             "total_delta_v": optimal_dv,
-            "constraint_satisfaction": self._check_constraints(optimal_dv, optimal_transfer_time, constraints),
+            "constraint_satisfaction": self._check_constraints(
+                optimal_dv, optimal_transfer_time, constraints
+            ),
         }
 
-    def _find_pareto_front(self, solutions: list[dict], objectives: list[str]) -> list[dict]:
+    def _find_pareto_front(
+        self, solutions: list[dict], objectives: list[str]
+    ) -> list[dict]:
         """Find Pareto-optimal solutions from a set of solutions."""
         pareto_solutions = []
 
@@ -355,7 +376,9 @@ class TrajectoryOptimizer:
 
         return pareto_solutions
 
-    def _check_constraints(self, delta_v: float, transfer_time: float, constraints: dict[str, float]) -> dict[str, bool]:
+    def _check_constraints(
+        self, delta_v: float, transfer_time: float, constraints: dict[str, float]
+    ) -> dict[str, bool]:
         """Check if solution satisfies constraints."""
         satisfaction = {}
 
@@ -366,15 +389,15 @@ class TrajectoryOptimizer:
             satisfaction["max_time"] = transfer_time <= constraints["max_time"]
 
         if "min_c3" in constraints:
-            c3 = (delta_v / 1000)**2
+            c3 = (delta_v / 1000) ** 2
             satisfaction["min_c3"] = c3 >= constraints["min_c3"]
 
         return satisfaction
 
 
-def optimize_trajectory_parameters(epoch: float,
-                                 optimization_type: str = "single_objective",
-                                 **kwargs) -> dict[str, any]:
+def optimize_trajectory_parameters(
+    epoch: float, optimization_type: str = "single_objective", **kwargs
+) -> dict[str, Any]:
     """Convenience function for trajectory optimization.
 
     Args:
@@ -398,9 +421,9 @@ def optimize_trajectory_parameters(epoch: float,
     raise ValueError(msg)
 
 
-def batch_trajectory_optimization(epochs: list[float],
-                                objective: str = "delta_v",
-                                max_workers: int = 4) -> list[dict[str, any]]:
+def batch_trajectory_optimization(
+    epochs: list[float], objective: str = "delta_v", max_workers: int = 4
+) -> list[dict[str, Any]]:
     """Perform batch optimization for multiple epochs.
 
     Args:

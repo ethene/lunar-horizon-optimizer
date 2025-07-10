@@ -83,7 +83,9 @@ class TemplateManager:
         """
         return self.registry.get_template(template_name)
 
-    def validate_template_overrides(self, template_name: str, overrides: dict[str, Any]) -> bool:
+    def validate_template_overrides(
+        self, template_name: str, overrides: dict[str, Any]
+    ) -> bool:
         """Validate that template overrides will produce a valid configuration.
 
         Args:
@@ -105,7 +107,9 @@ class TemplateManager:
         except ValidationError:
             return False
 
-    def _apply_overrides(self, config_dict: dict[str, Any], overrides: dict[str, Any]) -> dict[str, Any]:
+    def _apply_overrides(
+        self, config_dict: dict[str, Any], overrides: dict[str, Any]
+    ) -> dict[str, Any]:
         """Apply override values to a configuration dictionary.
 
         Performs deep update of nested dictionaries to preserve structure
@@ -119,6 +123,7 @@ class TemplateManager:
         -------
             Updated configuration dictionary.
         """
+
         # Deep update nested dictionaries
         def deep_update(d: dict, u: dict) -> dict:
             for k, v in u.items():

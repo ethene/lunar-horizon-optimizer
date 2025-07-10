@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 # Test imports with mock fallbacks for missing dependencies
 try:
     import pykep as pk
+
     PYKEP_AVAILABLE = True
 except ImportError:
     PYKEP_AVAILABLE = False
@@ -29,9 +30,10 @@ except ImportError:
 
 # Test constants and fixtures
 EARTH_MU = 3.986004418e14  # m³/s²
-MOON_MU = 4.9048695e12     # m³/s²
-EARTH_RADIUS = 6378137.0   # m
-MOON_RADIUS = 1737400.0    # m
+MOON_MU = 4.9048695e12  # m³/s²
+EARTH_RADIUS = 6378137.0  # m
+MOON_RADIUS = 1737400.0  # m
+
 
 class TestLambertSolver:
     """Test suite for Lambert problem solver."""
@@ -40,6 +42,7 @@ class TestLambertSolver:
         """Setup test fixtures."""
         if PYKEP_AVAILABLE:
             from trajectory.earth_moon_trajectories import LambertSolver
+
             self.solver = LambertSolver(EARTH_MU)
         else:
             pytest.skip("PyKEP not available - testing structure only")
@@ -131,6 +134,7 @@ class TestPatchedConicsApproximation:
         try:
             from trajectory.earth_moon_trajectories import PatchedConicsApproximation
             from trajectory.models import OrbitState
+
             self.patched_conics = PatchedConicsApproximation()
             self.OrbitState = OrbitState
         except ImportError:
@@ -147,13 +151,13 @@ class TestPatchedConicsApproximation:
         earth_departure = self.OrbitState(
             position=(EARTH_RADIUS + 400000, 0, 0),
             velocity=(0, np.sqrt(EARTH_MU / (EARTH_RADIUS + 400000)), 0),
-            epoch=10000.0
+            epoch=10000.0,
         )
 
         moon_arrival = self.OrbitState(
             position=(MOON_RADIUS + 100000, 0, 0),
             velocity=(0, np.sqrt(MOON_MU / (MOON_RADIUS + 100000)), 0),
-            epoch=10004.5
+            epoch=10004.5,
         )
 
         try:
@@ -182,6 +186,7 @@ class TestTrajectoryWindowAnalyzer:
         """Setup test fixtures."""
         try:
             from trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
+
             self.analyzer = TrajectoryWindowAnalyzer()
         except ImportError:
             pytest.skip("Transfer window analysis module not available")
@@ -205,9 +210,7 @@ class TestTrajectoryWindowAnalyzer:
         end_date = datetime(2025, 6, 5)  # Short period for testing
 
         windows = self.analyzer.find_transfer_windows(
-            start_date=start_date,
-            end_date=end_date,
-            time_step=1.0
+            start_date=start_date, end_date=end_date, time_step=1.0
         )
 
         # Should find some windows (mocked)
@@ -237,7 +240,7 @@ class TestTrajectoryWindowAnalyzer:
 
         # Sanity checks
         assert c3_energy > 0
-        assert c3_energy == total_dv ** 2  # Based on implementation
+        assert c3_energy == total_dv**2  # Based on implementation
         assert isinstance(c3_energy, float)
 
 
@@ -248,6 +251,7 @@ class TestNBodyPropagator:
         """Setup test fixtures."""
         try:
             from trajectory.nbody_dynamics import NBodyPropagator
+
             self.propagator = NBodyPropagator(["earth", "moon"])
         except ImportError:
             pytest.skip("N-body propagator module not available")
@@ -270,7 +274,9 @@ class TestNBodyPropagator:
         mock_solve_ivp.return_value = mock_result
 
         # Test parameters
-        initial_state = np.array([EARTH_RADIUS + 400000, 0, 0, 0, 7669, 0])  # 400 km orbit
+        initial_state = np.array(
+            [EARTH_RADIUS + 400000, 0, 0, 0, 7669, 0]
+        )  # 400 km orbit
         time_span = (0.0, 3600.0)  # 1 hour
 
         times, states = self.propagator.propagate_trajectory(
@@ -286,7 +292,9 @@ class TestNBodyPropagator:
     def test_nbody_dynamics_function(self):
         """Test n-body dynamics function."""
         # Test state vector
-        state = np.array([EARTH_RADIUS + 400000, 0, 0, 0, 7669, 0])  # 400 km circular orbit
+        state = np.array(
+            [EARTH_RADIUS + 400000, 0, 0, 0, 7669, 0]
+        )  # 400 km circular orbit
         t = 0.0
         epoch = 10000.0
 
@@ -315,6 +323,7 @@ class TestNumericalIntegrator:
         """Setup test fixtures."""
         try:
             from trajectory.nbody_integration import NumericalIntegrator
+
             self.integrator = NumericalIntegrator(method="DOP853")
         except ImportError:
             pytest.skip("Numerical integrator module not available")
@@ -327,6 +336,7 @@ class TestNumericalIntegrator:
 
     def test_simple_harmonic_oscillator(self):
         """Test integration with simple harmonic oscillator."""
+
         def harmonic_oscillator(t, y):
             """Simple harmonic oscillator: y'' + y = 0"""
             return np.array([y[1], -y[0]])
@@ -352,6 +362,7 @@ class TestNumericalIntegrator:
 
     def test_energy_conservation_orbit(self):
         """Test energy conservation in orbital mechanics."""
+
         def two_body_dynamics(t, y):
             """Two-body orbital dynamics."""
             r = y[:3]
@@ -425,14 +436,12 @@ class TestTrajectoryIO:
             departure_pos=(7000.0, 0.0, 0.0),
             departure_vel=(0.0, 7.5, 0.0),
             arrival_pos=(1900.0, 0.0, 0.0),
-            arrival_vel=(0.0, 1.6, 0.0)
+            arrival_vel=(0.0, 1.6, 0.0),
         )
 
         # Add test maneuver
         maneuver = self.Maneuver(
-            epoch=10000.0,
-            delta_v=(0.1, 0.2, 0.0),
-            name="Test Maneuver"
+            epoch=10000.0, delta_v=(0.1, 0.2, 0.0), name="Test Maneuver"
         )
         trajectory.add_maneuver(maneuver)
 
@@ -464,7 +473,7 @@ class TestTrajectoryIO:
             "times": np.linspace(0, 3600, 100),
             "positions": np.random.rand(3, 100),
             "velocities": np.random.rand(3, 100),
-            "propagation_time": 3600.0
+            "propagation_time": 3600.0,
         }
 
         try:
@@ -481,7 +490,9 @@ class TestTrajectoryIO:
 
             # Verify loaded data
             np.testing.assert_array_equal(loaded_result["times"], result["times"])
-            np.testing.assert_array_equal(loaded_result["positions"], result["positions"])
+            np.testing.assert_array_equal(
+                loaded_result["positions"], result["positions"]
+            )
             assert loaded_result["propagation_time"] == result["propagation_time"]
 
         except Exception as e:
@@ -495,6 +506,7 @@ class TestTrajectoryOptimization:
         """Setup test fixtures."""
         try:
             from trajectory.trajectory_optimization import TrajectoryOptimizer
+
             self.optimizer = TrajectoryOptimizer()
         except ImportError:
             pytest.skip("Trajectory optimization module not available")
@@ -516,9 +528,7 @@ class TestTrajectoryOptimization:
 
         try:
             result = self.optimizer.optimize_single_objective(
-                epoch=10000.0,
-                objective="delta_v",
-                method="differential_evolution"
+                epoch=10000.0, objective="delta_v", method="differential_evolution"
             )
 
             # Check result structure
@@ -529,8 +539,16 @@ class TestTrajectoryOptimization:
 
             # Check parameter bounds
             params = result["optimal_parameters"]
-            assert self.optimizer.min_earth_alt <= params["earth_orbit_alt"] <= self.optimizer.max_earth_alt
-            assert self.optimizer.min_moon_alt <= params["moon_orbit_alt"] <= self.optimizer.max_moon_alt
+            assert (
+                self.optimizer.min_earth_alt
+                <= params["earth_orbit_alt"]
+                <= self.optimizer.max_earth_alt
+            )
+            assert (
+                self.optimizer.min_moon_alt
+                <= params["moon_orbit_alt"]
+                <= self.optimizer.max_moon_alt
+            )
 
         except Exception as e:
             pytest.skip(f"Single objective optimization test failed: {e}")
@@ -540,9 +558,11 @@ class TestTrajectoryOptimization:
         """Test Pareto front analysis with mocked trajectory generation."""
         # Mock trajectory generation with varying results
         mock_instance = MagicMock()
+
         def mock_generate_transfer(*args, **kwargs):
             # Return different delta-v values for different calls
             import random
+
             dv = random.uniform(2800, 4000)
             return (MagicMock(), dv)
 
@@ -551,9 +571,7 @@ class TestTrajectoryOptimization:
 
         try:
             pareto_solutions = self.optimizer.pareto_front_analysis(
-                epoch=10000.0,
-                objectives=["delta_v", "time"],
-                num_solutions=10
+                epoch=10000.0, objectives=["delta_v", "time"], num_solutions=10
             )
 
             # Should return some solutions
@@ -587,14 +605,16 @@ class TestTask3Integration:
         mock_lunar_transfer.return_value = mock_instance
 
         try:
-            from trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
+            from trajectory.earth_moon_trajectories import (
+                generate_earth_moon_trajectory,
+            )
 
             trajectory, total_dv = generate_earth_moon_trajectory(
                 departure_epoch=10000.0,
                 earth_orbit_alt=400.0,
                 moon_orbit_alt=100.0,
                 transfer_time=4.5,
-                method="lambert"
+                method="lambert",
             )
 
             # Basic sanity checks
@@ -611,7 +631,7 @@ class TestTask3Integration:
             "trajectory.nbody_integration",
             "trajectory.nbody_dynamics",
             "trajectory.transfer_window_analysis",
-            "trajectory.trajectory_optimization"
+            "trajectory.trajectory_optimization",
         ]
 
         for module_name in modules_to_test:
@@ -627,10 +647,11 @@ def sample_orbit_state():
     """Fixture providing sample orbit state."""
     try:
         from trajectory.models import OrbitState
+
         return OrbitState(
             position=(EARTH_RADIUS + 400000, 0, 0),
             velocity=(0, np.sqrt(EARTH_MU / (EARTH_RADIUS + 400000)), 0),
-            epoch=10000.0
+            epoch=10000.0,
         )
     except ImportError:
         return None
@@ -641,13 +662,14 @@ def sample_trajectory():
     """Fixture providing sample trajectory."""
     try:
         from trajectory.models import Trajectory
+
         return Trajectory(
             departure_epoch=10000.0,
             arrival_epoch=10004.5,
             departure_pos=(7000.0, 0.0, 0.0),
             departure_vel=(0.0, 7.5, 0.0),
             arrival_pos=(1900.0, 0.0, 0.0),
-            arrival_vel=(0.0, 1.6, 0.0)
+            arrival_vel=(0.0, 1.6, 0.0),
         )
     except ImportError:
         return None
@@ -663,6 +685,7 @@ def test_configuration():
     try:
         import numpy
         import scipy
+
         assert True
     except ImportError:
         pytest.fail("Critical scientific computing modules not available")

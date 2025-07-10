@@ -47,7 +47,15 @@ from .trajectory_validator import TrajectoryValidator  # Import from renamed mod
 class LunarTrajectory:
     """Simple concrete implementation for lunar transfers."""
 
-    def __init__(self, departure_epoch, arrival_epoch, departure_pos, departure_vel, arrival_pos, arrival_vel) -> None:
+    def __init__(
+        self,
+        departure_epoch,
+        arrival_epoch,
+        departure_pos,
+        departure_vel,
+        arrival_pos,
+        arrival_vel,
+    ) -> None:
         """Initialize lunar trajectory with departure and arrival states."""
         self.departure_epoch = departure_epoch
         self.arrival_epoch = arrival_epoch
@@ -61,9 +69,15 @@ class LunarTrajectory:
         """Validate the lunar trajectory."""
         try:
             # Check that states are valid
-            if not np.isfinite(self.departure_pos).all() or not np.isfinite(self.departure_vel).all():
+            if (
+                not np.isfinite(self.departure_pos).all()
+                or not np.isfinite(self.departure_vel).all()
+            ):
                 return False
-            if not np.isfinite(self.arrival_pos).all() or not np.isfinite(self.arrival_vel).all():
+            if (
+                not np.isfinite(self.arrival_pos).all()
+                or not np.isfinite(self.arrival_vel).all()
+            ):
                 return False
 
             # Check that trajectory duration is reasonable (between 1 and 30 days)
@@ -106,13 +120,15 @@ class LunarTransfer:
         propagator (TrajectoryPropagator): Trajectory propagator
     """
 
-    def __init__(self,
-                moon_soi: float = PC.MOON_SOI,
-                moon_radius: float = PC.MOON_RADIUS,
-                min_earth_alt: float = 200,
-                max_earth_alt: float = 1000,
-                min_moon_alt: float = 50,
-                max_moon_alt: float = 500) -> None:
+    def __init__(
+        self,
+        moon_soi: float = PC.MOON_SOI,
+        moon_radius: float = PC.MOON_RADIUS,
+        min_earth_alt: float = 200,
+        max_earth_alt: float = 1000,
+        min_moon_alt: float = 50,
+        max_moon_alt: float = 500,
+    ) -> None:
         """Initialize lunar transfer trajectory generator.
 
         Args:
@@ -140,12 +156,14 @@ class LunarTransfer:
         )
         self.propagator = TrajectoryPropagator(self.celestial)
 
-    def generate_transfer(self,
-                         epoch: float,
-                         earth_orbit_alt: float,
-                         moon_orbit_alt: float,
-                         transfer_time: float,
-                         max_revolutions: int = 0) -> tuple[Trajectory, float]:
+    def generate_transfer(
+        self,
+        epoch: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+        transfer_time: float,
+        max_revolutions: int = 0,
+    ) -> tuple[Trajectory, float]:
         """Generate lunar transfer trajectory.
 
         This method orchestrates the complete lunar transfer trajectory generation
@@ -171,28 +189,44 @@ class LunarTransfer:
 
         # Step 1: Validate and prepare inputs
         transfer_params = self._validate_and_prepare_inputs(
-            epoch, earth_orbit_alt, moon_orbit_alt, transfer_time,
+            epoch,
+            earth_orbit_alt,
+            moon_orbit_alt,
+            transfer_time,
         )
 
         # Step 2: Calculate celestial body states
         moon_states = self._calculate_moon_states(
-            transfer_params["mjd2000_epoch"], transfer_time, transfer_params["r_moon_orbit"],
+            transfer_params["mjd2000_epoch"],
+            transfer_time,
+            transfer_params["r_moon_orbit"],
         )
 
         # Step 3: Find optimal departure point
         departure_state = self._find_optimal_departure(
-            transfer_params, moon_states, max_revolutions,
+            transfer_params,
+            moon_states,
+            max_revolutions,
         )
 
         # Step 4: Calculate trajectory and maneuvers
         trajectory, total_dv = self._build_trajectory(
-            epoch, transfer_time, departure_state, moon_states, transfer_params,
+            epoch,
+            transfer_time,
+            departure_state,
+            moon_states,
+            transfer_params,
         )
 
         return trajectory, total_dv
 
-    def _validate_and_prepare_inputs(self, epoch: float, earth_orbit_alt: float,
-                                   moon_orbit_alt: float, transfer_time: float) -> dict[str, float]:
+    def _validate_and_prepare_inputs(
+        self,
+        epoch: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+        transfer_time: float,
+    ) -> dict[str, float]:
         """Validate inputs and prepare transfer parameters.
 
         Args:
@@ -220,8 +254,12 @@ class LunarTransfer:
             "mjd2000_epoch": epoch + 0.5,  # Convert J2000 to MJD2000
         }
 
-    def _calculate_moon_states(self, mjd2000_epoch: float, transfer_time: float,
-                             r_moon_orbit: float | None = None) -> dict[str, np.ndarray]:
+    def _calculate_moon_states(
+        self,
+        mjd2000_epoch: float,
+        transfer_time: float,
+        r_moon_orbit: float | None = None,
+    ) -> dict[str, np.ndarray]:
         """Calculate Moon states at departure and arrival.
 
         Args:
@@ -233,28 +271,35 @@ class LunarTransfer:
             Dictionary containing Moon position and velocity states
         """
         # Get Moon states at departure and arrival
-        moon_pos_i, moon_vel_i = self.celestial.get_moon_state_earth_centered(mjd2000_epoch)
+        moon_pos_i, moon_vel_i = self.celestial.get_moon_state_earth_centered(
+            mjd2000_epoch
+        )
         moon_pos_f, moon_vel_f = self.celestial.get_moon_state_earth_centered(
             mjd2000_epoch + transfer_time,
         )
 
         # Calculate target state in lunar orbit
         target_pos, target_vel = calculate_target_state(
-            moon_pos_f, moon_vel_f, r_moon_orbit or (self.moon_radius + 100000),
+            moon_pos_f,
+            moon_vel_f,
+            r_moon_orbit or (self.moon_radius + 100000),
         )
 
         return {
-            "moon_pos_initial": moon_pos_i,
-            "moon_vel_initial": moon_vel_i,
-            "moon_pos_final": moon_pos_f,
-            "moon_vel_final": moon_vel_f,
+            "moon_pos_initial": np.array(moon_pos_i),
+            "moon_vel_initial": np.array(moon_vel_i),
+            "moon_pos_final": np.array(moon_pos_f),
+            "moon_vel_final": np.array(moon_vel_f),
             "target_pos": target_pos,
             "target_vel": target_vel,
         }
 
-    def _find_optimal_departure(self, transfer_params: dict[str, float],
-                              moon_states: dict[str, np.ndarray],
-                              max_revolutions: int) -> dict[str, np.ndarray]:
+    def _find_optimal_departure(
+        self,
+        transfer_params: dict[str, float],
+        moon_states: dict[str, np.ndarray],
+        max_revolutions: int,
+    ) -> dict[str, np.ndarray]:
         """Find optimal departure point and initial orbit conditions.
 
         Args:
@@ -271,7 +316,9 @@ class LunarTransfer:
             ValueError: If optimal departure phase cannot be found
         """
         # Calculate moon orbital plane unit vector
-        moon_h = np.cross(moon_states["moon_pos_initial"], moon_states["moon_vel_initial"])
+        moon_h = np.cross(
+            moon_states["moon_pos_initial"], moon_states["moon_vel_initial"]
+        )
         moon_h_unit = moon_h / np.linalg.norm(moon_h)
 
         # Find optimal departure phase
@@ -295,14 +342,18 @@ class LunarTransfer:
         return {
             "position": r1,
             "velocity": init_vel,
-            "phase": phase,
+            "phase": np.array([float(phase)]),
             "moon_h_unit": moon_h_unit,
         }
 
-    def _build_trajectory(self, epoch: float, transfer_time: float,
-                        departure_state: dict[str, np.ndarray],
-                        moon_states: dict[str, np.ndarray],
-                        transfer_params: dict[str, float]) -> tuple[Trajectory, float]:
+    def _build_trajectory(
+        self,
+        epoch: float,
+        transfer_time: float,
+        departure_state: dict[str, np.ndarray],
+        moon_states: dict[str, np.ndarray],
+        transfer_params: dict[str, float],
+    ) -> tuple[Trajectory, float]:
         """Build complete trajectory with maneuvers.
 
         Args:
@@ -324,7 +375,10 @@ class LunarTransfer:
 
         # Calculate maneuver delta-v values
         tli_dv, loi_dv, arrival_pos, arrival_vel = self._calculate_maneuvers(
-            r1, init_vel, target_vel, tof,
+            r1,
+            init_vel,
+            target_vel,
+            tof,
         )
 
         # Create trajectory object
@@ -338,14 +392,17 @@ class LunarTransfer:
         )
 
         # Add maneuver objects to trajectory
-        self._add_maneuvers_to_trajectory(trajectory, epoch, transfer_time, tli_dv, loi_dv)
+        self._add_maneuvers_to_trajectory(
+            trajectory, epoch, transfer_time, tli_dv, loi_dv
+        )
 
         # Calculate total delta-v
         total_dv = np.linalg.norm(tli_dv) + np.linalg.norm(loi_dv)
         return trajectory, total_dv
 
-    def _calculate_maneuvers(self, r1: np.ndarray, init_vel: np.ndarray,
-                           target_vel: np.ndarray, tof: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def _calculate_maneuvers(
+        self, r1: np.ndarray, init_vel: np.ndarray, target_vel: np.ndarray, tof: float
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Calculate TLI and LOI maneuver delta-v values.
 
         Args:
@@ -363,7 +420,10 @@ class LunarTransfer:
 
         # Propagate trajectory to calculate arrival state
         arrival_pos, arrival_vel = self.propagator.propagate_to_target(
-            r1, init_vel + tli_dv, tof, self.departure_epoch,
+            r1,
+            init_vel + tli_dv,
+            tof,
+            self.departure_epoch,
         )
 
         # Calculate LOI delta-v
@@ -376,9 +436,14 @@ class LunarTransfer:
 
         return tli_dv, loi_dv, arrival_pos, arrival_vel
 
-    def _add_maneuvers_to_trajectory(self, trajectory: Trajectory, epoch: float,
-                                   transfer_time: float, tli_dv: np.ndarray,
-                                   loi_dv: np.ndarray) -> None:
+    def _add_maneuvers_to_trajectory(
+        self,
+        trajectory: Trajectory,
+        epoch: float,
+        transfer_time: float,
+        tli_dv: np.ndarray,
+        loi_dv: np.ndarray,
+    ) -> None:
         """Add TLI and LOI maneuvers to the trajectory.
 
         Args:
@@ -390,6 +455,7 @@ class LunarTransfer:
         """
         # Create maneuver objects (convert delta-v from m/s to km/s and epoch to datetime)
         from datetime import datetime, timedelta
+
         j2000 = datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
 
         tli = Maneuver(

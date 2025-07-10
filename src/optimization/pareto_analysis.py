@@ -57,7 +57,9 @@ class OptimizationResult:
             "cost": (min(cost_values), max(cost_values)),
         }
 
-    def get_best_solutions(self, objective: str, num_solutions: int = 5) -> list[dict[str, Any]]:
+    def get_best_solutions(
+        self, objective: str, num_solutions: int = 5
+    ) -> list[dict[str, Any]]:
         """Get best solutions for a specific objective.
 
         Args:
@@ -115,7 +117,9 @@ class ParetoAnalyzer:
         """Initialize Pareto analyzer."""
         logger.info("Initialized ParetoAnalyzer")
 
-    def analyze_pareto_front(self, optimization_result: dict[str, Any]) -> OptimizationResult:
+    def analyze_pareto_front(
+        self, optimization_result: dict[str, Any]
+    ) -> OptimizationResult:
         """Analyze optimization results and create structured result object.
 
         Args:
@@ -145,10 +149,12 @@ class ParetoAnalyzer:
         logger.info(f"Analyzed Pareto front: {result.num_pareto_solutions} solutions")
         return result
 
-    def rank_solutions_by_preference(self,
-                                   solutions: list[dict[str, Any]],
-                                   preference_weights: list[float],
-                                   normalization_method: str = "minmax") -> list[tuple[float, dict[str, Any]]]:
+    def rank_solutions_by_preference(
+        self,
+        solutions: list[dict[str, Any]],
+        preference_weights: list[float],
+        normalization_method: str = "minmax",
+    ) -> list[tuple[float, dict[str, Any]]]:
         """Rank solutions by user preferences using weighted objectives.
 
         Args:
@@ -168,10 +174,16 @@ class ParetoAnalyzer:
             return []
 
         # Extract objective values
-        objectives_matrix = np.array([
-            [sol["objectives"]["delta_v"], sol["objectives"]["time"], sol["objectives"]["cost"]]
-            for sol in solutions
-        ])
+        objectives_matrix = np.array(
+            [
+                [
+                    sol["objectives"]["delta_v"],
+                    sol["objectives"]["time"],
+                    sol["objectives"]["cost"],
+                ]
+                for sol in solutions
+            ]
+        )
 
         # Normalize objectives
         if normalization_method == "minmax":
@@ -192,10 +204,14 @@ class ParetoAnalyzer:
             key=lambda x: x[0],
         )
 
-        logger.info(f"Ranked {len(solutions)} solutions by preference weights {preference_weights}")
+        logger.info(
+            f"Ranked {len(solutions)} solutions by preference weights {preference_weights}"
+        )
         return ranked_solutions
 
-    def find_knee_solutions(self, solutions: list[dict[str, Any]], num_knees: int = 3) -> list[dict[str, Any]]:
+    def find_knee_solutions(
+        self, solutions: list[dict[str, Any]], num_knees: int = 3
+    ) -> list[dict[str, Any]]:
         """Find knee points in the Pareto front (best trade-off solutions).
 
         Args:
@@ -210,10 +226,16 @@ class ParetoAnalyzer:
             return solutions
 
         # Extract normalized objective values
-        objectives_matrix = np.array([
-            [sol["objectives"]["delta_v"], sol["objectives"]["time"], sol["objectives"]["cost"]]
-            for sol in solutions
-        ])
+        objectives_matrix = np.array(
+            [
+                [
+                    sol["objectives"]["delta_v"],
+                    sol["objectives"]["time"],
+                    sol["objectives"]["cost"],
+                ]
+                for sol in solutions
+            ]
+        )
 
         normalized_objectives = self._minmax_normalize(objectives_matrix)
 
@@ -225,8 +247,9 @@ class ParetoAnalyzer:
         logger.info(f"Found {len(knee_solutions)} knee point solutions")
         return knee_solutions
 
-    def compare_optimization_runs(self,
-                                results: list[OptimizationResult]) -> dict[str, Any]:
+    def compare_optimization_runs(
+        self, results: list[OptimizationResult]
+    ) -> dict[str, Any]:
         """Compare multiple optimization runs.
 
         Args:
@@ -249,8 +272,10 @@ class ParetoAnalyzer:
 
         # Compare objective ranges across runs
         for objective in ["delta_v", "time", "cost"]:
-            ranges = [r.objective_ranges.get(objective, (float("inf"), float("-inf")))
-                     for r in results]
+            ranges = [
+                r.objective_ranges.get(objective, (float("inf"), float("-inf")))
+                for r in results
+            ]
             comparison["objective_ranges_comparison"][objective] = {
                 "min_values": [r[0] for r in ranges],
                 "max_values": [r[1] for r in ranges],
@@ -265,15 +290,19 @@ class ParetoAnalyzer:
 
         if all_solutions:
             for objective in ["delta_v", "time", "cost"]:
-                best_sol = min(all_solutions, key=lambda sol: sol["objectives"][objective])
+                best_sol = min(
+                    all_solutions, key=lambda sol: sol["objectives"][objective]
+                )
                 comparison["best_solutions_overall"][objective] = best_sol
 
         logger.info(f"Compared {len(results)} optimization runs")
         return comparison
 
-    def calculate_hypervolume(self,
-                            solutions: list[dict[str, Any]],
-                            reference_point: list[float] | None = None) -> float:
+    def calculate_hypervolume(
+        self,
+        solutions: list[dict[str, Any]],
+        reference_point: list[float] | None = None,
+    ) -> float:
         """Calculate hypervolume indicator for Pareto front quality.
 
         Args:
@@ -288,14 +317,22 @@ class ParetoAnalyzer:
             return 0.0
 
         # Extract objective values
-        objectives = np.array([
-            [sol["objectives"]["delta_v"], sol["objectives"]["time"], sol["objectives"]["cost"]]
-            for sol in solutions
-        ])
+        objectives = np.array(
+            [
+                [
+                    sol["objectives"]["delta_v"],
+                    sol["objectives"]["time"],
+                    sol["objectives"]["cost"],
+                ]
+                for sol in solutions
+            ]
+        )
 
         # Use worst point as reference if not provided
         if reference_point is None:
-            reference_point_array = np.max(objectives, axis=0) * 1.1  # 10% worse than worst
+            reference_point_array = (
+                np.max(objectives, axis=0) * 1.1
+            )  # 10% worse than worst
         else:
             reference_point_array = np.array(reference_point)
 
@@ -321,7 +358,9 @@ class ParetoAnalyzer:
             logger.exception(f"Failed to export results: {e}")
             raise
 
-    def _calculate_optimization_stats(self, optimization_result: dict[str, Any]) -> dict[str, Any]:
+    def _calculate_optimization_stats(
+        self, optimization_result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate optimization statistics."""
         pareto_solutions = optimization_result.get("pareto_solutions", [])
 
@@ -342,14 +381,28 @@ class ParetoAnalyzer:
             cost_values = [sol["objectives"]["cost"] for sol in pareto_solutions]
 
             stats["objective_statistics"] = {
-                "delta_v": {"min": min(delta_v_values), "max": max(delta_v_values), "mean": np.mean(delta_v_values)},
-                "time": {"min": min(time_values), "max": max(time_values), "mean": np.mean(time_values)},
-                "cost": {"min": min(cost_values), "max": max(cost_values), "mean": np.mean(cost_values)},
+                "delta_v": {
+                    "min": min(delta_v_values),
+                    "max": max(delta_v_values),
+                    "mean": np.mean(delta_v_values),
+                },
+                "time": {
+                    "min": min(time_values),
+                    "max": max(time_values),
+                    "mean": np.mean(time_values),
+                },
+                "cost": {
+                    "min": min(cost_values),
+                    "max": max(cost_values),
+                    "mean": np.mean(cost_values),
+                },
             }
 
         return stats
 
-    def _extract_problem_config(self, optimization_result: dict[str, Any]) -> dict[str, Any]:
+    def _extract_problem_config(
+        self, optimization_result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Extract problem configuration from optimization result."""
         return {
             "objectives": ["delta_v", "time", "cost"],
@@ -357,7 +410,9 @@ class ParetoAnalyzer:
             "optimization_type": "multi_objective",
         }
 
-    def _minmax_normalize(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+    def _minmax_normalize(
+        self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]
+    ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
         """Min-max normalization of objectives."""
         min_vals = np.min(objectives, axis=0)
         max_vals = np.max(objectives, axis=0)
@@ -366,10 +421,14 @@ class ParetoAnalyzer:
         ranges = max_vals - min_vals
         ranges[ranges == 0] = 1.0
 
-        normalized_result: np.ndarray[np.float64, np.dtype[np.float64]] = (objectives - min_vals) / ranges
+        normalized_result: np.ndarray[np.float64, np.dtype[np.float64]] = (
+            objectives - min_vals
+        ) / ranges
         return normalized_result
 
-    def _zscore_normalize(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+    def _zscore_normalize(
+        self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]
+    ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
         """Z-score normalization of objectives."""
         means = np.mean(objectives, axis=0)
         stds = np.std(objectives, axis=0)
@@ -377,10 +436,16 @@ class ParetoAnalyzer:
         # Avoid division by zero
         stds[stds == 0] = 1.0
 
-        normalized_result: np.ndarray[np.float64, np.dtype[np.float64]] = (objectives - means) / stds
+        normalized_result: np.ndarray[np.float64, np.dtype[np.float64]] = (
+            objectives - means
+        ) / stds
         return normalized_result
 
-    def _find_knee_points(self, normalized_objectives: np.ndarray[np.float64, np.dtype[np.float64]], num_knees: int) -> list[int]:
+    def _find_knee_points(
+        self,
+        normalized_objectives: np.ndarray[np.float64, np.dtype[np.float64]],
+        num_knees: int,
+    ) -> list[int]:
         """Find knee points using perpendicular distance method."""
         if len(normalized_objectives) <= num_knees:
             return list(range(len(normalized_objectives)))
@@ -397,8 +462,11 @@ class ParetoAnalyzer:
         step = len(distances) // num_knees
         return [distances[i * step][1] for i in range(num_knees)]
 
-
-    def _calculate_hypervolume_3d(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]], reference_point: np.ndarray[np.float64, np.dtype[np.float64]]) -> float:
+    def _calculate_hypervolume_3d(
+        self,
+        objectives: np.ndarray[np.float64, np.dtype[np.float64]],
+        reference_point: np.ndarray[np.float64, np.dtype[np.float64]],
+    ) -> float:
         """Simple hypervolume calculation for 3D objectives."""
         # This is a simplified implementation
         # For production, consider using pygmo.hypervolume or similar

@@ -158,7 +158,9 @@ def analyze_command(args):
     )
 
     # Export results
-    output_dir = args.output or f"analysis_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
+    output_dir = (
+        args.output or f"analysis_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
+    )
     optimizer.export_results(results, output_dir)
 
     # Show visualizations if requested
@@ -212,7 +214,6 @@ def config_command(args) -> None:
 
     with open(output_file, "w") as f:
         json.dump(sample_config, f, indent=2)
-
 
 
 def validate_command(args) -> None:
@@ -275,8 +276,6 @@ def create_sample_command(args):
     )
 
 
-
-
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -284,34 +283,42 @@ def main():
         prog="lunar-optimizer",
     )
 
-    parser.add_argument("--verbose", "-v", action="store_true",
-                       help="Enable verbose output")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Analyze command
     analyze_parser = subparsers.add_parser("analyze", help="Run mission analysis")
-    analyze_parser.add_argument("--config", "-c", type=str,
-                               help="Configuration file (JSON)")
-    analyze_parser.add_argument("--mission-name", "-n", type=str,
-                               help="Mission name")
-    analyze_parser.add_argument("--output", "-o", type=str,
-                               help="Output directory")
-    analyze_parser.add_argument("--population-size", "-p", type=int,
-                               help="Optimization population size")
-    analyze_parser.add_argument("--generations", "-g", type=int,
-                               help="Optimization generations")
-    analyze_parser.add_argument("--no-sensitivity", action="store_true",
-                               help="Skip sensitivity analysis")
-    analyze_parser.add_argument("--no-isru", action="store_true",
-                               help="Skip ISRU analysis")
-    analyze_parser.add_argument("--show-plots", action="store_true",
-                               help="Show plots after analysis")
+    analyze_parser.add_argument(
+        "--config", "-c", type=str, help="Configuration file (JSON)"
+    )
+    analyze_parser.add_argument("--mission-name", "-n", type=str, help="Mission name")
+    analyze_parser.add_argument("--output", "-o", type=str, help="Output directory")
+    analyze_parser.add_argument(
+        "--population-size", "-p", type=int, help="Optimization population size"
+    )
+    analyze_parser.add_argument(
+        "--generations", "-g", type=int, help="Optimization generations"
+    )
+    analyze_parser.add_argument(
+        "--no-sensitivity", action="store_true", help="Skip sensitivity analysis"
+    )
+    analyze_parser.add_argument(
+        "--no-isru", action="store_true", help="Skip ISRU analysis"
+    )
+    analyze_parser.add_argument(
+        "--show-plots", action="store_true", help="Show plots after analysis"
+    )
 
     # Config command
-    config_parser = subparsers.add_parser("config", help="Generate sample configuration")
-    config_parser.add_argument("--output", "-o", type=str,
-                              help="Output configuration file")
+    config_parser = subparsers.add_parser(
+        "config", help="Generate sample configuration"
+    )
+    config_parser.add_argument(
+        "--output", "-o", type=str, help="Output configuration file"
+    )
 
     # Validate command
     subparsers.add_parser("validate", help="Validate environment")

@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 # Test imports with mock fallbacks for missing dependencies
 try:
     import pygmo as pg
+
     PYGMO_AVAILABLE = True
 except ImportError:
     PYGMO_AVAILABLE = False
@@ -32,8 +33,8 @@ except ImportError:
     pg.problem = MagicMock()
 
 # Test constants
-EARTH_RADIUS = 6378137.0   # m
-MOON_RADIUS = 1737400.0    # m
+EARTH_RADIUS = 6378137.0  # m
+MOON_RADIUS = 1737400.0  # m
 EARTH_MU = 3.986004418e14  # m³/s²
 
 
@@ -52,7 +53,7 @@ class TestLunarMissionProblem:
                     launch_cost_per_kg=10000.0,
                     operations_cost_per_day=100000.0,
                     development_cost=1e9,
-                    contingency_percentage=20.0
+                    contingency_percentage=20.0,
                 )
 
                 self.problem = LunarMissionProblem(
@@ -63,7 +64,7 @@ class TestLunarMissionProblem:
                     max_moon_alt=500,
                     min_transfer_time=3.0,
                     max_transfer_time=10.0,
-                    reference_epoch=10000.0
+                    reference_epoch=10000.0,
                 )
 
             except ImportError:
@@ -97,11 +98,11 @@ class TestLunarMissionProblem:
         assert len(upper_bounds) == 3
 
         # Check bounds values
-        assert lower_bounds[0] == 200   # min_earth_alt
+        assert lower_bounds[0] == 200  # min_earth_alt
         assert upper_bounds[0] == 1000  # max_earth_alt
-        assert lower_bounds[1] == 50    # min_moon_alt
-        assert upper_bounds[1] == 500   # max_moon_alt
-        assert lower_bounds[2] == 3.0   # min_transfer_time
+        assert lower_bounds[1] == 50  # min_moon_alt
+        assert upper_bounds[1] == 500  # max_moon_alt
+        assert lower_bounds[2] == 3.0  # min_transfer_time
         assert upper_bounds[2] == 10.0  # max_transfer_time
 
     def test_get_nobj(self):
@@ -142,19 +143,19 @@ class TestLunarMissionProblem:
 
             # Check fitness values are reasonable
             delta_v, time_seconds, cost = fitness
-            assert 1000 < delta_v < 10000      # Reasonable delta-v range
+            assert 1000 < delta_v < 10000  # Reasonable delta-v range
             assert 200000 < time_seconds < 1000000  # Reasonable time range
-            assert 1e8 < cost < 1e12           # Reasonable cost range
+            assert 1e8 < cost < 1e12  # Reasonable cost range
 
     def test_fitness_bounds_checking(self):
         """Test fitness evaluation with invalid bounds."""
         # Test with values outside bounds
         invalid_vectors = [
-            [100.0, 100.0, 4.5],   # earth_alt too low
+            [100.0, 100.0, 4.5],  # earth_alt too low
             [1200.0, 100.0, 4.5],  # earth_alt too high
-            [400.0, 25.0, 4.5],    # moon_alt too low
-            [400.0, 600.0, 4.5],   # moon_alt too high
-            [400.0, 100.0, 2.0],   # transfer_time too low
+            [400.0, 25.0, 4.5],  # moon_alt too low
+            [400.0, 600.0, 4.5],  # moon_alt too high
+            [400.0, 100.0, 2.0],  # transfer_time too low
             [400.0, 100.0, 15.0],  # transfer_time too high
         ]
 
@@ -194,7 +195,10 @@ class TestGlobalOptimizer:
         """Setup test fixtures."""
         if PYGMO_AVAILABLE:
             try:
-                from optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
+                from optimization.global_optimizer import (
+                    GlobalOptimizer,
+                    LunarMissionProblem,
+                )
                 from config.costs import CostFactors
 
                 # Create test problem
@@ -202,21 +206,21 @@ class TestGlobalOptimizer:
                     launch_cost_per_kg=10000.0,
                     operations_cost_per_day=100000.0,
                     development_cost=1e9,
-                    contingency_percentage=20.0
+                    contingency_percentage=20.0,
                 )
                 self.problem = LunarMissionProblem(
                     cost_factors=cost_factors,
                     min_earth_alt=200,
                     max_earth_alt=800,
                     min_moon_alt=50,
-                    max_moon_alt=300
+                    max_moon_alt=300,
                 )
 
                 self.optimizer = GlobalOptimizer(
                     problem=self.problem,
                     population_size=50,
                     num_generations=10,
-                    seed=42
+                    seed=42,
                 )
 
             except ImportError:
@@ -249,9 +253,11 @@ class TestGlobalOptimizer:
         """Test optimization execution with mocked trajectory generation."""
         # Mock trajectory generation
         mock_instance = MagicMock()
+
         def mock_generate_transfer(*args, **kwargs):
             # Return varying results for different calls
             import random
+
             dv = random.uniform(2800, 4200)
             return (MagicMock(), dv)
 
@@ -311,20 +317,18 @@ class TestGlobalOptimizer:
             "pareto_solutions": [
                 {
                     "parameters": [400, 100, 4.5],
-                    "objectives": [3200, 4.5*86400, 150e6]
+                    "objectives": [3200, 4.5 * 86400, 150e6],
                 },
                 {
                     "parameters": [600, 200, 5.0],
-                    "objectives": [3800, 5.0*86400, 180e6]
-                }
+                    "objectives": [3800, 5.0 * 86400, 180e6],
+                },
             ]
         }
 
         if hasattr(self.optimizer, "get_best_solutions"):
             best_solutions = self.optimizer.get_best_solutions(
-                mock_results,
-                num_solutions=1,
-                preference_weights=[0.5, 0.3, 0.2]
+                mock_results, num_solutions=1, preference_weights=[0.5, 0.3, 0.2]
             )
 
             assert isinstance(best_solutions, list)
@@ -344,6 +348,7 @@ class TestParetoAnalyzer:
         """Setup test fixtures."""
         try:
             from optimization.pareto_analysis import ParetoAnalyzer
+
             self.analyzer = ParetoAnalyzer()
         except ImportError:
             pytest.skip("Pareto analysis module not available")
@@ -358,29 +363,28 @@ class TestParetoAnalyzer:
         """Test Pareto front analysis functionality."""
         # Create mock optimization results
         mock_results = {
-            "pareto_front": np.array([
-                [3200, 4.5*86400, 150e6],
-                [3800, 5.0*86400, 180e6],
-                [3000, 6.0*86400, 200e6]
-            ]),
+            "pareto_front": np.array(
+                [
+                    [3200, 4.5 * 86400, 150e6],
+                    [3800, 5.0 * 86400, 180e6],
+                    [3000, 6.0 * 86400, 200e6],
+                ]
+            ),
             "pareto_solutions": [
                 {
                     "parameters": [400, 100, 4.5],
-                    "objectives": [3200, 4.5*86400, 150e6]
+                    "objectives": [3200, 4.5 * 86400, 150e6],
                 },
                 {
                     "parameters": [600, 200, 5.0],
-                    "objectives": [3800, 5.0*86400, 180e6]
+                    "objectives": [3800, 5.0 * 86400, 180e6],
                 },
                 {
                     "parameters": [350, 80, 6.0],
-                    "objectives": [3000, 6.0*86400, 200e6]
-                }
+                    "objectives": [3000, 6.0 * 86400, 200e6],
+                },
             ],
-            "statistics": {
-                "num_evaluations": 5000,
-                "convergence_metric": 0.01
-            }
+            "statistics": {"num_evaluations": 5000, "convergence_metric": 0.01},
         }
 
         try:
@@ -401,18 +405,9 @@ class TestParetoAnalyzer:
         """Test solution ranking by preference."""
         # Create test solutions
         test_solutions = [
-            {
-                "parameters": [400, 100, 4.5],
-                "objectives": [3200, 4.5*86400, 150e6]
-            },
-            {
-                "parameters": [600, 200, 5.0],
-                "objectives": [3800, 5.0*86400, 180e6]
-            },
-            {
-                "parameters": [350, 80, 6.0],
-                "objectives": [3000, 6.0*86400, 200e6]
-            }
+            {"parameters": [400, 100, 4.5], "objectives": [3200, 4.5 * 86400, 150e6]},
+            {"parameters": [600, 200, 5.0], "objectives": [3800, 5.0 * 86400, 180e6]},
+            {"parameters": [350, 80, 6.0], "objectives": [3000, 6.0 * 86400, 200e6]},
         ]
 
         # Test ranking with different preferences
@@ -420,9 +415,7 @@ class TestParetoAnalyzer:
 
         try:
             ranked_solutions = self.analyzer.rank_solutions_by_preference(
-                test_solutions,
-                preference_weights,
-                normalization_method="minmax"
+                test_solutions, preference_weights, normalization_method="minmax"
             )
 
             # Check ranking structure
@@ -445,9 +438,9 @@ class TestParetoAnalyzer:
     def test_normalization_methods(self):
         """Test different normalization methods."""
         test_solutions = [
-            {"objectives": [3200, 4.5*86400, 150e6]},
-            {"objectives": [3800, 5.0*86400, 180e6]},
-            {"objectives": [3000, 6.0*86400, 200e6]}
+            {"objectives": [3200, 4.5 * 86400, 150e6]},
+            {"objectives": [3800, 5.0 * 86400, 180e6]},
+            {"objectives": [3000, 6.0 * 86400, 200e6]},
         ]
 
         preference_weights = [0.33, 0.33, 0.34]
@@ -474,16 +467,16 @@ class TestParetoAnalyzer:
         """Test Pareto dominance relationships."""
         if hasattr(self.analyzer, "is_pareto_dominated"):
             # Test clear dominance
-            solution1 = [3000, 4.0*86400, 140e6]  # Better in all objectives
-            solution2 = [3200, 4.5*86400, 150e6]  # Worse in all objectives
+            solution1 = [3000, 4.0 * 86400, 140e6]  # Better in all objectives
+            solution2 = [3200, 4.5 * 86400, 150e6]  # Worse in all objectives
 
             # Solution1 should dominate solution2
             dominated = self.analyzer.is_pareto_dominated(solution2, solution1)
             assert dominated
 
             # Test non-dominance
-            solution3 = [3100, 5.0*86400, 140e6]  # Better in some, worse in others
-            solution4 = [3200, 4.5*86400, 150e6]
+            solution3 = [3100, 5.0 * 86400, 140e6]  # Better in some, worse in others
+            solution4 = [3200, 4.5 * 86400, 150e6]
 
             dominated = self.analyzer.is_pareto_dominated(solution3, solution4)
             assert not dominated
@@ -502,7 +495,7 @@ class TestCostIntegration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
 
             self.cost_calculator = CostCalculator(self.cost_factors)
@@ -520,19 +513,18 @@ class TestCostIntegration:
         """Test mission cost calculation."""
         # Test parameters
         trajectory_params = {
-            "total_dv": 3200,        # m/s
-            "transfer_time": 4.5,    # days
+            "total_dv": 3200,  # m/s
+            "transfer_time": 4.5,  # days
             "earth_orbit_alt": 400,  # km
-            "moon_orbit_alt": 100    # km
+            "moon_orbit_alt": 100,  # km
         }
-
 
         try:
             total_cost = self.cost_calculator.calculate_mission_cost(
                 total_dv=trajectory_params["total_dv"],
                 transfer_time=trajectory_params["transfer_time"],
                 earth_orbit_alt=trajectory_params["earth_orbit_alt"],
-                moon_orbit_alt=trajectory_params["moon_orbit_alt"]
+                moon_orbit_alt=trajectory_params["moon_orbit_alt"],
             )
 
             # Sanity checks
@@ -549,7 +541,7 @@ class TestCostIntegration:
             "total_dv": 3200,
             "transfer_time": 4.5,
             "earth_orbit_alt": 400,
-            "moon_orbit_alt": 100
+            "moon_orbit_alt": 100,
         }
 
         try:
@@ -557,7 +549,7 @@ class TestCostIntegration:
                 total_dv=trajectory_params["total_dv"],
                 transfer_time=trajectory_params["transfer_time"],
                 earth_orbit_alt=trajectory_params["earth_orbit_alt"],
-                moon_orbit_alt=trajectory_params["moon_orbit_alt"]
+                moon_orbit_alt=trajectory_params["moon_orbit_alt"],
             )
 
             # Sanity checks
@@ -574,7 +566,7 @@ class TestCostIntegration:
             "total_dv": 3200,
             "transfer_time": 4.5,
             "earth_orbit_alt": 400,
-            "moon_orbit_alt": 100
+            "moon_orbit_alt": 100,
         }
 
         # Test delta-v scaling
@@ -586,13 +578,13 @@ class TestCostIntegration:
                 total_dv=base_params["total_dv"],
                 transfer_time=base_params["transfer_time"],
                 earth_orbit_alt=base_params["earth_orbit_alt"],
-                moon_orbit_alt=base_params["moon_orbit_alt"]
+                moon_orbit_alt=base_params["moon_orbit_alt"],
             )
             high_dv_cost = self.cost_calculator.calculate_mission_cost(
                 total_dv=high_dv_params["total_dv"],
                 transfer_time=high_dv_params["transfer_time"],
                 earth_orbit_alt=high_dv_params["earth_orbit_alt"],
-                moon_orbit_alt=high_dv_params["moon_orbit_alt"]
+                moon_orbit_alt=high_dv_params["moon_orbit_alt"],
             )
 
             # Higher delta-v should cost more
@@ -609,7 +601,7 @@ class TestCostIntegration:
                     total_dv=3200,
                     transfer_time=4.5,
                     earth_orbit_alt=400,
-                    moon_orbit_alt=100
+                    moon_orbit_alt=100,
                 )
 
                 # Check breakdown structure
@@ -623,18 +615,33 @@ class TestCostIntegration:
                 assert "total_cost" in breakdown
 
                 # Check breakdown values
-                cost_components = ["propellant_cost", "launch_cost", "operations_cost", 
-                                 "development_cost", "altitude_cost", "contingency_cost", "total_cost"]
+                cost_components = [
+                    "propellant_cost",
+                    "launch_cost",
+                    "operations_cost",
+                    "development_cost",
+                    "altitude_cost",
+                    "contingency_cost",
+                    "total_cost",
+                ]
                 for key in cost_components:
-                    assert isinstance(breakdown[key], (int, float)), f"{key} should be numeric"
+                    assert isinstance(
+                        breakdown[key], (int, float)
+                    ), f"{key} should be numeric"
                     assert breakdown[key] >= 0, f"{key} should be non-negative"
 
                 # Total should equal sum of components plus contingency
-                component_sum = (breakdown["propellant_cost"] + breakdown["launch_cost"] + 
-                               breakdown["operations_cost"] + breakdown["development_cost"] + 
-                               breakdown["altitude_cost"])
+                component_sum = (
+                    breakdown["propellant_cost"]
+                    + breakdown["launch_cost"]
+                    + breakdown["operations_cost"]
+                    + breakdown["development_cost"]
+                    + breakdown["altitude_cost"]
+                )
                 expected_total = component_sum + breakdown["contingency_cost"]
-                assert abs(breakdown["total_cost"] - expected_total) < 1e6  # Allow small numerical errors
+                assert (
+                    abs(breakdown["total_cost"] - expected_total) < 1e6
+                )  # Allow small numerical errors
 
             except Exception as e:
                 pytest.skip(f"Cost breakdown test failed: {e}")
@@ -650,7 +657,10 @@ class TestTask4Integration:
             pytest.skip("PyGMO not available")
 
         try:
-            from optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
+            from optimization.global_optimizer import (
+                GlobalOptimizer,
+                LunarMissionProblem,
+            )
             from optimization.pareto_analysis import ParetoAnalyzer
             from config.costs import CostFactors
 
@@ -659,7 +669,7 @@ class TestTask4Integration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
             problem = LunarMissionProblem(cost_factors=cost_factors)
             optimizer = GlobalOptimizer(problem, population_size=20, num_generations=5)
@@ -671,9 +681,14 @@ class TestTask4Integration:
 
             # Test that analyzer can process optimizer output format
             mock_results = {
-                "pareto_front": np.array([[3200, 4.5*86400, 150e6]]),
-                "pareto_solutions": [{"parameters": [400, 100, 4.5], "objectives": [3200, 4.5*86400, 150e6]}],
-                "statistics": {"num_evaluations": 100}
+                "pareto_front": np.array([[3200, 4.5 * 86400, 150e6]]),
+                "pareto_solutions": [
+                    {
+                        "parameters": [400, 100, 4.5],
+                        "objectives": [3200, 4.5 * 86400, 150e6],
+                    }
+                ],
+                "statistics": {"num_evaluations": 100},
             }
 
             analysis_result = analyzer.analyze_pareto_front(mock_results)
@@ -687,7 +702,7 @@ class TestTask4Integration:
         modules_to_test = [
             "optimization.global_optimizer",
             "optimization.pareto_analysis",
-            "optimization.cost_integration"
+            "optimization.cost_integration",
         ]
 
         for module_name in modules_to_test:
@@ -716,24 +731,20 @@ class TestTask4Integration:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
             config = {
                 "problem_params": {
                     "min_earth_alt": 200,
                     "max_earth_alt": 800,
                 },
-                "optimizer_params": {
-                    "population_size": 20,
-                    "num_generations": 5
-                },
-                "verbose": False
+                "optimizer_params": {"population_size": 20, "num_generations": 5},
+                "verbose": False,
             }
 
             # Run optimization
             results = optimize_lunar_mission(
-                cost_factors=cost_factors,
-                optimization_config=config
+                cost_factors=cost_factors, optimization_config=config
             )
 
             # Check results
@@ -764,7 +775,7 @@ class TestTask4Performance:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
             problem = LunarMissionProblem(cost_factors=cost_factors)
 
@@ -794,7 +805,10 @@ class TestTask4Performance:
             pytest.skip("PyGMO not available")
 
         try:
-            from optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
+            from optimization.global_optimizer import (
+                GlobalOptimizer,
+                LunarMissionProblem,
+            )
             from config.costs import CostFactors
             import psutil
             import os
@@ -808,14 +822,14 @@ class TestTask4Performance:
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=100000.0,
                 development_cost=1e9,
-                contingency_percentage=20.0
+                contingency_percentage=20.0,
             )
             problem = LunarMissionProblem(cost_factors=cost_factors)
             optimizer = GlobalOptimizer(problem, population_size=50, num_generations=10)
 
             # Mock expensive operations
             with patch.object(problem, "fitness") as mock_fitness:
-                mock_fitness.return_value = [3200, 4.5*86400, 150e6]
+                mock_fitness.return_value = [3200, 4.5 * 86400, 150e6]
 
                 optimizer.optimize(verbose=False)
 
@@ -840,6 +854,7 @@ def test_task4_configuration():
     try:
         import numpy
         import scipy
+
         assert True
     except ImportError:
         pytest.fail("Critical scientific computing modules not available")
@@ -847,6 +862,7 @@ def test_task4_configuration():
     # Check for optimization modules
     try:
         import pygmo
+
         print("✓ PyGMO optimization library available")
     except ImportError:
         print("⚠ PyGMO optimization library not available")
@@ -854,6 +870,7 @@ def test_task4_configuration():
     # Check for trajectory modules
     try:
         from trajectory.lunar_transfer import LunarTransfer
+
         print("✓ Trajectory generation modules available")
     except ImportError:
         print("⚠ Trajectory generation modules not available")

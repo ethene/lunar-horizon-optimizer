@@ -67,9 +67,13 @@ class CashFlowModel:
         self.financial_params = financial_params or FinancialParameters()
         self.cash_flows: list[CashFlow] = []
 
-        logger.info(f"Initialized CashFlowModel with {self.financial_params.discount_rate:.1%} discount rate")
+        logger.info(
+            f"Initialized CashFlowModel with {self.financial_params.discount_rate:.1%} discount rate"
+        )
 
-    def add_cash_flow(self, amount: float, date: datetime, category: str, description: str = "") -> None:
+    def add_cash_flow(
+        self, amount: float, date: datetime, category: str, description: str = ""
+    ) -> None:
         """Add a cash flow event.
 
         Args:
@@ -80,9 +84,13 @@ class CashFlowModel:
         """
         cash_flow = CashFlow(amount, date, category, description)
         self.cash_flows.append(cash_flow)
-        logger.debug(f"Added cash flow: {category} ${amount:,.0f} on {date.strftime('%Y-%m-%d')}")
+        logger.debug(
+            f"Added cash flow: {category} ${amount:,.0f} on {date.strftime('%Y-%m-%d')}"
+        )
 
-    def add_development_costs(self, total_cost: float, start_date: datetime, duration_months: int) -> None:
+    def add_development_costs(
+        self, total_cost: float, start_date: datetime, duration_months: int
+    ) -> None:
         """Add development costs spread over development period.
 
         Args:
@@ -94,12 +102,20 @@ class CashFlowModel:
 
         for month in range(duration_months):
             cash_flow_date = start_date + timedelta(days=30 * month)
-            self.add_cash_flow(-monthly_cost, cash_flow_date, "development",
-                             f"Development cost month {month + 1}")
+            self.add_cash_flow(
+                -monthly_cost,
+                cash_flow_date,
+                "development",
+                f"Development cost month {month + 1}",
+            )
 
-        logger.info(f"Added development costs: ${total_cost:,.0f} over {duration_months} months")
+        logger.info(
+            f"Added development costs: ${total_cost:,.0f} over {duration_months} months"
+        )
 
-    def add_launch_costs(self, cost_per_launch: float, launch_dates: list[datetime]) -> None:
+    def add_launch_costs(
+        self, cost_per_launch: float, launch_dates: list[datetime]
+    ) -> None:
         """Add launch costs for multiple launches.
 
         Args:
@@ -110,9 +126,13 @@ class CashFlowModel:
             self.add_cash_flow(-cost_per_launch, date, "launch", f"Launch {i + 1}")
 
         total_launch_cost = cost_per_launch * len(launch_dates)
-        logger.info(f"Added launch costs: ${total_launch_cost:,.0f} for {len(launch_dates)} launches")
+        logger.info(
+            f"Added launch costs: ${total_launch_cost:,.0f} for {len(launch_dates)} launches"
+        )
 
-    def add_operational_costs(self, monthly_cost: float, start_date: datetime, duration_months: int) -> None:
+    def add_operational_costs(
+        self, monthly_cost: float, start_date: datetime, duration_months: int
+    ) -> None:
         """Add operational costs over mission duration.
 
         Args:
@@ -123,15 +143,27 @@ class CashFlowModel:
         for month in range(duration_months):
             cash_flow_date = start_date + timedelta(days=30 * month)
             # Apply inflation to operational costs
-            inflated_cost = monthly_cost * (1 + self.financial_params.inflation_rate) ** (month / 12)
-            self.add_cash_flow(-inflated_cost, cash_flow_date, "operations",
-                             f"Operations month {month + 1}")
+            inflated_cost = monthly_cost * (
+                1 + self.financial_params.inflation_rate
+            ) ** (month / 12)
+            self.add_cash_flow(
+                -inflated_cost,
+                cash_flow_date,
+                "operations",
+                f"Operations month {month + 1}",
+            )
 
-        total_ops_cost = sum(monthly_cost * (1 + self.financial_params.inflation_rate) ** (m / 12)
-                           for m in range(duration_months))
-        logger.info(f"Added operational costs: ${total_ops_cost:,.0f} over {duration_months} months")
+        total_ops_cost = sum(
+            monthly_cost * (1 + self.financial_params.inflation_rate) ** (m / 12)
+            for m in range(duration_months)
+        )
+        logger.info(
+            f"Added operational costs: ${total_ops_cost:,.0f} over {duration_months} months"
+        )
 
-    def add_revenue_stream(self, monthly_revenue: float, start_date: datetime, duration_months: int) -> None:
+    def add_revenue_stream(
+        self, monthly_revenue: float, start_date: datetime, duration_months: int
+    ) -> None:
         """Add revenue stream over mission duration.
 
         Args:
@@ -142,13 +174,20 @@ class CashFlowModel:
         for month in range(duration_months):
             revenue_date = start_date + timedelta(days=30 * month)
             # Apply inflation to revenues
-            inflated_revenue = monthly_revenue * (1 + self.financial_params.inflation_rate) ** (month / 12)
-            self.add_cash_flow(inflated_revenue, revenue_date, "revenue",
-                             f"Revenue month {month + 1}")
+            inflated_revenue = monthly_revenue * (
+                1 + self.financial_params.inflation_rate
+            ) ** (month / 12)
+            self.add_cash_flow(
+                inflated_revenue, revenue_date, "revenue", f"Revenue month {month + 1}"
+            )
 
-        total_revenue = sum(monthly_revenue * (1 + self.financial_params.inflation_rate) ** (m / 12)
-                          for m in range(duration_months))
-        logger.info(f"Added revenue stream: ${total_revenue:,.0f} over {duration_months} months")
+        total_revenue = sum(
+            monthly_revenue * (1 + self.financial_params.inflation_rate) ** (m / 12)
+            for m in range(duration_months)
+        )
+        logger.info(
+            f"Added revenue stream: ${total_revenue:,.0f} over {duration_months} months"
+        )
 
     def get_cash_flows_by_category(self, category: str) -> list[CashFlow]:
         """Get cash flows by category.
@@ -209,9 +248,13 @@ class NPVAnalyzer:
         """
         self.financial_params = financial_params or FinancialParameters()
 
-        logger.info(f"Initialized NPVAnalyzer with {self.financial_params.discount_rate:.1%} discount rate")
+        logger.info(
+            f"Initialized NPVAnalyzer with {self.financial_params.discount_rate:.1%} discount rate"
+        )
 
-    def calculate_npv(self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None) -> float:
+    def calculate_npv(
+        self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None
+    ) -> float:
         """Calculate Net Present Value of cash flows.
 
         Args:
@@ -236,13 +279,17 @@ class NPVAnalyzer:
             years_from_reference = (cash_flow.date - reference_date).days / 365.25
 
             # Calculate present value
-            present_value = cash_flow.amount / (1 + discount_rate) ** years_from_reference
+            present_value = (
+                cash_flow.amount / (1 + discount_rate) ** years_from_reference
+            )
             npv += present_value
 
         logger.info(f"Calculated NPV: ${npv:,.0f}")
         return npv
 
-    def calculate_irr(self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None) -> float:
+    def calculate_irr(
+        self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None
+    ) -> float:
         """Calculate Internal Rate of Return (IRR).
 
         Args:
@@ -277,8 +324,13 @@ class NPVAnalyzer:
         logger.info(f"Calculated IRR: {irr:.1%}")
         return irr
 
-    def _calculate_irr_newton_raphson(self, times: np.ndarray, flows: np.ndarray,
-                                    initial_guess: float = 0.1, max_iterations: int = 100) -> float:
+    def _calculate_irr_newton_raphson(
+        self,
+        times: np.ndarray,
+        flows: np.ndarray,
+        initial_guess: float = 0.1,
+        max_iterations: int = 100,
+    ) -> float:
         """Calculate IRR using Newton-Raphson method."""
         rate = initial_guess
 
@@ -304,7 +356,9 @@ class NPVAnalyzer:
         # If no convergence, return best estimate
         return rate
 
-    def calculate_payback_period(self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None) -> float:
+    def calculate_payback_period(
+        self, cash_flow_model: CashFlowModel, reference_date: datetime | None = None
+    ) -> float:
         """Calculate payback period in years.
 
         Args:
@@ -336,8 +390,11 @@ class NPVAnalyzer:
         logger.info("Project never reaches payback")
         return float("inf")
 
-    def sensitivity_analysis(self, cash_flow_model: CashFlowModel,
-                           variable_ranges: dict[str, tuple[float, float]]) -> dict[str, list[float]]:
+    def sensitivity_analysis(
+        self,
+        cash_flow_model: CashFlowModel,
+        variable_ranges: dict[str, tuple[float, float]],
+    ) -> dict[str, list[float]]:
         """Perform sensitivity analysis on NPV.
 
         Args:
@@ -359,19 +416,24 @@ class NPVAnalyzer:
 
             for value in variable_values:
                 # Create modified cash flow model
-                modified_model = self._apply_sensitivity_change(cash_flow_model, variable, value)
+                modified_model = self._apply_sensitivity_change(
+                    cash_flow_model, variable, value
+                )
                 npv = self.calculate_npv(modified_model)
                 npv_values.append(npv)
 
             sensitivity_results[variable] = {
                 "variable_values": variable_values.tolist(),
                 "npv_values": npv_values,
-                "sensitivity": (max(npv_values) - min(npv_values)) / (max_val - min_val),
+                "sensitivity": (max(npv_values) - min(npv_values))
+                / (max_val - min_val),
             }
 
         return sensitivity_results
 
-    def _apply_sensitivity_change(self, base_model: CashFlowModel, variable: str, value: float) -> CashFlowModel:
+    def _apply_sensitivity_change(
+        self, base_model: CashFlowModel, variable: str, value: float
+    ) -> CashFlowModel:
         """Apply sensitivity change to cash flow model."""
         # This is a simplified implementation
         # In practice, you'd modify specific cash flows based on the variable
@@ -391,7 +453,9 @@ class NPVAnalyzer:
                 if cf.category == "operations":
                     modified_amount *= value
 
-            modified_model.add_cash_flow(modified_amount, cf.date, cf.category, cf.description)
+            modified_model.add_cash_flow(
+                modified_amount, cf.date, cf.category, cf.description
+            )
 
         return modified_model
 
@@ -407,7 +471,9 @@ class ROICalculator:
         """Initialize ROI calculator."""
         logger.info("Initialized ROICalculator")
 
-    def calculate_simple_roi(self, total_investment: float, total_return: float) -> float:
+    def calculate_simple_roi(
+        self, total_investment: float, total_return: float
+    ) -> float:
         """Calculate simple ROI.
 
         Args:
@@ -425,7 +491,9 @@ class ROICalculator:
         logger.info(f"Simple ROI: {roi:.1%}")
         return roi
 
-    def calculate_annualized_roi(self, initial_investment: float, final_value: float, years: float) -> float:
+    def calculate_annualized_roi(
+        self, initial_investment: float, final_value: float, years: float
+    ) -> float:
         """Calculate annualized ROI.
 
         Args:
@@ -444,7 +512,9 @@ class ROICalculator:
         logger.info(f"Annualized ROI: {annualized_roi:.1%}")
         return annualized_roi
 
-    def calculate_risk_adjusted_roi(self, roi: float, risk_free_rate: float, beta: float) -> float:
+    def calculate_risk_adjusted_roi(
+        self, roi: float, risk_free_rate: float, beta: float
+    ) -> float:
         """Calculate risk-adjusted ROI using CAPM.
 
         Args:
@@ -463,7 +533,9 @@ class ROICalculator:
         logger.info(f"Risk-adjusted ROI: {risk_adjusted_roi:.1%}")
         return risk_adjusted_roi
 
-    def compare_investments(self, investments: dict[str, dict[str, float]]) -> dict[str, Any]:
+    def compare_investments(
+        self, investments: dict[str, dict[str, float]]
+    ) -> dict[str, Any]:
         """Compare multiple investment options.
 
         Args:
@@ -494,7 +566,9 @@ class ROICalculator:
                     reverse=reverse_order,
                 )
 
-                comparison["rankings"][metric] = [name for name, _ in sorted_investments]
+                comparison["rankings"][metric] = [
+                    name for name, _ in sorted_investments
+                ]
                 comparison["best_options"][metric] = sorted_investments[0][0]
 
         return comparison

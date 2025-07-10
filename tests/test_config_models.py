@@ -7,10 +7,11 @@ from src.config.mission_config import (
     PayloadSpecification,
     CostFactors,
     IsruTarget,
-    IsruResourceType
+    IsruResourceType,
 )
 from src.config.isru import ResourceExtractionRate
 from src.config.orbit import OrbitParameters
+
 
 def test_valid_mission_config():
     """Test creation of a valid mission configuration."""
@@ -21,12 +22,12 @@ def test_valid_mission_config():
             dry_mass=1000.0,
             payload_mass=500.0,
             max_propellant_mass=2000.0,
-            specific_impulse=300.0
+            specific_impulse=300.0,
         ),
         cost_factors=CostFactors(
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=50000.0,
-            development_cost=1000000.0
+            development_cost=1000000.0,
         ),
         isru_targets=[
             IsruTarget(
@@ -37,29 +38,26 @@ def test_valid_mission_config():
                         resource_type=IsruResourceType.WATER,
                         max_rate=10.0,
                         efficiency=85.0,
-                        power_per_kg=2.0
+                        power_per_kg=2.0,
                     )
                 },
                 processing_efficiency=85.0,
                 startup_time_days=30.0,
                 maintenance_downtime=2.0,
-                max_storage_capacity={
-                    IsruResourceType.WATER: 1000.0
-                }
+                max_storage_capacity={IsruResourceType.WATER: 1000.0},
             )
         ],
         mission_duration_days=180.0,
         target_orbit=OrbitParameters(
-            semi_major_axis=384400.0,  # km
-            eccentricity=0.1,
-            inclination=45.0
-        )
+            semi_major_axis=384400.0, eccentricity=0.1, inclination=45.0  # km
+        ),
     )
 
     assert config.name == "Test Mission"
     assert config.payload.dry_mass == 1000.0
     assert len(config.isru_targets) == 1
     assert IsruResourceType.WATER in config.isru_targets[0].extraction_rates
+
 
 def test_invalid_payload_mass():
     """Test validation of payload mass against dry mass."""
@@ -68,10 +66,11 @@ def test_invalid_payload_mass():
             dry_mass=1000.0,
             payload_mass=1500.0,  # Greater than dry mass
             max_propellant_mass=2000.0,
-            specific_impulse=300.0
+            specific_impulse=300.0,
         )
     assert "Value error, Payload mass" in str(exc_info.value)
     assert "must be less than dry mass" in str(exc_info.value)
+
 
 def test_invalid_orbit_parameters():
     """Test validation of orbit parameters."""
@@ -82,20 +81,21 @@ def test_invalid_orbit_parameters():
                 dry_mass=1000.0,
                 payload_mass=500.0,
                 max_propellant_mass=2000.0,
-                specific_impulse=300.0
+                specific_impulse=300.0,
             ),
             cost_factors=CostFactors(
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=50000.0,
-                development_cost=1000000.0
+                development_cost=1000000.0,
             ),
             mission_duration_days=180.0,
             target_orbit={
                 "semi_major_axis": 384400.0,
                 # Missing eccentricity and inclination
-            }
+            },
         )
     assert "Field required" in str(exc_info.value)
+
 
 def test_invalid_eccentricity():
     """Test validation of orbit eccentricity."""
@@ -106,21 +106,22 @@ def test_invalid_eccentricity():
                 dry_mass=1000.0,
                 payload_mass=500.0,
                 max_propellant_mass=2000.0,
-                specific_impulse=300.0
+                specific_impulse=300.0,
             ),
             cost_factors=CostFactors(
                 launch_cost_per_kg=10000.0,
                 operations_cost_per_day=50000.0,
-                development_cost=1000000.0
+                development_cost=1000000.0,
             ),
             mission_duration_days=180.0,
             target_orbit=OrbitParameters(
                 semi_major_axis=384400.0,
                 eccentricity=1.5,  # Invalid: must be < 1
-                inclination=45.0
-            )
+                inclination=45.0,
+            ),
         )
     assert "Input should be less than 1" in str(exc_info.value)
+
 
 def test_cost_factors_validation():
     """Test validation of cost factors."""
@@ -128,10 +129,11 @@ def test_cost_factors_validation():
         CostFactors(
             launch_cost_per_kg=-1000.0,  # Invalid: must be positive
             operations_cost_per_day=50000.0,
-            development_cost=1000000.0
+            development_cost=1000000.0,
         )
 
     assert "greater than 0" in str(exc_info.value)
+
 
 def test_isru_target_validation():
     """Test validation of ISRU targets."""
@@ -144,18 +146,17 @@ def test_isru_target_validation():
                     resource_type=IsruResourceType.WATER,
                     max_rate=-10.0,  # Invalid: must be positive
                     efficiency=85.0,
-                    power_per_kg=2.0
+                    power_per_kg=2.0,
                 )
             },
             processing_efficiency=85.0,
             startup_time_days=30.0,
             maintenance_downtime=2.0,
-            max_storage_capacity={
-                IsruResourceType.WATER: 1000.0
-            }
+            max_storage_capacity={IsruResourceType.WATER: 1000.0},
         )
 
     assert "greater than 0" in str(exc_info.value)
+
 
 def test_optional_description():
     """Test that description is optional."""
@@ -165,22 +166,21 @@ def test_optional_description():
             dry_mass=1000.0,
             payload_mass=500.0,
             max_propellant_mass=2000.0,
-            specific_impulse=300.0
+            specific_impulse=300.0,
         ),
         cost_factors=CostFactors(
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=50000.0,
-            development_cost=1000000.0
+            development_cost=1000000.0,
         ),
         mission_duration_days=180.0,
         target_orbit=OrbitParameters(
-            semi_major_axis=384400.0,
-            eccentricity=0.1,
-            inclination=45.0
-        )
+            semi_major_axis=384400.0, eccentricity=0.1, inclination=45.0
+        ),
     )
 
     assert config.description is None
+
 
 def test_empty_isru_targets():
     """Test that ISRU targets can be empty."""
@@ -190,19 +190,17 @@ def test_empty_isru_targets():
             dry_mass=1000.0,
             payload_mass=500.0,
             max_propellant_mass=2000.0,
-            specific_impulse=300.0
+            specific_impulse=300.0,
         ),
         cost_factors=CostFactors(
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=50000.0,
-            development_cost=1000000.0
+            development_cost=1000000.0,
         ),
         mission_duration_days=180.0,
         target_orbit=OrbitParameters(
-            semi_major_axis=384400.0,
-            eccentricity=0.1,
-            inclination=45.0
-        )
+            semi_major_axis=384400.0, eccentricity=0.1, inclination=45.0
+        ),
     )
 
     assert len(config.isru_targets) == 0

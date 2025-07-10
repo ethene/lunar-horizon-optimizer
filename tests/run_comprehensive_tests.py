@@ -17,6 +17,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+
 class ComprehensiveTestRunner:
     """Comprehensive test runner with validation and reporting."""
 
@@ -41,14 +42,22 @@ class ComprehensiveTestRunner:
 
         try:
             # Run pytest with verbose output and capture results
-            result = subprocess.run([
-                sys.executable, "-m", "pytest",
-                str(test_path),
-                "-v",
-                "--tb=short",
-                "--capture=no",
-                "--disable-warnings"
-            ], check=False, capture_output=True, text=True, timeout=300)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    str(test_path),
+                    "-v",
+                    "--tb=short",
+                    "--capture=no",
+                    "--disable-warnings",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
 
             end_time = time.time()
             execution_time = end_time - start_time
@@ -77,13 +86,15 @@ class ComprehensiveTestRunner:
                 "skipped": skipped_count,
                 "errors": error_count,
                 "output": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
 
             # Print summary
             status = "✅ PASSED" if success else "❌ FAILED"
             print(f"\n{status} - {suite_name}")
-            print(f"Tests: {total_tests} total, {passed_count} passed, {failed_count} failed, {skipped_count} skipped")
+            print(
+                f"Tests: {total_tests} total, {passed_count} passed, {failed_count} failed, {skipped_count} skipped"
+            )
             print(f"Execution time: {execution_time:.2f}s")
 
             if failed_count > 0 or error_count > 0:
@@ -98,7 +109,7 @@ class ComprehensiveTestRunner:
             self.results[suite_name] = {
                 "success": False,
                 "error": "timeout",
-                "execution_time": 300
+                "execution_time": 300,
             }
             return False
 
@@ -107,7 +118,7 @@ class ComprehensiveTestRunner:
             self.results[suite_name] = {
                 "success": False,
                 "error": str(e),
-                "execution_time": 0
+                "execution_time": 0,
             }
             return False
 
@@ -138,7 +149,7 @@ class ComprehensiveTestRunner:
             "total_tests": total_tests,
             "pass_rate": pass_rate,
             "sufficient_coverage": total_tests >= 50,  # Expect at least 50 tests
-            "good_pass_rate": pass_rate >= 0.8  # Expect 80%+ pass rate
+            "good_pass_rate": pass_rate >= 0.8,  # Expect 80%+ pass rate
         }
 
         # 2. Check test execution performance
@@ -153,7 +164,7 @@ class ComprehensiveTestRunner:
             "total_time": total_time,
             "avg_time_per_test": avg_time_per_test,
             "reasonable_total_time": total_time < 600,  # Less than 10 minutes
-            "reasonable_avg_time": avg_time_per_test < 5.0  # Less than 5s per test
+            "reasonable_avg_time": avg_time_per_test < 5.0,  # Less than 5s per test
         }
 
         # 3. Check module coverage
@@ -161,7 +172,7 @@ class ComprehensiveTestRunner:
             "Task 3: Trajectory Generation",
             "Task 4: Global Optimization",
             "Task 5: Economic Analysis",
-            "Integration Tests"
+            "Integration Tests",
         ]
 
         modules_tested = list(self.results.keys())
@@ -173,7 +184,10 @@ class ComprehensiveTestRunner:
         print(f"  Coverage: {module_coverage:.1%}")
 
         for module in expected_modules:
-            tested = any(module.lower() in tested_module.lower() for tested_module in modules_tested)
+            tested = any(
+                module.lower() in tested_module.lower()
+                for tested_module in modules_tested
+            )
             status = "✅" if tested else "❌"
             print(f"  {status} {module}")
 
@@ -181,7 +195,7 @@ class ComprehensiveTestRunner:
             "expected_count": len(expected_modules),
             "tested_count": len(modules_tested),
             "coverage": module_coverage,
-            "complete_coverage": module_coverage >= 1.0
+            "complete_coverage": module_coverage >= 1.0,
         }
 
         # 4. Validate critical test functionality
@@ -191,7 +205,7 @@ class ComprehensiveTestRunner:
             "trajectory_generation": self._check_trajectory_tests(),
             "optimization": self._check_optimization_tests(),
             "economic_analysis": self._check_economic_tests(),
-            "integration": self._check_integration_tests()
+            "integration": self._check_integration_tests(),
         }
 
         for check_name, check_result in critical_checks.items():
@@ -207,7 +221,7 @@ class ComprehensiveTestRunner:
             validation_results["performance"]["reasonable_total_time"],
             validation_results["performance"]["reasonable_avg_time"],
             validation_results["modules"]["complete_coverage"],
-            all(critical_checks.values())
+            all(critical_checks.values()),
         ]
 
         validation_score = sum(all_checks) / len(all_checks)
@@ -219,7 +233,7 @@ class ComprehensiveTestRunner:
 
         validation_results["overall"] = {
             "score": validation_score,
-            "pass": overall_pass
+            "pass": overall_pass,
         }
 
         return validation_results
@@ -231,13 +245,7 @@ class ComprehensiveTestRunner:
         # Look for key test indicators in output
         output = task3_results.get("output", "")
 
-        key_tests = [
-            "lambert",
-            "nbody",
-            "trajectory",
-            "integration",
-            "propagation"
-        ]
+        key_tests = ["lambert", "nbody", "trajectory", "integration", "propagation"]
 
         tests_found = sum(1 for test in key_tests if test.lower() in output.lower())
         return tests_found >= 3 and task3_results.get("success", False)
@@ -248,13 +256,7 @@ class ComprehensiveTestRunner:
 
         output = task4_results.get("output", "")
 
-        key_tests = [
-            "nsga",
-            "pygmo",
-            "pareto",
-            "optimization",
-            "fitness"
-        ]
+        key_tests = ["nsga", "pygmo", "pareto", "optimization", "fitness"]
 
         tests_found = sum(1 for test in key_tests if test.lower() in output.lower())
         return tests_found >= 3 and task4_results.get("success", False)
@@ -265,13 +267,7 @@ class ComprehensiveTestRunner:
 
         output = task5_results.get("output", "")
 
-        key_tests = [
-            "npv",
-            "financial",
-            "cost",
-            "isru",
-            "economic"
-        ]
+        key_tests = ["npv", "financial", "cost", "isru", "economic"]
 
         tests_found = sum(1 for test in key_tests if test.lower() in output.lower())
         return tests_found >= 3 and task5_results.get("success", False)
@@ -282,12 +278,7 @@ class ComprehensiveTestRunner:
 
         output = integration_results.get("output", "")
 
-        key_tests = [
-            "integration",
-            "end_to_end",
-            "workflow",
-            "task"
-        ]
+        key_tests = ["integration", "end_to_end", "workflow", "task"]
 
         tests_found = sum(1 for test in key_tests if test.lower() in output.lower())
         return tests_found >= 2 and integration_results.get("success", False)
@@ -301,15 +292,21 @@ class ComprehensiveTestRunner:
         report = {
             "timestamp": datetime.now().isoformat(),
             "summary": {
-                "total_execution_time": sum(r.get("execution_time", 0) for r in self.results.values()),
-                "total_tests": sum(r.get("total_tests", 0) for r in self.results.values()),
+                "total_execution_time": sum(
+                    r.get("execution_time", 0) for r in self.results.values()
+                ),
+                "total_tests": sum(
+                    r.get("total_tests", 0) for r in self.results.values()
+                ),
                 "total_passed": sum(r.get("passed", 0) for r in self.results.values()),
                 "total_failed": sum(r.get("failed", 0) for r in self.results.values()),
-                "total_skipped": sum(r.get("skipped", 0) for r in self.results.values()),
-                "overall_success": validation_results["overall"]["pass"]
+                "total_skipped": sum(
+                    r.get("skipped", 0) for r in self.results.values()
+                ),
+                "overall_success": validation_results["overall"]["pass"],
             },
             "test_suites": self.results,
-            "validation": validation_results
+            "validation": validation_results,
         }
 
         # Print summary
@@ -319,9 +316,13 @@ class ComprehensiveTestRunner:
         print(f"  Total passed: {report['summary']['total_passed']}")
         print(f"  Total failed: {report['summary']['total_failed']}")
         print(f"  Total skipped: {report['summary']['total_skipped']}")
-        print(f"  Total execution time: {report['summary']['total_execution_time']:.2f}s")
+        print(
+            f"  Total execution time: {report['summary']['total_execution_time']:.2f}s"
+        )
         print(f"  Validation score: {validation_results['overall']['score']:.1%}")
-        print(f"  Overall status: {'✅ SUCCESS' if report['summary']['overall_success'] else '❌ FAILURE'}")
+        print(
+            f"  Overall status: {'✅ SUCCESS' if report['summary']['overall_success'] else '❌ FAILURE'}"
+        )
 
         # Save detailed report
         report_path = self.test_dir / "test_report.json"
@@ -345,7 +346,7 @@ class ComprehensiveTestRunner:
             ("test_task_3_trajectory_generation.py", "Task 3: Trajectory Generation"),
             ("test_task_4_global_optimization.py", "Task 4: Global Optimization"),
             ("test_task_5_economic_analysis.py", "Task 5: Economic Analysis"),
-            ("test_integration_tasks_3_4_5.py", "Integration Tests")
+            ("test_integration_tasks_3_4_5.py", "Integration Tests"),
         ]
 
         # Run each test suite
