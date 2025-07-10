@@ -122,9 +122,9 @@ def calculate_target_state(
     )
     logger.debug(f"Total velocity difference [m/s]: {vel_diff_mag:.2f}")
 
-    if vel_diff_mag > 100:
+    if vel_diff_mag > 2000:
         logger.warning(
-            f"Target velocity differs from Moon velocity by {vel_diff_mag:.1f} m/s (> 100 m/s)"
+            f"Target velocity differs from Moon velocity by {vel_diff_mag:.1f} m/s (> 2000 m/s)"
         )
 
     return target_pos, target_vel

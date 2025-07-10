@@ -24,7 +24,11 @@ from .vector_validation import (
     validate_vector_units,
 )
 
+# Import TrajectoryValidator for backward compatibility
+from ..trajectory_validator import TrajectoryValidator
+
 __all__ = [
+    "TrajectoryValidator",
     "calculate_circular_velocity",
     "propagate_orbit",
     # Physics validation

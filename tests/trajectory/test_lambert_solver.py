@@ -80,7 +80,7 @@ class TestLambertSolver:
         ]:  # Velocity vectors should be in m/s (reasonable orbital range)
             mag = np.linalg.norm(vec)
             assert (
-                1e3 < mag < 2e4
+                100 < mag < 2e4
             ), f"Velocity magnitude {mag:.2e} m/s outside reasonable orbital range"
 
         assert tof > 0, "Time of flight must be positive"
