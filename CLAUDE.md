@@ -174,17 +174,40 @@ pip install -r requirements.txt
 
 #### Testing Strategy
 
-##### **Production Test Suite (38 tests)**
+##### **Production Test Suite (38 tests) - RECOMMENDED**
 - **Command**: `make test`
-- **Coverage**: Core functionality, physics validation, economics analysis
-- **Requirement**: 100% pass rate for commits
-- **Time**: ~30 seconds execution
+- **Coverage**: Core functionality (15) + Economics modules (23) = 38 tests
+- **Requirement**: 100% pass rate for commits (CI/CD ready)
+- **Time**: ~5 seconds execution
+- **Purpose**: Essential validation for production readiness
 
-##### **Comprehensive Test Suite (445 tests)**
+##### **Comprehensive Test Suite Options**
+
+**Core Test Suites:**
+- **`make test`** - Production tests (38 tests: functionality + economics)
+- **`make test-all`** - Complete test suite (445+ tests - comprehensive but includes experimental)
+- **`make test-quick`** - Quick sanity tests (9 tests: environment + basic functionality)
+
+**Specialized Test Suites:**
+- **`make test-trajectory`** - Trajectory generation and orbital mechanics tests
+- **`make test-economics`** - Economic analysis and financial modeling tests (64 tests)
+- **`make test-config`** - Configuration validation and management tests
+
+**Test Suite Details:**
 ```bash
-# Full test suite (development only):
-conda activate py312
-python -m pytest tests/ --tb=short
+# Production tests (recommended for daily use)
+make test                    # 38 tests, ~5s, 100% must pass
+
+# Quick environment validation
+make test-quick             # 9 tests, ~7s, environment + basic functionality
+
+# Comprehensive testing (development)
+make test-all               # 445+ tests, ~30s, includes experimental features
+
+# Domain-specific testing
+make test-economics         # 64 tests, ~4s, financial modeling + ISRU + sensitivity
+make test-trajectory        # varies, orbital mechanics + Lambert solvers
+make test-config           # varies, configuration loading + validation
 ```
 
 ##### **Coverage Analysis**
@@ -196,10 +219,13 @@ python -m pytest tests/ --tb=short
 #### Performance and Monitoring
 
 ##### **Execution Times**
-- `make test`: ~30 seconds
-- `make pipeline`: ~2-3 minutes
+- `make test`: ~5 seconds (38 production tests)
+- `make test-quick`: ~7 seconds (9 sanity tests)
+- `make test-economics`: ~4 seconds (64 economics tests)
+- `make test-all`: ~30 seconds (445+ comprehensive tests)
+- `make lint`: <1 second (production-focused)
 - `make coverage`: ~45 seconds
-- `make lint`: ~30 seconds
+- `make pipeline`: ~2-3 minutes (includes all steps)
 
 ##### **Resource Usage**
 - Memory: ~500MB peak during testing

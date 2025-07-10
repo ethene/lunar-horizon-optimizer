@@ -16,7 +16,7 @@ BOLD := \033[1m
 NC := \033[0m # No Color
 
 # Pipeline targets
-.PHONY: help pipeline format lint complexity type-check refactor security test coverage clean install-dev
+.PHONY: help pipeline format lint complexity type-check refactor security test test-all test-quick test-trajectory test-economics test-config coverage clean install-dev
 .DEFAULT_GOAL := help
 
 help: ## Display this help message
@@ -25,8 +25,16 @@ help: ## Display this help message
 	@echo ""
 	@echo "$(BOLD)Main Commands:$(NC)"
 	@echo "  $(GREEN)make pipeline$(NC)     - Run complete development pipeline (format, lint, type-check, etc.)"
-	@echo "  $(GREEN)make test$(NC)         - Run all tests with pytest"
+	@echo "  $(GREEN)make test$(NC)         - Run core production tests (38 tests - recommended for CI/CD)"
 	@echo "  $(GREEN)make coverage$(NC)     - Run tests with coverage reporting"
+	@echo ""
+	@echo "$(BOLD)Test Suite Options:$(NC)"
+	@echo "  $(GREEN)make test$(NC)         - Core production tests (38 tests: functionality + economics)"
+	@echo "  $(GREEN)make test-all$(NC)     - Complete test suite (445+ tests - comprehensive)"
+	@echo "  $(GREEN)make test-quick$(NC)   - Quick sanity tests (environment + basic functionality)"
+	@echo "  $(GREEN)make test-trajectory$(NC) - Trajectory generation and orbital mechanics tests"
+	@echo "  $(GREEN)make test-economics$(NC)  - Economic analysis and financial modeling tests"
+	@echo "  $(GREEN)make test-config$(NC)     - Configuration validation and management tests"
 	@echo ""
 	@echo "$(BOLD)Individual Steps:$(NC)"
 	@echo "  $(BLUE)make format$(NC)       - Format code with black"
@@ -132,16 +140,17 @@ security: ## Security scan with bandit
 	@echo "$(GREEN)✅ Security scan completed$(NC)"
 	@echo ""
 
-test: ## Run all tests with pytest
-	@echo "$(BOLD)$(BLUE)🧪 Running Test Suite$(NC)"
-	@echo "=========================="
-	@echo "$(YELLOW)Activating conda py312 environment and running tests...$(NC)"
+test: ## Run core production tests (38 tests - recommended for CI/CD)
+	@echo "$(BOLD)$(BLUE)🧪 Running Core Production Test Suite$(NC)"
+	@echo "============================================="
+	@echo "$(YELLOW)Activating conda py312 environment and running core tests...$(NC)"
+	@echo "$(BLUE)Tests: Core functionality (15) + Economics modules (23) = 38 tests$(NC)"
 	@conda run -n py312 python -m pytest tests/test_final_functionality.py tests/test_economics_modules.py \
 		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
-		echo "$(RED)❌ Test suite failed$(NC)"; \
+		echo "$(RED)❌ Core test suite failed$(NC)"; \
 		exit 1; \
 	}
-	@echo "$(GREEN)✅ All tests passed$(NC)"
+	@echo "$(GREEN)✅ All core tests passed (38/38)$(NC)"
 	@echo ""
 
 coverage: ## Run tests with coverage reporting
@@ -160,6 +169,71 @@ coverage: ## Run tests with coverage reporting
 	@echo ""
 	@echo "$(GREEN)✅ Coverage analysis completed$(NC)"
 	@echo "$(BLUE)📊 HTML coverage report generated in htmlcov/$(NC)"
+	@echo ""
+
+test-all: ## Run complete test suite (445+ tests - comprehensive)
+	@echo "$(BOLD)$(BLUE)🧪 Running Complete Test Suite$(NC)"
+	@echo "===================================="
+	@echo "$(YELLOW)Activating conda py312 environment and running ALL tests...$(NC)"
+	@echo "$(RED)⚠️  This may take several minutes and includes experimental tests$(NC)"
+	@conda run -n py312 python -m pytest tests/ -x --tb=short --disable-warnings --maxfail=5 || { \
+		echo "$(RED)❌ Complete test suite failed$(NC)"; \
+		echo "$(YELLOW)Note: Some failures expected in experimental/incomplete modules$(NC)"; \
+		exit 1; \
+	}
+	@echo "$(GREEN)✅ Complete test suite completed$(NC)"
+	@echo ""
+
+test-quick: ## Quick sanity tests (environment + basic functionality)
+	@echo "$(BOLD)$(BLUE)🧪 Running Quick Sanity Tests$(NC)"
+	@echo "=================================="
+	@echo "$(YELLOW)Running environment setup and basic functionality tests...$(NC)"
+	@conda run -n py312 python -m pytest tests/test_environment.py tests/test_final_functionality.py::test_environment_setup \
+		tests/test_final_functionality.py::TestPyKEPRealFunctionality::test_mu_constants \
+		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
+		echo "$(RED)❌ Quick tests failed$(NC)"; \
+		exit 1; \
+	}
+	@echo "$(GREEN)✅ Quick sanity tests passed$(NC)"
+	@echo ""
+
+test-trajectory: ## Trajectory generation and orbital mechanics tests
+	@echo "$(BOLD)$(BLUE)🧪 Running Trajectory Tests$(NC)"
+	@echo "==============================="
+	@echo "$(YELLOW)Testing trajectory generation, orbital mechanics, and Lambert solvers...$(NC)"
+	@conda run -n py312 python -m pytest tests/test_task_3_trajectory_generation.py tests/trajectory/ \
+		tests/test_final_functionality.py::TestPyKEPRealFunctionality \
+		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
+		echo "$(RED)❌ Trajectory tests failed$(NC)"; \
+		exit 1; \
+	}
+	@echo "$(GREEN)✅ Trajectory tests passed$(NC)"
+	@echo ""
+
+test-economics: ## Economic analysis and financial modeling tests
+	@echo "$(BOLD)$(BLUE)🧪 Running Economics Tests$(NC)"
+	@echo "==============================="
+	@echo "$(YELLOW)Testing economic analysis, financial modeling, and ISRU benefits...$(NC)"
+	@conda run -n py312 python -m pytest tests/test_economics_modules.py tests/test_task_5_economic_analysis.py \
+		tests/test_final_functionality.py::TestEconomicAnalysisRealFunctionality \
+		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
+		echo "$(RED)❌ Economics tests failed$(NC)"; \
+		exit 1; \
+	}
+	@echo "$(GREEN)✅ Economics tests passed$(NC)"
+	@echo ""
+
+test-config: ## Configuration validation and management tests
+	@echo "$(BOLD)$(BLUE)🧪 Running Configuration Tests$(NC)"
+	@echo "===================================="
+	@echo "$(YELLOW)Testing configuration loading, validation, and management...$(NC)"
+	@conda run -n py312 python -m pytest tests/test_config_*.py \
+		tests/test_final_functionality.py::TestConfigurationRealFunctionality \
+		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
+		echo "$(RED)❌ Configuration tests failed$(NC)"; \
+		exit 1; \
+	}
+	@echo "$(GREEN)✅ Configuration tests passed$(NC)"
 	@echo ""
 
 install-dev: ## Install development dependencies
