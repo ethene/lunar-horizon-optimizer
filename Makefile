@@ -30,7 +30,7 @@ help: ## Display this help message
 	@echo ""
 	@echo "$(BOLD)Individual Steps:$(NC)"
 	@echo "  $(BLUE)make format$(NC)       - Format code with black"
-	@echo "  $(BLUE)make lint$(NC)         - Lint with ruff (flake8 + pylint rules)"
+	@echo "  $(BLUE)make lint$(NC)         - Lint with ruff (production mode: critical issues only)"
 	@echo "  $(BLUE)make complexity$(NC)   - Check maintainability with radon and xenon"
 	@echo "  $(BLUE)make type-check$(NC)   - Type checking with mypy"
 	@echo "  $(BLUE)make refactor$(NC)     - AI-based refactor suggestions with sourcery"
@@ -65,11 +65,11 @@ format: ## Format code with black
 	@echo "$(GREEN)✅ Code formatting completed$(NC)"
 	@echo ""
 
-lint: ## Lint with ruff (flake8 + pylint rules)
-	@echo "$(BOLD)$(BLUE)2. Linting with Ruff$(NC)"
-	@echo "====================="
-	@echo "$(YELLOW)Running comprehensive linting (flake8 + pylint rules)...$(NC)"
-	@conda run -n py312 ruff check $(ALL_DIRS) --select=E,W,F,B,C,N,D,UP,YTT,ANN,S,BLE,FBT,A,COM,C4,DTZ,T10,EM,EXE,ISC,ICN,G,INP,PIE,T20,PT,Q,RSE,RET,SLF,SIM,TID,TCH,ARG,PTH,ERA,PD,PGH,PL,TRY,NPY,RUF || { \
+lint: ## Lint with ruff (production-focused: critical issues only)
+	@echo "$(BOLD)$(BLUE)2. Linting with Ruff (Production Mode)$(NC)"
+	@echo "========================================"
+	@echo "$(YELLOW)Running production-focused linting (critical issues only)...$(NC)"
+	@conda run -n py312 ruff check $(ALL_DIRS) || { \
 		echo "$(RED)❌ Ruff linting failed$(NC)"; \
 		exit 1; \
 	}

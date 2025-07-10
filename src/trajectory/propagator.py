@@ -21,11 +21,14 @@ Example:
     ```
 """
 
+import logging
+
 import numpy as np
 import pykep as pk
-import logging
-from .constants import PhysicalConstants as PC
+
 from .celestial_bodies import CelestialBody
+from .constants import PhysicalConstants as PC
+
 
 class TrajectoryPropagator:
     """Handles trajectory propagation with gravity effects.
@@ -112,7 +115,7 @@ class TrajectoryPropagator:
             # Last two parameters are log10 of tolerances, so -10 means 1e-10
             final_pos, final_vel, final_mass = pk.propagate_taylor(
                 r0, v0, m0, thrust, time_of_flight,
-                PC.MU_EARTH, veff, -10, -10
+                PC.MU_EARTH, veff, -10, -10,
             )
 
             # Convert back to numpy arrays
@@ -142,7 +145,7 @@ class TrajectoryPropagator:
 
         except Exception as e:
             msg = f"Propagation failed: {e!s}"
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) from e
 
     def _calculate_energy(self, position: np.ndarray, velocity: np.ndarray) -> float:
         """Calculate the specific energy of a spacecraft at a given position and velocity.

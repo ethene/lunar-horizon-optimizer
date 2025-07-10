@@ -12,11 +12,11 @@ Author: Lunar Horizon Optimizer Team
 Date: July 2025
 """
 
-from .trajectory_visualization import TrajectoryVisualizer, TrajectoryPlotConfig
-from .optimization_visualization import OptimizationVisualizer, ParetoPlotConfig
-from .economic_visualization import EconomicVisualizer, DashboardConfig
-from .mission_visualization import MissionVisualizer, TimelineConfig
 from .dashboard import ComprehensiveDashboard, DashboardTheme
+from .economic_visualization import DashboardConfig, EconomicVisualizer
+from .mission_visualization import MissionVisualizer, TimelineConfig
+from .optimization_visualization import OptimizationVisualizer, ParetoPlotConfig
+from .trajectory_visualization import TrajectoryPlotConfig, TrajectoryVisualizer
 
 __all__ = [
     "ComprehensiveDashboard",
@@ -28,7 +28,7 @@ __all__ = [
     "ParetoPlotConfig",
     "TimelineConfig",
     "TrajectoryPlotConfig",
-    "TrajectoryVisualizer"
+    "TrajectoryVisualizer",
 ]
 
 __version__ = "0.9.0"

@@ -15,24 +15,22 @@ import warnings
 warnings.warn(
     "trajectory_physics.py is deprecated. Import from src.trajectory.validation package instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export from the new validation modules for backward compatibility
+from .validation.constraint_validation import validate_trajectory_constraints
 from .validation.physics_validation import (
+    calculate_circular_velocity,
     validate_basic_orbital_mechanics,
-    validate_transfer_time,
     validate_solution_physics,
-    calculate_circular_velocity
-)
-from .validation.constraint_validation import (
-    validate_trajectory_constraints
+    validate_transfer_time,
 )
 from .validation.vector_validation import (
-    validate_vector_units,
+    propagate_orbit,
     validate_delta_v,
     validate_state_vector,
-    propagate_orbit
+    validate_vector_units,
 )
 
 __all__ = [
@@ -47,5 +45,5 @@ __all__ = [
     "validate_trajectory_constraints",
     "validate_transfer_time",
     # Vector validation
-    "validate_vector_units"
+    "validate_vector_units",
 ]

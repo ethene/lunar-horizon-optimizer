@@ -17,28 +17,29 @@ from pydantic import BaseModel, Field, validator
 
 from .enums import IsruResourceType
 
+
 class ResourceExtractionRate(BaseModel):
     """Defines the extraction rate and efficiency for a specific resource."""
 
     resource_type: IsruResourceType = Field(
         ...,
-        description="Type of resource being extracted"
+        description="Type of resource being extracted",
     )
     max_rate: float = Field(
         ...,
         gt=0,
-        description="Maximum extraction rate in kg/day"
+        description="Maximum extraction rate in kg/day",
     )
     efficiency: float = Field(
         ...,
         ge=0,
         le=100,
-        description="Extraction efficiency percentage (0-100)"
+        description="Extraction efficiency percentage (0-100)",
     )
     power_per_kg: float = Field(
         ...,
         gt=0,
-        description="Power required per kg of resource extracted (kW/kg)"
+        description="Power required per kg of resource extracted (kW/kg)",
     )
 
 class IsruCapabilities(BaseModel):
@@ -47,36 +48,36 @@ class IsruCapabilities(BaseModel):
     mass: float = Field(
         ...,
         gt=0,
-        description="Total mass of the ISRU system in kg"
+        description="Total mass of the ISRU system in kg",
     )
     base_power: float = Field(
         ...,
         ge=0,
-        description="Base power consumption in kW (when idle)"
+        description="Base power consumption in kW (when idle)",
     )
     extraction_rates: dict[IsruResourceType, ResourceExtractionRate] = Field(
         ...,
-        description="Extraction rates and efficiencies for each resource type"
+        description="Extraction rates and efficiencies for each resource type",
     )
     processing_efficiency: float = Field(
         ...,
         ge=0,
         le=100,
-        description="Overall processing efficiency percentage (0-100)"
+        description="Overall processing efficiency percentage (0-100)",
     )
     startup_time_days: float = Field(
         ...,
         ge=0,
-        description="Time required to start up the system in days"
+        description="Time required to start up the system in days",
     )
     maintenance_downtime: float = Field(
         ...,
         ge=0,
-        description="Expected maintenance downtime in days per month"
+        description="Expected maintenance downtime in days per month",
     )
     max_storage_capacity: dict[IsruResourceType, float] = Field(
         ...,
-        description="Maximum storage capacity in kg for each resource type"
+        description="Maximum storage capacity in kg for each resource type",
     )
 
     @validator("extraction_rates")

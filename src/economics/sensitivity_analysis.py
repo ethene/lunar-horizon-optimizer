@@ -4,10 +4,11 @@ This module provides comprehensive sensitivity and scenario analysis for
 lunar mission economics, including Monte Carlo simulation and tornado diagrams.
 """
 
-import numpy as np
-from typing import Any
-from collections.abc import Callable
 import logging
+from collections.abc import Callable
+from typing import Any
+
+import numpy as np
 from scipy import stats
 
 # Configure logging
@@ -60,7 +61,7 @@ class EconomicSensitivityAnalyzer:
         sensitivity_results: dict[str, Any] = {
             "base_npv": base_npv,
             "base_parameters": base_parameters,
-            "variables": {}
+            "variables": {},
         }
 
         for variable, (min_val, max_val) in variable_ranges.items():
@@ -86,7 +87,7 @@ class EconomicSensitivityAnalyzer:
             # Calculate elasticity at base point
             base_value = base_parameters[variable]
             elasticity = self._calculate_elasticity(
-                values, npv_values, base_value, base_npv
+                values, npv_values, base_value, base_npv,
             )
 
             sensitivity_results["variables"][variable] = {
@@ -95,14 +96,14 @@ class EconomicSensitivityAnalyzer:
                 "sensitivity": sensitivity,
                 "elasticity": elasticity,
                 "npv_range": npv_range,
-                "parameter_range": param_range
+                "parameter_range": param_range,
             }
 
         # Rank variables by sensitivity
         ranked_variables = sorted(
             sensitivity_results["variables"].items(),
             key=lambda x: abs(x[1]["sensitivity"]),
-            reverse=True
+            reverse=True,
         )
 
         sensitivity_results["ranking"] = [var for var, _ in ranked_variables]
@@ -136,7 +137,7 @@ class EconomicSensitivityAnalyzer:
 
         tornado_data: dict[str, Any] = {
             "base_npv": base_npv,
-            "variables": {}
+            "variables": {},
         }
 
         for variable, (min_val, max_val) in variable_ranges.items():
@@ -164,14 +165,14 @@ class EconomicSensitivityAnalyzer:
                 "high_npv": high_npv,
                 "low_impact": low_impact,
                 "high_impact": high_impact,
-                "total_swing": total_swing
+                "total_swing": total_swing,
             }
 
         # Sort by total swing (tornado ordering)
         sorted_variables = sorted(
             tornado_data["variables"].items(),
             key=lambda x: x[1]["total_swing"],
-            reverse=True
+            reverse=True,
         )
 
         tornado_data["sorted_variables"] = sorted_variables
@@ -205,9 +206,9 @@ class EconomicSensitivityAnalyzer:
             "base_case": {
                 "parameters": base_parameters,
                 "result": base_result,
-                "npv": base_npv
+                "npv": base_npv,
             },
-            "scenarios": {}
+            "scenarios": {},
         }
 
         for scenario_name, scenario_params in scenarios.items():
@@ -228,7 +229,7 @@ class EconomicSensitivityAnalyzer:
                 "result": scenario_result,
                 "npv": scenario_npv,
                 "npv_change": npv_change,
-                "npv_change_percent": npv_change_percent
+                "npv_change_percent": npv_change_percent,
             }
 
         # Summary statistics
@@ -239,7 +240,7 @@ class EconomicSensitivityAnalyzer:
             "mean_npv": np.mean(scenario_npvs),
             "std_npv": np.std(scenario_npvs),
             "best_scenario": max(scenario_results["scenarios"].items(), key=lambda x: x[1]["npv"])[0],
-            "worst_scenario": min(scenario_results["scenarios"].items(), key=lambda x: x[1]["npv"])[0]
+            "worst_scenario": min(scenario_results["scenarios"].items(), key=lambda x: x[1]["npv"])[0],
         }
 
         logger.info(f"Scenario analysis complete. Range: ${min(scenario_npvs)/1e6:.1f}M to ${max(scenario_npvs)/1e6:.1f}M")
@@ -274,7 +275,7 @@ class EconomicSensitivityAnalyzer:
 
         # Generate random samples
         samples = self._generate_monte_carlo_samples(
-            variable_distributions, num_simulations
+            variable_distributions, num_simulations,
         )
 
         # Run simulations
@@ -314,7 +315,7 @@ class EconomicSensitivityAnalyzer:
                 "min": np.min(valid_results_array),
                 "max": np.max(valid_results_array),
                 "skewness": self._calculate_skewness(valid_results_array),
-                "kurtosis": self._calculate_kurtosis(valid_results_array)
+                "kurtosis": self._calculate_kurtosis(valid_results_array),
             },
             "percentiles": {
                 f"p{int(cl * 100)}": percentiles[i]
@@ -324,14 +325,14 @@ class EconomicSensitivityAnalyzer:
                 "probability_positive_npv": np.mean(valid_results_array > 0),
                 "value_at_risk_5%": percentiles[0],  # 5th percentile
                 "expected_shortfall_5%": np.mean(valid_results_array[valid_results_array <= percentiles[0]]),
-                "coefficient_of_variation": np.std(valid_results_array) / np.mean(valid_results_array) if np.mean(valid_results_array) != 0 else 0
-            }
+                "coefficient_of_variation": np.std(valid_results_array) / np.mean(valid_results_array) if np.mean(valid_results_array) != 0 else 0,
+            },
         }
 
         # Correlation analysis
         if len(variable_distributions) > 1:
             mc_results["correlation_analysis"] = self._analyze_parameter_correlations(
-                samples, valid_results_array
+                samples, valid_results_array,
             )
 
         logger.info(f"Monte Carlo simulation complete. Mean NPV: ${mc_results['statistics']['mean']/1e6:.1f}M, "
@@ -376,21 +377,21 @@ class EconomicSensitivityAnalyzer:
 
             if dist_type == "normal":
                 samples[param_name] = np.random.normal(
-                    dist_spec["mean"], dist_spec["std"], num_samples
+                    dist_spec["mean"], dist_spec["std"], num_samples,
                 )
             elif dist_type == "uniform":
                 samples[param_name] = np.random.uniform(
-                    dist_spec["min"], dist_spec["max"], num_samples
+                    dist_spec["min"], dist_spec["max"], num_samples,
                 )
             elif dist_type == "triang":
                 # Use scipy.stats.triang for triangular distribution
                 c = (dist_spec["mode"] - dist_spec["min"]) / (dist_spec["max"] - dist_spec["min"])
                 samples[param_name] = stats.triang.rvs(
-                    c=c, loc=dist_spec["min"], scale=dist_spec["max"] - dist_spec["min"], size=num_samples
+                    c=c, loc=dist_spec["min"], scale=dist_spec["max"] - dist_spec["min"], size=num_samples,
                 )
             elif dist_type == "lognormal":
                 samples[param_name] = np.random.lognormal(
-                    dist_spec["mean"], dist_spec["sigma"], num_samples
+                    dist_spec["mean"], dist_spec["sigma"], num_samples,
                 )
             else:
                 msg = f"Unsupported distribution type: {dist_type}"
@@ -428,14 +429,14 @@ class EconomicSensitivityAnalyzer:
         ranked_correlations = sorted(
             correlations.items(),
             key=lambda x: abs(x[1]),
-            reverse=True
+            reverse=True,
         )
 
         return {
             "correlations": correlations,
             "ranked_by_abs_correlation": ranked_correlations,
             "strongest_positive_correlation": max(correlations.items(), key=lambda x: x[1]),
-            "strongest_negative_correlation": min(correlations.items(), key=lambda x: x[1])
+            "strongest_negative_correlation": min(correlations.items(), key=lambda x: x[1]),
         }
 
     def comprehensive_sensitivity_report(self,
@@ -459,29 +460,29 @@ class EconomicSensitivityAnalyzer:
 
         report = {
             "base_parameters": base_parameters,
-            "analysis_timestamp": np.datetime64("now").item().isoformat()
+            "analysis_timestamp": np.datetime64("now").item().isoformat(),
         }
 
         # One-way sensitivity analysis
         report["one_way_sensitivity"] = self.one_way_sensitivity(
-            base_parameters, variable_ranges
+            base_parameters, variable_ranges,
         )
 
         # Tornado diagram
         report["tornado_diagram"] = self.tornado_diagram_data(
-            base_parameters, variable_ranges
+            base_parameters, variable_ranges,
         )
 
         # Scenario analysis (if scenarios provided)
         if scenarios:
             report["scenario_analysis"] = self.scenario_analysis(
-                scenarios, base_parameters
+                scenarios, base_parameters,
             )
 
         # Monte Carlo simulation (if distributions provided)
         if distributions:
             report["monte_carlo"] = self.monte_carlo_simulation(
-                base_parameters, distributions
+                base_parameters, distributions,
             )
 
         # Summary and recommendations
@@ -495,7 +496,7 @@ class EconomicSensitivityAnalyzer:
         summary: dict[str, Any] = {
             "key_findings": [],
             "risk_assessment": {},
-            "recommendations": []
+            "recommendations": [],
         }
 
         # One-way sensitivity findings
@@ -503,7 +504,7 @@ class EconomicSensitivityAnalyzer:
             most_sensitive = report["one_way_sensitivity"]["ranking"][0]
             sensitivity_value = report["one_way_sensitivity"]["variables"][most_sensitive]["sensitivity"]
             summary["key_findings"].append(
-                f"Most sensitive parameter: {most_sensitive} (sensitivity: {sensitivity_value:.2f})"
+                f"Most sensitive parameter: {most_sensitive} (sensitivity: {sensitivity_value:.2f})",
             )
 
         # Monte Carlo findings
@@ -515,23 +516,23 @@ class EconomicSensitivityAnalyzer:
             summary["risk_assessment"] = {
                 "probability_of_success": prob_positive,
                 "value_at_risk_5_percent": var_5,
-                "risk_level": "High" if prob_positive < 0.6 else "Medium" if prob_positive < 0.8 else "Low"
+                "risk_level": "High" if prob_positive < 0.6 else "Medium" if prob_positive < 0.8 else "Low",
             }
 
             summary["key_findings"].append(
-                f"Probability of positive NPV: {prob_positive:.1%}"
+                f"Probability of positive NPV: {prob_positive:.1%}",
             )
 
         # Recommendations based on analysis
         if summary["risk_assessment"].get("risk_level") == "High":
             summary["recommendations"].append(
-                "High risk identified. Consider risk mitigation strategies."
+                "High risk identified. Consider risk mitigation strategies.",
             )
 
         if "one_way_sensitivity" in report:
             top_3_sensitive = report["one_way_sensitivity"]["ranking"][:3]
             summary["recommendations"].append(
-                f"Focus risk management on top 3 sensitive parameters: {', '.join(top_3_sensitive)}"
+                f"Focus risk management on top 3 sensitive parameters: {', '.join(top_3_sensitive)}",
             )
 
         return summary
@@ -549,26 +550,26 @@ def create_lunar_mission_scenarios() -> dict[str, dict[str, float]]:
             "development_cost_multiplier": 0.8,
             "launch_cost_multiplier": 0.7,
             "revenue_multiplier": 1.3,
-            "schedule_multiplier": 0.9
+            "schedule_multiplier": 0.9,
         },
         "pessimistic": {
             "development_cost_multiplier": 1.5,
             "launch_cost_multiplier": 1.3,
             "revenue_multiplier": 0.7,
-            "schedule_multiplier": 1.4
+            "schedule_multiplier": 1.4,
         },
         "conservative": {
             "development_cost_multiplier": 1.2,
             "launch_cost_multiplier": 1.1,
             "revenue_multiplier": 0.9,
-            "schedule_multiplier": 1.1
+            "schedule_multiplier": 1.1,
         },
         "aggressive": {
             "development_cost_multiplier": 0.9,
             "launch_cost_multiplier": 0.8,
             "revenue_multiplier": 1.2,
-            "schedule_multiplier": 0.8
-        }
+            "schedule_multiplier": 0.8,
+        },
     }
 
 
@@ -585,29 +586,29 @@ def create_parameter_distributions() -> dict[str, dict[str, Any]]:
             "type": "triang",
             "min": 0.8,
             "mode": 1.0,
-            "max": 1.8
+            "max": 1.8,
         },
         "launch_cost_multiplier": {
             "type": "triang",
             "min": 0.7,
             "mode": 1.0,
-            "max": 1.5
+            "max": 1.5,
         },
         "revenue_multiplier": {
             "type": "triang",
             "min": 0.6,
             "mode": 1.0,
-            "max": 1.4
+            "max": 1.4,
         },
         "discount_rate": {
             "type": "normal",
             "mean": 0.08,
-            "std": 0.02
+            "std": 0.02,
         },
         "operational_efficiency": {
             "type": "normal",
             "mean": 0.85,
-            "std": 0.1
-        }
+            "std": 0.1,
+        },
     }
 

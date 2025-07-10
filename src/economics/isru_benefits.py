@@ -4,9 +4,9 @@ This module provides economic analysis of lunar ISRU operations including
 resource extraction, processing, and economic value calculations.
 """
 
-from typing import Any
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class ResourceValueModel:
                 processing_complexity=2.0,
                 earth_value=1.0,  # $/kg (essentially free on Earth)
                 space_value=20000,  # $/kg (extremely valuable in space)
-                transportation_cost=5000  # $/kg from Moon to LEO
+                transportation_cost=5000,  # $/kg from Moon to LEO
             ),
             "oxygen": ResourceProperty(
                 name="Oxygen",
@@ -52,7 +52,7 @@ class ResourceValueModel:
                 processing_complexity=3.5,
                 earth_value=0.5,  # $/kg
                 space_value=15000,  # $/kg (life support, propellant)
-                transportation_cost=5000  # $/kg
+                transportation_cost=5000,  # $/kg
             ),
             "hydrogen": ResourceProperty(
                 name="Hydrogen",
@@ -61,7 +61,7 @@ class ResourceValueModel:
                 processing_complexity=4.0,
                 earth_value=2.0,  # $/kg
                 space_value=25000,  # $/kg (propellant)
-                transportation_cost=5000  # $/kg
+                transportation_cost=5000,  # $/kg
             ),
             "helium3": ResourceProperty(
                 name="Helium-3",
@@ -70,7 +70,7 @@ class ResourceValueModel:
                 processing_complexity=5.0,
                 earth_value=1000000,  # $/kg (fusion fuel)
                 space_value=1000000,  # $/kg
-                transportation_cost=10000  # $/kg (special handling)
+                transportation_cost=10000,  # $/kg (special handling)
             ),
             "rare_earth_elements": ResourceProperty(
                 name="Rare Earth Elements",
@@ -79,7 +79,7 @@ class ResourceValueModel:
                 processing_complexity=4.5,
                 earth_value=50000,  # $/kg (average)
                 space_value=100000,  # $/kg (manufacturing)
-                transportation_cost=8000   # $/kg
+                transportation_cost=8000,   # $/kg
             ),
             "titanium": ResourceProperty(
                 name="Titanium",
@@ -88,7 +88,7 @@ class ResourceValueModel:
                 processing_complexity=4.0,
                 earth_value=30,   # $/kg
                 space_value=500,  # $/kg (structural materials)
-                transportation_cost=5000  # $/kg
+                transportation_cost=5000,  # $/kg
             ),
             "aluminum": ResourceProperty(
                 name="Aluminum",
@@ -97,8 +97,8 @@ class ResourceValueModel:
                 processing_complexity=3.5,
                 earth_value=2,    # $/kg
                 space_value=50,   # $/kg (structural materials)
-                transportation_cost=5000  # $/kg
-            )
+                transportation_cost=5000,  # $/kg
+            ),
         }
 
         logger.info(f"Initialized ResourceValueModel with {len(self.resources)} resource types")
@@ -144,7 +144,7 @@ class ResourceValueModel:
             "earth_net_value": earth_net_value,
             "space_net_value": space_net_value,
             "optimal_market": "space" if space_net_value > earth_net_value else "earth",
-            "optimal_value": max(space_net_value, earth_net_value)
+            "optimal_value": max(space_net_value, earth_net_value),
         }
 
         logger.info(f"Resource value calculated: {extracted_mass:.0f} kg {resource_name} "
@@ -177,7 +177,7 @@ class ResourceValueModel:
         scale_factors = {
             "pilot": {"capital": 1.0, "operations": 1.0, "efficiency": 0.5},
             "commercial": {"capital": 0.7, "operations": 0.8, "efficiency": 1.0},
-            "industrial": {"capital": 0.5, "operations": 0.6, "efficiency": 1.5}
+            "industrial": {"capital": 0.5, "operations": 0.6, "efficiency": 1.5},
         }
 
         scale = scale_factors[facility_scale]
@@ -209,7 +209,7 @@ class ResourceValueModel:
             "cost_per_kg": cost_per_kg,
             "regolith_mass_needed": regolith_needed,
             "facility_scale": facility_scale,
-            "efficiency_factor": scale["efficiency"]
+            "efficiency_factor": scale["efficiency"],
         }
 
         logger.info(f"Extraction cost estimate: ${total_cost/1e6:.1f}M total "
@@ -236,22 +236,22 @@ class ISRUBenefitAnalyzer:
                 "ramp_up_months": 12,          # months to reach peak
                 "operational_lifetime": 60,    # months
                 "reliability": 0.8,            # operational reliability
-                "maintenance_cost_rate": 0.05  # % of capital cost per month
+                "maintenance_cost_rate": 0.05,  # % of capital cost per month
             },
             "oxygen_production": {
                 "peak_production_rate": 500,   # kg/month
                 "ramp_up_months": 18,
                 "operational_lifetime": 60,
                 "reliability": 0.75,
-                "maintenance_cost_rate": 0.06
+                "maintenance_cost_rate": 0.06,
             },
             "metal_extraction": {
                 "peak_production_rate": 100,   # kg/month
                 "ramp_up_months": 24,
                 "operational_lifetime": 120,
                 "reliability": 0.7,
-                "maintenance_cost_rate": 0.08
-            }
+                "maintenance_cost_rate": 0.08,
+            },
         }
 
         logger.info("Initialized ISRUBenefitAnalyzer")
@@ -281,14 +281,14 @@ class ISRUBenefitAnalyzer:
 
         # Calculate production profile
         production_profile = self._calculate_production_profile(
-            facility_params, operation_duration_months
+            facility_params, operation_duration_months,
         )
 
         total_production = sum(production_profile)
 
         # Calculate costs
         extraction_costs = self.resource_model.estimate_extraction_costs(
-            resource_name, total_production, facility_scale
+            resource_name, total_production, facility_scale,
         )
 
         # Calculate operational costs over time
@@ -297,23 +297,23 @@ class ISRUBenefitAnalyzer:
 
         # Calculate revenues
         resource_value = self.resource_model.calculate_resource_value(
-            resource_name, total_production, "space"
+            resource_name, total_production, "space",
         )
 
         # NPV analysis
         npv_analysis = self._calculate_isru_npv(
             extraction_costs, total_operational_cost, resource_value,
-            production_profile, discount_rate
+            production_profile, discount_rate,
         )
 
         # Break-even analysis
         break_even = self._calculate_break_even(
-            extraction_costs, monthly_maintenance, resource_value, facility_params
+            extraction_costs, monthly_maintenance, resource_value, facility_params,
         )
 
         # Risk analysis
         risk_analysis = self._perform_risk_analysis(
-            npv_analysis["npv"], facility_params, resource_value
+            npv_analysis["npv"], facility_params, resource_value,
         )
 
         result = {
@@ -321,13 +321,13 @@ class ISRUBenefitAnalyzer:
                 "resource_name": resource_name,
                 "total_production_kg": total_production,
                 "facility_scale": facility_scale,
-                "operation_duration_months": operation_duration_months
+                "operation_duration_months": operation_duration_months,
             },
             "cost_analysis": {
                 "capital_cost": extraction_costs["capital_cost"],
                 "operational_cost": total_operational_cost,
                 "total_cost": extraction_costs["capital_cost"] + total_operational_cost,
-                "cost_per_kg": (extraction_costs["capital_cost"] + total_operational_cost) / total_production
+                "cost_per_kg": (extraction_costs["capital_cost"] + total_operational_cost) / total_production,
             },
             "revenue_analysis": resource_value,
             "financial_metrics": npv_analysis,
@@ -336,8 +336,8 @@ class ISRUBenefitAnalyzer:
             "production_profile": {
                 "monthly_production": production_profile,
                 "peak_production_rate": facility_params["peak_production_rate"],
-                "ramp_up_months": facility_params["ramp_up_months"]
-            }
+                "ramp_up_months": facility_params["ramp_up_months"],
+            },
         }
 
         logger.info(f"ISRU analysis complete: NPV = ${npv_analysis['npv']/1e6:.1f}M, "
@@ -370,7 +370,7 @@ class ISRUBenefitAnalyzer:
 
         # ISRU option
         isru_analysis = self.analyze_isru_economics(
-            resource_name, "commercial", years * 12
+            resource_name, "commercial", years * 12,
         )
 
         isru_cost = isru_analysis["cost_analysis"]["total_cost"]
@@ -393,20 +393,20 @@ class ISRUBenefitAnalyzer:
             "technology_risk": 0.3,    # 30% chance of technical issues
             "schedule_risk": 0.2,      # 20% chance of delays
             "performance_risk": 0.25,  # 25% chance of reduced performance
-            "cost_overrun_risk": 0.4   # 40% chance of cost overruns
+            "cost_overrun_risk": 0.4,   # 40% chance of cost overruns
         }
 
         comparison: dict[str, Any] = {
             "demand_analysis": {
                 "annual_demand": annual_demand,
                 "total_demand": total_demand,
-                "analysis_years": years
+                "analysis_years": years,
             },
             "earth_supply": {
                 "total_cost": earth_supply_cost,
                 "cost_per_kg": resource.transportation_cost,
                 "availability": "immediate",
-                "risk": "low"
+                "risk": "low",
             },
             "isru_option": {
                 "capital_cost": isru_analysis["cost_analysis"]["capital_cost"],
@@ -415,15 +415,15 @@ class ISRUBenefitAnalyzer:
                 "production_capacity": isru_production,
                 "coverage_percentage": isru_coverage,
                 "ramp_up_time_months": isru_ramp_time,
-                "risk_factors": risk_factors
+                "risk_factors": risk_factors,
             },
             "comparison": {
                 "cost_savings": cost_savings,
                 "savings_percentage": savings_percentage,
                 "break_even_demand": isru_cost / resource.transportation_cost,
                 "payback_period_years": isru_cost / (annual_demand * resource.transportation_cost),
-                "recommendation": "ISRU" if cost_savings > 0 else "Earth Supply"
-            }
+                "recommendation": "ISRU" if cost_savings > 0 else "Earth Supply",
+            },
         }
 
         logger.info(f"Comparison complete: {comparison['comparison']['recommendation']} preferred "
@@ -439,7 +439,7 @@ class ISRUBenefitAnalyzer:
             "hydrogen": "water_extraction",
             "titanium": "metal_extraction",
             "aluminum": "metal_extraction",
-            "rare_earth_elements": "metal_extraction"
+            "rare_earth_elements": "metal_extraction",
         }
         return mapping.get(resource_name, "water_extraction")
 
@@ -497,7 +497,7 @@ class ISRUBenefitAnalyzer:
             "total_revenue": total_revenue,
             "total_profit": total_profit,
             "roi": roi,
-            "cash_flows": cash_flows
+            "cash_flows": cash_flows,
         }
 
     def _calculate_break_even(self, extraction_costs: dict[str, Any], monthly_maintenance: float,
@@ -518,7 +518,7 @@ class ISRUBenefitAnalyzer:
         return {
             "payback_period_months": payback_months,
             "break_even_production_kg": break_even_production,
-            "monthly_break_even_rate": break_even_production / payback_months if payback_months < float("inf") else 0
+            "monthly_break_even_rate": break_even_production / payback_months if payback_months < float("inf") else 0,
         }
 
     def _perform_risk_analysis(self, base_npv: float, facility_params: dict[str, Any],
@@ -528,20 +528,20 @@ class ISRUBenefitAnalyzer:
         risks = {
             "technology_failure": {
                 "probability": 0.2,
-                "impact": -0.5 * base_npv  # 50% NPV loss
+                "impact": -0.5 * base_npv,  # 50% NPV loss
             },
             "reduced_performance": {
                 "probability": 0.3,
-                "impact": -0.3 * base_npv  # 30% NPV loss
+                "impact": -0.3 * base_npv,  # 30% NPV loss
             },
             "cost_overrun": {
                 "probability": 0.4,
-                "impact": -0.2 * base_npv  # 20% NPV loss
+                "impact": -0.2 * base_npv,  # 20% NPV loss
             },
             "market_changes": {
                 "probability": 0.25,
-                "impact": -0.4 * base_npv  # 40% NPV loss
-            }
+                "impact": -0.4 * base_npv,  # 40% NPV loss
+            },
         }
 
         # Calculate expected value
@@ -557,7 +557,7 @@ class ISRUBenefitAnalyzer:
             "risk_adjusted_npv": risk_adjusted_npv,
             "worst_case_npv": worst_case_npv,
             "risk_factors": risks,
-            "confidence_level": 0.7  # 70% confidence in base case
+            "confidence_level": 0.7,  # 70% confidence in base case
         }
 
 
@@ -583,7 +583,7 @@ def analyze_lunar_resource_portfolio(resources: list[str],
 
     for resource in resources:
         analysis = analyzer.analyze_isru_economics(
-            resource, facility_scale, operation_years * 12
+            resource, facility_scale, operation_years * 12,
         )
         portfolio_results[resource] = analysis
 
@@ -599,7 +599,7 @@ def analyze_lunar_resource_portfolio(resources: list[str],
             "total_npv": total_npv,
             "portfolio_roi": portfolio_roi,
             "num_resources": len(resources),
-            "diversification_benefit": 0.1 * portfolio_roi  # Simplified diversification benefit
-        }
+            "diversification_benefit": 0.1 * portfolio_roi,  # Simplified diversification benefit
+        },
     }
 

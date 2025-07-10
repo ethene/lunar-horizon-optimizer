@@ -12,7 +12,7 @@ import warnings
 warnings.warn(
     "validator.py is deprecated. Import from src.trajectory.validation instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export from the new validation module

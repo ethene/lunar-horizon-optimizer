@@ -4,14 +4,15 @@ This module implements multi-objective trajectory optimization using PyGMO's
 NSGA-II algorithm to generate Pareto fronts balancing delta-v, time, and cost.
 """
 
-from typing import Any
-import pygmo as pg
-import logging
 import hashlib
+import logging
+from typing import Any
 
-from src.trajectory.lunar_transfer import LunarTransfer
+import pygmo as pg
+
 from src.config.costs import CostFactors
 from src.optimization.cost_integration import CostCalculator
+from src.trajectory.lunar_transfer import LunarTransfer
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class LunarMissionProblem:
             min_earth_alt=min_earth_alt,
             max_earth_alt=max_earth_alt,
             min_moon_alt=min_moon_alt,
-            max_moon_alt=max_moon_alt
+            max_moon_alt=max_moon_alt,
         )
 
         # Initialize cost calculator
@@ -105,7 +106,7 @@ class LunarMissionProblem:
                 earth_orbit_alt=earth_alt,
                 moon_orbit_alt=moon_alt,
                 transfer_time=transfer_time,
-                max_revolutions=0
+                max_revolutions=0,
             )
 
             # Calculate objectives
@@ -115,7 +116,7 @@ class LunarMissionProblem:
                 total_dv=total_dv,
                 transfer_time=transfer_time,
                 earth_orbit_alt=earth_alt,
-                moon_orbit_alt=moon_alt
+                moon_orbit_alt=moon_alt,
             )
 
             objectives = [obj1_delta_v, obj2_time, obj3_cost]
@@ -174,7 +175,7 @@ class LunarMissionProblem:
             "cache_misses": self._cache_misses,
             "total_evaluations": total,
             "hit_rate": hit_rate,
-            "cache_size": len(self._trajectory_cache)
+            "cache_size": len(self._trajectory_cache),
         }
 
     def clear_cache(self) -> None:
@@ -300,8 +301,8 @@ class GlobalOptimizer:
                 "name": "NSGA-II",
                 "population_size": self.population_size,
                 "generations": self.num_generations,
-                "seed": self.seed
-            }
+                "seed": self.seed,
+            },
         }
 
         # Add cache stats if available
@@ -425,7 +426,7 @@ class GlobalOptimizer:
                 "parameters": params,
                 "objectives": objectives,
                 "objective_vector": objectives,
-                "parameter_vector": params
+                "parameter_vector": params,
             }
 
             # If this is a lunar mission problem (3 parameters, 3 objectives), add named structure
@@ -433,12 +434,12 @@ class GlobalOptimizer:
                 solution["parameters"] = {
                     "earth_orbit_alt": params[0],
                     "moon_orbit_alt": params[1],
-                    "transfer_time": params[2]
+                    "transfer_time": params[2],
                 }
                 solution["objectives"] = {
                     "delta_v": objectives[0],      # m/s
                     "time": objectives[1],         # seconds
-                    "cost": objectives[2]          # cost units
+                    "cost": objectives[2],          # cost units
                 }
 
             solutions.append(solution)
@@ -523,13 +524,13 @@ def optimize_lunar_mission(cost_factors: CostFactors = None,
     # Create problem
     problem = LunarMissionProblem(
         cost_factors=cost_factors,
-        **config.get("problem_params", {})
+        **config.get("problem_params", {}),
     )
 
     # Create optimizer
     optimizer = GlobalOptimizer(
         problem=problem,
-        **config.get("optimizer_params", {})
+        **config.get("optimizer_params", {}),
     )
 
     # Run optimization

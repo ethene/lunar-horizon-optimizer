@@ -9,16 +9,20 @@ Author: Lunar Horizon Optimizer Team
 Date: July 2025
 """
 
-import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-from typing import Any
 from dataclasses import dataclass
 from datetime import datetime
-import pykep as pk
+from typing import Any
 
-from src.trajectory.earth_moon_trajectories import LambertSolver, generate_earth_moon_trajectory
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import pykep as pk
+from plotly.subplots import make_subplots
+
+from src.trajectory.earth_moon_trajectories import (
+    LambertSolver,
+    generate_earth_moon_trajectory,
+)
 from src.trajectory.nbody_integration import EarthMoonNBodyPropagator
 from src.trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
 
@@ -89,7 +93,7 @@ class TrajectoryVisualizer:
     def create_3d_trajectory_plot(
         self,
         trajectories: dict[str, Any] | list[dict[str, Any]],
-        title: str | None = None
+        title: str | None = None,
     ) -> go.Figure:
         """
         Create comprehensive 3D trajectory visualization.
@@ -125,7 +129,7 @@ class TrajectoryVisualizer:
         end_date: datetime,
         earth_orbit_alt: float = 400.0,
         moon_orbit_alt: float = 100.0,
-        max_windows: int = 50
+        max_windows: int = 50,
     ) -> go.Figure:
         """
         Create transfer window opportunity visualization.
@@ -147,7 +151,7 @@ class TrajectoryVisualizer:
             end_date=end_date,
             earth_orbit_alt=earth_orbit_alt,
             moon_orbit_alt=moon_orbit_alt,
-            time_step=1.0
+            time_step=1.0,
         )
 
         if not windows:
@@ -157,7 +161,7 @@ class TrajectoryVisualizer:
                 text="No transfer windows found in specified period",
                 xref="paper", yref="paper",
                 x=0.5, y=0.5, showarrow=False,
-                font={"size": 16, "color": self.config.text_color}
+                font={"size": 16, "color": self.config.text_color},
             )
             return fig
 
@@ -171,12 +175,12 @@ class TrajectoryVisualizer:
                 "Transfer Windows (Delta-V vs Time)",
                 "C3 Energy vs Transfer Time",
                 "Departure Date vs Delta-V",
-                "Transfer Duration Distribution"
+                "Transfer Duration Distribution",
             ],
             specs=[
                 [{"type": "scatter"}, {"type": "scatter"}],
-                [{"type": "scatter"}, {"type": "histogram"}]
-            ]
+                [{"type": "scatter"}, {"type": "histogram"}],
+            ],
         )
 
         # Extract data
@@ -199,10 +203,10 @@ class TrajectoryVisualizer:
                     "color": delta_vs,
                     "colorscale": "Viridis",
                     "showscale": True,
-                    "colorbar": {"title": "Delta-V (m/s)", "x": 0.45}
-                }
+                    "colorbar": {"title": "Delta-V (m/s)", "x": 0.45},
+                },
             ),
-            row=1, col=1
+            row=1, col=1,
         )
 
         # Plot 2: C3 Energy vs Transfer Time
@@ -215,9 +219,9 @@ class TrajectoryVisualizer:
                 text=[f"Departure: {d.strftime('%Y-%m-%d')}" for d in departure_dates],
                 hovertemplate="Transfer Time: %{x:.1f} days<br>C3: %{y:.0f} m²/s²<br>%{text}<extra></extra>",
                 marker={"size": 6, "color": "orange"},
-                showlegend=False
+                showlegend=False,
             ),
-            row=1, col=2
+            row=1, col=2,
         )
 
         # Plot 3: Departure Date vs Delta-V
@@ -230,9 +234,9 @@ class TrajectoryVisualizer:
                 hovertemplate="Date: %{x}<br>Delta-V: %{y:.0f} m/s<extra></extra>",
                 marker={"size": 6, "color": "cyan"},
                 line={"width": 2},
-                showlegend=False
+                showlegend=False,
             ),
-            row=2, col=1
+            row=2, col=1,
         )
 
         # Plot 4: Transfer Duration Distribution
@@ -242,9 +246,9 @@ class TrajectoryVisualizer:
                 nbinsx=20,
                 name="Duration Distribution",
                 marker={"color": "lightblue", "opacity": 0.7},
-                showlegend=False
+                showlegend=False,
             ),
-            row=2, col=2
+            row=2, col=2,
         )
 
         # Update layout
@@ -265,7 +269,7 @@ class TrajectoryVisualizer:
             template=self.config.theme,
             height=800,
             width=1400,
-            showlegend=True
+            showlegend=True,
         )
 
         return fig
@@ -273,7 +277,7 @@ class TrajectoryVisualizer:
     def create_orbital_elements_plot(
         self,
         trajectory_data: dict[str, Any],
-        show_evolution: bool = True
+        show_evolution: bool = True,
     ) -> go.Figure:
         """
         Create orbital elements evolution visualization.
@@ -304,8 +308,8 @@ class TrajectoryVisualizer:
                 subplot_titles=[
                     "Semi-major Axis", "Eccentricity",
                     "Inclination", "RAAN",
-                    "Argument of Periapsis", "True Anomaly"
-                ]
+                    "Argument of Periapsis", "True Anomaly",
+                ],
             )
 
             # Plot each orbital element
@@ -329,9 +333,9 @@ class TrajectoryVisualizer:
                         mode="lines",
                         name=f"{name.upper()} ({unit})",
                         line={"width": 2},
-                        showlegend=False
+                        showlegend=False,
                     ),
-                    row=row, col=col
+                    row=row, col=col,
                 )
 
                 fig.update_yaxes(title_text=f"{name.upper()} ({unit})", row=row, col=col)
@@ -359,22 +363,22 @@ class TrajectoryVisualizer:
                         "values": ["Orbital Element", "Value"],
                         "fill_color": "darkblue",
                         "align": "left",
-                        "font": {"color": "white", "size": 14}
+                        "font": {"color": "white", "size": 14},
                     },
                     cells={
                         "values": list(zip(*summary_data, strict=False)),
                         "fill_color": "lightblue",
                         "align": "left",
-                        "font": {"size": 12}
-                    }
-                )
+                        "font": {"size": 12},
+                    },
+                ),
             )
 
         fig.update_layout(
             title="Orbital Elements Analysis",
             template=self.config.theme,
             height=800,
-            width=1200
+            width=1200,
         )
 
         return fig
@@ -382,7 +386,7 @@ class TrajectoryVisualizer:
     def create_trajectory_comparison(
         self,
         trajectories: list[dict[str, Any]],
-        labels: list[str] | None = None
+        labels: list[str] | None = None,
     ) -> go.Figure:
         """
         Create comparative visualization of multiple trajectories.
@@ -431,11 +435,11 @@ class TrajectoryVisualizer:
                     marker={
                         "size": self.config.earth_radius_scale,
                         "color": "blue",
-                        "opacity": 0.8
+                        "opacity": 0.8,
                     },
                     name="Earth",
-                    hovertemplate="Earth<br>Radius: 6,378 km<extra></extra>"
-                )
+                    hovertemplate="Earth<br>Radius: 6,378 km<extra></extra>",
+                ),
             )
 
         if self.config.show_moon:
@@ -448,11 +452,11 @@ class TrajectoryVisualizer:
                     marker={
                         "size": self.config.moon_radius_scale,
                         "color": "gray",
-                        "opacity": 0.8
+                        "opacity": 0.8,
                     },
                     name="Moon",
-                    hovertemplate="Moon<br>Radius: 1,737 km<extra></extra>"
-                )
+                    hovertemplate="Moon<br>Radius: 1,737 km<extra></extra>",
+                ),
             )
 
     def _add_trajectory_path(
@@ -460,7 +464,7 @@ class TrajectoryVisualizer:
         fig: go.Figure,
         trajectory: dict[str, Any],
         name: str,
-        color: str | None = None
+        color: str | None = None,
     ) -> None:
         """Add trajectory path to 3D plot."""
         if "positions" not in trajectory:
@@ -489,13 +493,13 @@ class TrajectoryVisualizer:
                 mode="lines+markers",
                 line={
                     "width": self.config.trajectory_width,
-                    "color": color or self.config.trajectory_color
+                    "color": color or self.config.trajectory_color,
                 },
                 marker={"size": 2},
                 name=name,
                 text=hover_text,
-                hovertemplate="%{text}<extra></extra>"
-            )
+                hovertemplate="%{text}<extra></extra>",
+            ),
         )
 
     def _configure_3d_layout(self, fig: go.Figure, title: str) -> None:
@@ -510,18 +514,18 @@ class TrajectoryVisualizer:
                 "xaxis": {"gridcolor": self.config.grid_color},
                 "yaxis": {"gridcolor": self.config.grid_color},
                 "zaxis": {"gridcolor": self.config.grid_color},
-                "aspectmode": "data"
+                "aspectmode": "data",
             },
             template=self.config.theme,
             width=self.config.width,
             height=self.config.height,
-            font={"color": self.config.text_color}
+            font={"color": self.config.text_color},
         )
 
     def _calculate_orbital_elements_evolution(
         self,
         positions: np.ndarray,
-        velocities: np.ndarray
+        velocities: np.ndarray,
     ) -> dict[str, np.ndarray]:
         """
         Calculate orbital elements evolution from position/velocity data.
@@ -544,7 +548,7 @@ class TrajectoryVisualizer:
             "i": np.zeros(n_points),      # Inclination
             "raan": np.zeros(n_points),   # Right ascension of ascending node
             "argp": np.zeros(n_points),   # Argument of periapsis
-            "nu": np.zeros(n_points)      # True anomaly
+            "nu": np.zeros(n_points),      # True anomaly
         }
 
         for idx in range(n_points):
@@ -574,7 +578,7 @@ def create_quick_trajectory_plot(
     earth_orbit_alt: float = 400.0,
     moon_orbit_alt: float = 100.0,
     transfer_time: float = 4.5,
-    departure_epoch: float = 10000.0
+    departure_epoch: float = 10000.0,
 ) -> go.Figure:
     """
     Quick function to create a simple trajectory plot.
@@ -595,7 +599,7 @@ def create_quick_trajectory_plot(
             departure_epoch=departure_epoch,
             earth_orbit_alt=earth_orbit_alt,
             moon_orbit_alt=moon_orbit_alt,
-            transfer_time=transfer_time
+            transfer_time=transfer_time,
         )
 
         # Create visualizer and plot
@@ -605,12 +609,12 @@ def create_quick_trajectory_plot(
         trajectory_data = {
             "positions": trajectory.position_history,
             "velocities": trajectory.velocity_history,
-            "times": trajectory.time_history
+            "times": trajectory.time_history,
         }
 
         return visualizer.create_3d_trajectory_plot(
             trajectory_data,
-            title=f"Earth-Moon Transfer (ΔV: {total_dv:.0f} m/s)"
+            title=f"Earth-Moon Transfer (ΔV: {total_dv:.0f} m/s)",
         )
 
 
@@ -621,6 +625,6 @@ def create_quick_trajectory_plot(
             text=f"Trajectory generation failed: {e!s}",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font={"size": 16, "color": "red"}
+            font={"size": 16, "color": "red"},
         )
         return fig

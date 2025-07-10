@@ -4,8 +4,9 @@ This module provides functions for validating vector units, magnitudes,
 and performing basic vector operations in trajectory calculations.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -160,13 +161,13 @@ def propagate_orbit(position: np.ndarray, velocity: np.ndarray, dt: float) -> tu
         final_position = np.array([
             position[0] * cos_theta - position[1] * sin_theta,
             position[0] * sin_theta + position[1] * cos_theta,
-            position[2]
+            position[2],
         ])
 
         final_velocity = np.array([
             velocity[0] * cos_theta - velocity[1] * sin_theta,
             velocity[0] * sin_theta + velocity[1] * cos_theta,
-            velocity[2]
+            velocity[2],
         ])
 
         return final_position, final_velocity

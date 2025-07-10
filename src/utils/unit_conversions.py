@@ -31,9 +31,10 @@ Example:
     >>> v = [0.0, 7800.0, 0.0]  # Velocity in m/s
 """
 
-from datetime import datetime, timedelta, UTC
-import numpy as np
+from datetime import UTC, datetime, timedelta
 from typing import Union
+
+import numpy as np
 
 # Type alias for numeric types
 NumericType = Union[float, list[float], tuple[float, ...], np.ndarray[tuple[int, ...], np.dtype[np.float64]]]
@@ -145,12 +146,11 @@ def km_to_m(km: NumericType) -> NumericType:
     -------
         Distance in meters, preserving input type
     """
-    if isinstance(km, (list, tuple)):
+    if isinstance(km, list | tuple):
         return type(km)([x * 1000.0 for x in km])
-    elif isinstance(km, np.ndarray):
+    if isinstance(km, np.ndarray):
         return km * 1000.0
-    else:
-        return km * 1000.0
+    return km * 1000.0
 
 def m_to_km(m: NumericType) -> NumericType:
     """Convert meters to kilometers.
@@ -162,12 +162,11 @@ def m_to_km(m: NumericType) -> NumericType:
     -------
         Distance in kilometers, preserving input type
     """
-    if isinstance(m, (list, tuple)):
+    if isinstance(m, list | tuple):
         return type(m)([x / 1000.0 for x in m])
-    elif isinstance(m, np.ndarray):
+    if isinstance(m, np.ndarray):
         return m / 1000.0
-    else:
-        return m / 1000.0
+    return m / 1000.0
 
 def kmps_to_mps(kmps: NumericType) -> NumericType:
     """Convert kilometers per second to meters per second.
@@ -179,12 +178,11 @@ def kmps_to_mps(kmps: NumericType) -> NumericType:
     -------
         Velocity in meters per second, preserving input type
     """
-    if isinstance(kmps, (list, tuple)):
+    if isinstance(kmps, list | tuple):
         return type(kmps)([x * 1000.0 for x in kmps])
-    elif isinstance(kmps, np.ndarray):
+    if isinstance(kmps, np.ndarray):
         return kmps * 1000.0
-    else:
-        return kmps * 1000.0
+    return kmps * 1000.0
 
 def mps_to_kmps(mps: NumericType) -> NumericType:
     """Convert meters per second to kilometers per second.

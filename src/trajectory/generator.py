@@ -29,17 +29,17 @@ The trajectory generation process:
 5. Return the complete trajectory with maneuvers
 """
 
+import logging
+from datetime import UTC, datetime, timedelta
+
 import numpy as np
 import pykep as pk
-from datetime import datetime, timedelta, UTC
-import logging
-from .models import Trajectory
-from src.utils.unit_conversions import (
-    datetime_to_mjd2000,
-    km_to_m
-)
+
 from src.trajectory.defaults import TransferDefaults as TD
+from src.utils.unit_conversions import datetime_to_mjd2000, km_to_m
+
 from .lunar_transfer import LunarTransfer
+from .models import Trajectory
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ def generate_lunar_transfer(
     final_orbit_alt: float = TD.DEFAULT_MOON_ORBIT,
     max_tli_dv: float = TD.MAX_TLI_DELTA_V,
     min_tli_dv: float | None = None,
-    max_revs: int = TD.MAX_REVOLUTIONS
+    max_revs: int = TD.MAX_REVOLUTIONS,
 ) -> tuple[Trajectory, float]:
     """Generate a lunar transfer trajectory.
 
@@ -114,7 +114,7 @@ def generate_lunar_transfer(
         earth_orbit_alt=initial_orbit_alt,
         moon_orbit_alt=final_orbit_alt,
         transfer_time=time_of_flight,
-        max_revolutions=max_revs
+        max_revolutions=max_revs,
     )
 
 
@@ -123,7 +123,7 @@ def optimize_departure_time(
     earth_orbit_altitude: float = TD.DEFAULT_EARTH_ORBIT,
     moon_orbit_altitude: float = TD.DEFAULT_MOON_ORBIT,
     transfer_time: float = TD.DEFAULT_TRANSFER_TIME,
-    search_window: float = 1.0  # days
+    search_window: float = 1.0,  # days
 ) -> datetime:
     """Find optimal departure time for minimum delta-v transfer.
 
@@ -156,7 +156,7 @@ def optimize_departure_time(
         try:
             trajectory, total_dv = generate_lunar_transfer(
                 departure_time=departure,
-                time_of_flight=transfer_time
+                time_of_flight=transfer_time,
             )
 
             if total_dv < min_dv:

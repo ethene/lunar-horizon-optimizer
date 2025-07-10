@@ -4,13 +4,15 @@ This module provides the Maneuver class for representing impulsive maneuvers
 and utility functions for maneuver calculations and validation.
 """
 
-from dataclasses import dataclass
-import numpy as np
-from datetime import datetime
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+
+import numpy as np
+
+from src.utils.unit_conversions import kmps_to_mps
 
 from .trajectory_physics import validate_delta_v
-from src.utils.unit_conversions import kmps_to_mps
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -100,7 +102,7 @@ class Maneuver:
         return Maneuver(
             delta_v=tuple(self.delta_v * factor),
             epoch=self.epoch,
-            description=f"{self.description} (scaled by {factor})" if self.description else None
+            description=f"{self.description} (scaled by {factor})" if self.description else None,
         )
 
     def reverse(self) -> "Maneuver":
@@ -113,7 +115,7 @@ class Maneuver:
         return Maneuver(
             delta_v=tuple(-self.delta_v),
             epoch=self.epoch,
-            description=f"{self.description} (reversed)" if self.description else None
+            description=f"{self.description} (reversed)" if self.description else None,
         )
 
     def __str__(self) -> str:

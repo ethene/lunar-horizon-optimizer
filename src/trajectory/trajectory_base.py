@@ -4,15 +4,16 @@ This module provides the base Trajectory class that handles common trajectory op
 like propagation, maneuver application, and state validation.
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime
 
-from .orbit_state import OrbitState
+from src.utils.unit_conversions import km_to_m, kmps_to_mps, m_to_km, mps_to_kmps
+
 from .maneuver import Maneuver
+from .orbit_state import OrbitState
 from .trajectory_physics import propagate_orbit
-from src.utils.unit_conversions import km_to_m, m_to_km, mps_to_kmps, kmps_to_mps
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -107,7 +108,7 @@ class Trajectory(ABC):
                 current_state = OrbitState(
                     position=pre_maneuver_state.position,
                     velocity=new_velocity,
-                    epoch=maneuver.epoch
+                    epoch=maneuver.epoch,
                 )
 
         # Final propagation to target epoch
@@ -141,7 +142,7 @@ class Trajectory(ABC):
         except Exception as e:
             logger.exception(f"Propagation failed: {e!s}")
             msg = f"Propagation failed: {e!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from e
 
         # Convert back to km, km/s
         final_pos = m_to_km(final_pos_m)
@@ -150,7 +151,7 @@ class Trajectory(ABC):
         return OrbitState(
             position=final_pos,
             velocity=final_vel,
-            epoch=target_epoch
+            epoch=target_epoch,
         )
 
     def get_state_at(self, epoch: datetime) -> OrbitState:

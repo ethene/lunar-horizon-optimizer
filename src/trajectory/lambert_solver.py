@@ -14,6 +14,7 @@ Unit Conventions (PyKEP Native):
 import numpy as np
 import pykep as pk
 
+
 def get_num_solutions(max_revolutions: int) -> int:
     """Calculate number of solutions for given maximum revolutions.
 
@@ -35,7 +36,7 @@ def solve_lambert(
     mu: float,
     max_revolutions: int = 0,
     prograde: bool = True,
-    solution_index: int | None = None
+    solution_index: int | None = None,
 ) -> tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]] | list[tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]]:
     """Solve Lambert's problem using PyKEP.
 
@@ -105,14 +106,14 @@ def solve_lambert(
             tof=float(tof),  # Ensure float type
             mu=float(mu),    # Ensure float type
             max_revs=max_revolutions,
-            cw=(not prograde)
+            cw=(not prograde),
         )
     except RuntimeError as e:
         msg = f"Failed to solve Lambert's problem: {e!s}"
-        raise ValueError(msg)
+        raise ValueError(msg) from e
     except Exception as e:
         msg = f"Unexpected error in PyKEP Lambert solver: {e!s}"
-        raise ValueError(msg)
+        raise ValueError(msg) from e
 
     # Get all solutions
     try:
@@ -120,7 +121,7 @@ def solve_lambert(
         v2_list = lambert.get_v2()
     except Exception as e:
         msg = f"Failed to extract velocity vectors: {e!s}"
-        raise ValueError(msg)
+        raise ValueError(msg) from e
 
     if not v1_list or not v2_list:
         msg = "No valid solutions found"
@@ -146,7 +147,7 @@ def get_all_solutions(
     tof: float,
     mu: float,
     max_revolutions: int = 0,
-    prograde: bool = True
+    prograde: bool = True,
 ) -> list[tuple[np.ndarray[np.float64, np.dtype[np.float64]], np.ndarray[np.float64, np.dtype[np.float64]]]]:
     """Get all possible solutions for the Lambert problem.
 

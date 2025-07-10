@@ -6,8 +6,9 @@ This module defines models for spacecraft specifications, including:
 - Payload configurations
 """
 
-from pydantic import BaseModel, Field, model_validator
 import numpy as np
+from pydantic import BaseModel, Field, model_validator
+
 
 class PayloadSpecification(BaseModel):
     """Spacecraft payload specifications."""
@@ -15,25 +16,25 @@ class PayloadSpecification(BaseModel):
     dry_mass: float = Field(
         ...,
         gt=0,
-        description="Dry mass of the spacecraft without propellant (kg)"
+        description="Dry mass of the spacecraft without propellant (kg)",
     )
 
     payload_mass: float = Field(
         ...,
         gt=0,
-        description="Mass of the mission payload (kg)"
+        description="Mass of the mission payload (kg)",
     )
 
     max_propellant_mass: float = Field(
         ...,
         gt=0,
-        description="Maximum propellant capacity (kg)"
+        description="Maximum propellant capacity (kg)",
     )
 
     specific_impulse: float = Field(
         ...,
         gt=0,
-        description="Specific impulse of the propulsion system (seconds)"
+        description="Specific impulse of the propulsion system (seconds)",
     )
 
     @model_validator(mode="after")
@@ -45,7 +46,7 @@ class PayloadSpecification(BaseModel):
                 f"dry mass ({self.dry_mass} kg)"
             )
             raise ValueError(
-                msg
+                msg,
             )
         return self
 

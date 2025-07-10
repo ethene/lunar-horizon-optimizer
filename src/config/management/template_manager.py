@@ -7,9 +7,10 @@ with custom overrides.
 
 from typing import Any
 
+from pydantic import ValidationError
+
 from src.config.models import MissionConfig
 from src.config.registry import ConfigRegistry
-from pydantic import ValidationError
 
 
 class TemplateManager:

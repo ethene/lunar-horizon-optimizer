@@ -7,6 +7,7 @@ using PyKEP, including orbital period, velocity, and coordinate transformations.
 import numpy as np
 import pykep as pk
 
+
 def orbital_period(semi_major_axis: float, mu: float = pk.MU_EARTH) -> float:
     """Calculate orbital period using Kepler's Third Law.
 
@@ -29,7 +30,7 @@ def velocity_at_point(
     semi_major_axis: float,
     eccentricity: float,
     true_anomaly: float,
-    mu: float = pk.MU_EARTH
+    mu: float = pk.MU_EARTH,
 ) -> tuple[float, float]:
     """Calculate radial and tangential velocity components at a point in orbit.
 
@@ -53,7 +54,6 @@ def velocity_at_point(
 
     # Calculate radius at true anomaly
     p = a * (1 - eccentricity**2)
-    r = p / (1 + eccentricity * np.cos(nu))
 
     # Calculate velocity components
     v_r = np.sqrt(mu/p) * eccentricity * np.sin(nu)

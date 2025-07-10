@@ -4,8 +4,9 @@ This module provides functions for validating physical constraints and
 orbital mechanics relationships in trajectory calculations.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 from src.trajectory.constants import PhysicalConstants
 

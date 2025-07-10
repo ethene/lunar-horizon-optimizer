@@ -10,20 +10,18 @@ split into focused modules for maintainability:
 For backward compatibility, the TrajectoryValidator class is re-exported from the original validation.py module.
 """
 
+from .constraint_validation import validate_trajectory_constraints
 from .physics_validation import (
+    calculate_circular_velocity,
     validate_basic_orbital_mechanics,
-    validate_transfer_time,
     validate_solution_physics,
-    calculate_circular_velocity
-)
-from .constraint_validation import (
-    validate_trajectory_constraints
+    validate_transfer_time,
 )
 from .vector_validation import (
-    validate_vector_units,
+    propagate_orbit,
     validate_delta_v,
     validate_state_vector,
-    propagate_orbit
+    validate_vector_units,
 )
 
 __all__ = [
@@ -38,5 +36,5 @@ __all__ = [
     "validate_trajectory_constraints",
     "validate_transfer_time",
     # Vector validation
-    "validate_vector_units"
+    "validate_vector_units",
 ]

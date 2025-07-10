@@ -14,12 +14,13 @@ The module imports and re-exports classes from specialized modules:
 import numpy as np
 from pydantic import BaseModel, Field, model_validator
 
+from .costs import CostFactors
+
 # Import specialized configuration components
 from .enums import IsruResourceType
-from .costs import CostFactors
 from .isru import IsruCapabilities, ResourceExtractionRate
-from .spacecraft import PayloadSpecification
 from .orbit import OrbitParameters
+from .spacecraft import PayloadSpecification
 
 
 class MissionConfig(BaseModel):
@@ -47,38 +48,38 @@ class MissionConfig(BaseModel):
     name: str = Field(
         ...,
         min_length=1,
-        description="Unique mission identifier"
+        description="Unique mission identifier",
     )
 
     description: str | None = Field(
         None,
-        description="Detailed mission description"
+        description="Detailed mission description",
     )
 
     payload: PayloadSpecification = Field(
         ...,
-        description="Spacecraft and payload specifications"
+        description="Spacecraft and payload specifications",
     )
 
     cost_factors: CostFactors = Field(
         ...,
-        description="Mission cost factors"
+        description="Mission cost factors",
     )
 
     isru_targets: list[IsruCapabilities] = Field(
         default_factory=list,
-        description="List of ISRU production targets"
+        description="List of ISRU production targets",
     )
 
     mission_duration_days: float = Field(
         ...,
         gt=0,
-        description="Total planned mission duration (days)"
+        description="Total planned mission duration (days)",
     )
 
     target_orbit: OrbitParameters = Field(
         ...,
-        description="Target lunar orbit parameters (km, degrees)"
+        description="Target lunar orbit parameters (km, degrees)",
     )
 
     @model_validator(mode="after")
@@ -90,7 +91,7 @@ class MissionConfig(BaseModel):
                 "3 years - please verify this is intended"
             )
             raise ValueError(
-                msg
+                msg,
             )
         return self
 
@@ -100,7 +101,7 @@ class MissionConfig(BaseModel):
         validate_assignment = True
         json_encoders = {
             np.float64: float,
-            np.int64: int
+            np.int64: int,
         }
 
 
@@ -117,5 +118,5 @@ __all__ = [
     "MissionConfig",
     "OrbitParameters",
     "PayloadSpecification",
-    "ResourceExtractionRate"
+    "ResourceExtractionRate",
 ]

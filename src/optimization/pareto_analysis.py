@@ -4,12 +4,13 @@ This module provides analysis tools for multi-objective optimization results,
 including Pareto front analysis, solution ranking, and visualization support.
 """
 
-import numpy as np
-from typing import Any
-from dataclasses import dataclass
 import json
 import logging
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
+
+import numpy as np
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class OptimizationResult:
         return {
             "delta_v": (min(delta_v_values), max(delta_v_values)),
             "time": (min(time_values), max(time_values)),
-            "cost": (min(cost_values), max(cost_values))
+            "cost": (min(cost_values), max(cost_values)),
         }
 
     def get_best_solutions(self, objective: str, num_solutions: int = 5) -> list[dict[str, Any]]:
@@ -74,7 +75,7 @@ class OptimizationResult:
         # Sort by objective value (ascending - all objectives are minimized)
         sorted_solutions = sorted(
             self.pareto_solutions,
-            key=lambda sol: sol["objectives"][objective]
+            key=lambda sol: sol["objectives"][objective],
         )
 
         return sorted_solutions[:num_solutions]
@@ -88,7 +89,7 @@ class OptimizationResult:
             "algorithm_config": self.algorithm_config,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "num_pareto_solutions": self.num_pareto_solutions,
-            "objective_ranges": self.objective_ranges
+            "objective_ranges": self.objective_ranges,
         }
 
     @classmethod
@@ -99,7 +100,7 @@ class OptimizationResult:
             optimization_stats=data["optimization_stats"],
             problem_config=data["problem_config"],
             algorithm_config=data["algorithm_config"],
-            timestamp=datetime.fromisoformat(data["timestamp"])
+            timestamp=datetime.fromisoformat(data["timestamp"]),
         )
 
 
@@ -138,7 +139,7 @@ class ParetoAnalyzer:
             optimization_stats=stats,
             problem_config=problem_config,
             algorithm_config=algorithm_config,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         logger.info(f"Analyzed Pareto front: {result.num_pareto_solutions} solutions")
@@ -188,7 +189,7 @@ class ParetoAnalyzer:
         # Create ranked list (lower scores are better)
         ranked_solutions = sorted(
             zip(scores, solutions, strict=False),
-            key=lambda x: x[0]
+            key=lambda x: x[0],
         )
 
         logger.info(f"Ranked {len(solutions)} solutions by preference weights {preference_weights}")
@@ -243,7 +244,7 @@ class ParetoAnalyzer:
             "pareto_sizes": [r.num_pareto_solutions for r in results],
             "objective_ranges_comparison": {},
             "convergence_analysis": {},
-            "best_solutions_overall": {}
+            "best_solutions_overall": {},
         }
 
         # Compare objective ranges across runs
@@ -254,7 +255,7 @@ class ParetoAnalyzer:
                 "min_values": [r[0] for r in ranges],
                 "max_values": [r[1] for r in ranges],
                 "overall_min": min(r[0] for r in ranges if r[0] != float("inf")),
-                "overall_max": max(r[1] for r in ranges if r[1] != float("-inf"))
+                "overall_max": max(r[1] for r in ranges if r[1] != float("-inf")),
             }
 
         # Find overall best solutions
@@ -330,8 +331,8 @@ class ParetoAnalyzer:
             "cache_efficiency": optimization_result.get("cache_stats", {}),
             "algorithm_performance": {
                 "generations": optimization_result.get("generations", 0),
-                "population_size": optimization_result.get("population_size", 0)
-            }
+                "population_size": optimization_result.get("population_size", 0),
+            },
         }
 
         if pareto_solutions:
@@ -343,7 +344,7 @@ class ParetoAnalyzer:
             stats["objective_statistics"] = {
                 "delta_v": {"min": min(delta_v_values), "max": max(delta_v_values), "mean": np.mean(delta_v_values)},
                 "time": {"min": min(time_values), "max": max(time_values), "mean": np.mean(time_values)},
-                "cost": {"min": min(cost_values), "max": max(cost_values), "mean": np.mean(cost_values)}
+                "cost": {"min": min(cost_values), "max": max(cost_values), "mean": np.mean(cost_values)},
             }
 
         return stats
@@ -353,7 +354,7 @@ class ParetoAnalyzer:
         return {
             "objectives": ["delta_v", "time", "cost"],
             "problem_type": "lunar_mission_optimization",
-            "optimization_type": "multi_objective"
+            "optimization_type": "multi_objective",
         }
 
     def _minmax_normalize(self, objectives: np.ndarray[np.float64, np.dtype[np.float64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:

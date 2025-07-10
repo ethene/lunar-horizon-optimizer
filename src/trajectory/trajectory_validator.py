@@ -44,8 +44,8 @@ except ImportError:
 
 # Import constants (handle potential import issues gracefully)
 try:
-    from .defaults import TransferDefaults as TD
     from .constants import EphemerisLimits
+    from .defaults import TransferDefaults as TD
 except ImportError:
     # Fallback constants if import fails
     class TransferDefaults:
@@ -151,7 +151,7 @@ class TrajectoryValidator:
                 f"and {self.max_moon_alt/1000:.1f} km"
             )
             raise ValueError(
-                msg
+                msg,
             )
 
         if not (self.min_earth_alt/1000 <= earth_orbit_alt <= self.max_earth_alt/1000):
@@ -160,7 +160,7 @@ class TrajectoryValidator:
                 f"and {self.max_earth_alt/1000:.1f} km"
             )
             raise ValueError(
-                msg
+                msg,
             )
 
         if not (self.min_transfer_time <= transfer_time <= self.max_transfer_time):
@@ -169,7 +169,7 @@ class TrajectoryValidator:
                 f"and {self.max_transfer_time} days"
             )
             raise ValueError(
-                msg
+                msg,
             )
 
     def validate_delta_v(self, tli_dv: float, loi_dv: float) -> None:
@@ -262,14 +262,14 @@ def validate_epoch(dt: datetime, allow_none: bool = False) -> None:
             f"and {EphemerisLimits.MAX_YEAR}"
         )
         raise ValueError(
-            msg
+            msg,
         )
 
 
 def validate_orbit_altitude(
     altitude: float,
     min_alt: float = 200.0,  # Minimum safe perigee altitude
-    max_alt: float = 400000.0  # Maximum practical apogee altitude
+    max_alt: float = 400000.0,  # Maximum practical apogee altitude
 ) -> None:
     """Validate orbit altitude is within reasonable range.
 
@@ -290,7 +290,7 @@ def validate_orbit_altitude(
     if altitude < min_alt or altitude > max_alt:
         msg = f"Orbit altitude must be between {min_alt} and {max_alt} km"
         raise ValueError(
-            msg
+            msg,
         )
 
 
@@ -298,7 +298,7 @@ def validate_transfer_parameters(
     tof_days: float,
     max_revs: int,
     min_dv: float = TD.MIN_TLI_DV,
-    max_dv: float = TD.MAX_TLI_DV
+    max_dv: float = TD.MAX_TLI_DV,
 ) -> None:
     """Validate transfer trajectory parameters.
 
@@ -326,13 +326,13 @@ def validate_transfer_parameters(
             f"and {TD.MAX_TOF} days"
         )
         raise ValueError(
-            msg
+            msg,
         )
 
     if max_revs < 0 or max_revs > TD.MAX_REVOLUTIONS:
         msg = f"Maximum revolutions must be between 0 and {TD.MAX_REVOLUTIONS}"
         raise ValueError(
-            msg
+            msg,
         )
 
     if min_dv < 0 or max_dv < min_dv:
@@ -341,7 +341,7 @@ def validate_transfer_parameters(
             f"greater than min ({min_dv:.1f} km/s)"
         )
         raise ValueError(
-            msg
+            msg,
         )
 
 
@@ -369,13 +369,13 @@ def validate_initial_orbit(orbit: float | OrbitState) -> None:
     else:
         msg = "Initial orbit must be a float (altitude in km) or OrbitState object"
         raise TypeError(
-            msg
+            msg,
         )
 
 
 def validate_final_orbit(
     final_radius: float,
-    initial_radius: float
+    initial_radius: float,
 ) -> None:
     """Validate final orbit radius.
 
@@ -398,7 +398,7 @@ def validate_final_orbit(
             f"initial orbit radius ({initial_radius:.1f} km)"
         )
         raise ValueError(
-            msg
+            msg,
         )
 
 
@@ -409,5 +409,5 @@ __all__ = [
     "validate_final_orbit",
     "validate_initial_orbit",
     "validate_orbit_altitude",
-    "validate_transfer_parameters"
+    "validate_transfer_parameters",
 ]

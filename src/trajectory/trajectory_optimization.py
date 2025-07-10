@@ -5,9 +5,10 @@ for Earth-Moon transfers, including multi-objective optimization
 and constraint handling.
 """
 
-import numpy as np
-from scipy.optimize import minimize, differential_evolution
 import logging
+
+import numpy as np
+from scipy.optimize import differential_evolution, minimize
 
 from .constants import PhysicalConstants as PC
 from .lunar_transfer import LunarTransfer
@@ -38,7 +39,7 @@ class TrajectoryOptimizer:
         self.max_moon_alt = max_moon_alt
 
         self.lunar_transfer = LunarTransfer(
-            min_earth_alt, max_earth_alt, min_moon_alt, max_moon_alt
+            min_earth_alt, max_earth_alt, min_moon_alt, max_moon_alt,
         )
 
         logger.info("Initialized TrajectoryOptimizer for multi-objective optimization")
@@ -64,7 +65,7 @@ class TrajectoryOptimizer:
             bounds = {
                 "earth_alt": (self.min_earth_alt, self.max_earth_alt),
                 "moon_alt": (self.min_moon_alt, self.max_moon_alt),
-                "transfer_time": (3.0, 7.0)
+                "transfer_time": (3.0, 7.0),
             }
 
         logger.info(f"Optimizing trajectory for {objective} objective using {method}")
@@ -79,7 +80,7 @@ class TrajectoryOptimizer:
                     earth_orbit_alt=earth_alt,
                     moon_orbit_alt=moon_alt,
                     transfer_time=transfer_time,
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
 
                 if objective == "delta_v":
@@ -101,7 +102,7 @@ class TrajectoryOptimizer:
         opt_bounds = [
             bounds["earth_alt"],
             bounds["moon_alt"],
-            bounds["transfer_time"]
+            bounds["transfer_time"],
         ]
 
         # Perform optimization
@@ -111,7 +112,7 @@ class TrajectoryOptimizer:
                 bounds=opt_bounds,
                 seed=42,
                 maxiter=100,
-                popsize=15
+                popsize=15,
             )
         else:
             # Use initial guess at center of bounds
@@ -120,7 +121,7 @@ class TrajectoryOptimizer:
                 objective_function,
                 x0=x0,
                 bounds=opt_bounds,
-                method="L-BFGS-B"
+                method="L-BFGS-B",
             )
 
         # Extract optimal parameters
@@ -132,7 +133,7 @@ class TrajectoryOptimizer:
             earth_orbit_alt=optimal_earth_alt,
             moon_orbit_alt=optimal_moon_alt,
             transfer_time=optimal_transfer_time,
-            max_revolutions=0
+            max_revolutions=0,
         )
 
         optimization_result = {
@@ -141,15 +142,15 @@ class TrajectoryOptimizer:
             "optimal_parameters": {
                 "earth_orbit_alt": optimal_earth_alt,
                 "moon_orbit_alt": optimal_moon_alt,
-                "transfer_time": optimal_transfer_time
+                "transfer_time": optimal_transfer_time,
             },
             "optimal_trajectory": optimal_trajectory,
             "total_delta_v": optimal_dv,
             "optimization_info": {
                 "method": method,
                 "iterations": getattr(result, "nit", None),
-                "function_evaluations": getattr(result, "nfev", None)
-            }
+                "function_evaluations": getattr(result, "nfev", None),
+            },
         }
 
         logger.info(f"Optimization completed: {objective} = {result.fun:.2f}")
@@ -192,7 +193,7 @@ class TrajectoryOptimizer:
                     earth_orbit_alt=earth_alts[i],
                     moon_orbit_alt=moon_alts[i],
                     transfer_time=transfer_times[i],
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
 
                 # Calculate objective values
@@ -208,11 +209,11 @@ class TrajectoryOptimizer:
                     "parameters": {
                         "earth_orbit_alt": earth_alts[i],
                         "moon_orbit_alt": moon_alts[i],
-                        "transfer_time": transfer_times[i]
+                        "transfer_time": transfer_times[i],
                     },
                     "objectives": obj_values,
                     "trajectory": trajectory,
-                    "total_delta_v": total_dv
+                    "total_delta_v": total_dv,
                 }
 
                 solutions.append(solution)
@@ -257,7 +258,7 @@ class TrajectoryOptimizer:
                     earth_orbit_alt=earth_alt,
                     moon_orbit_alt=moon_alt,
                     transfer_time=transfer_time,
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
 
                 # Base objective value
@@ -291,7 +292,7 @@ class TrajectoryOptimizer:
         bounds = [
             (self.min_earth_alt, self.max_earth_alt),
             (self.min_moon_alt, self.max_moon_alt),
-            (3.0, 7.0)
+            (3.0, 7.0),
         ]
 
         # Perform constrained optimization
@@ -300,7 +301,7 @@ class TrajectoryOptimizer:
             bounds=bounds,
             seed=42,
             maxiter=150,
-            popsize=20
+            popsize=20,
         )
 
         # Generate final trajectory
@@ -310,7 +311,7 @@ class TrajectoryOptimizer:
             earth_orbit_alt=optimal_earth_alt,
             moon_orbit_alt=optimal_moon_alt,
             transfer_time=optimal_transfer_time,
-            max_revolutions=0
+            max_revolutions=0,
         )
 
         return {
@@ -320,11 +321,11 @@ class TrajectoryOptimizer:
             "optimal_parameters": {
                 "earth_orbit_alt": optimal_earth_alt,
                 "moon_orbit_alt": optimal_moon_alt,
-                "transfer_time": optimal_transfer_time
+                "transfer_time": optimal_transfer_time,
             },
             "optimal_trajectory": optimal_trajectory,
             "total_delta_v": optimal_dv,
-            "constraint_satisfaction": self._check_constraints(optimal_dv, optimal_transfer_time, constraints)
+            "constraint_satisfaction": self._check_constraints(optimal_dv, optimal_transfer_time, constraints),
         }
 
     def _find_pareto_front(self, solutions: list[dict], objectives: list[str]) -> list[dict]:

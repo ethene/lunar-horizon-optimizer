@@ -10,9 +10,10 @@ Note: While SPICE internally uses kilometers and seconds, all values are automat
 converted to PyKEP's native units (meters, m/s) before being returned.
 """
 
-import numpy as np
-from pathlib import Path
 import logging
+from pathlib import Path
+
+import numpy as np
 import spiceypy as spice
 
 # Configure logging
@@ -70,7 +71,7 @@ class CelestialBody:
                 - position vector [x, y, z] in meters
                 - velocity vector [vx, vy, vz] in meters/second
         """
-        if not isinstance(epoch, (int, float)):
+        if not isinstance(epoch, int | float):
             msg = f"Epoch must be a number, got {type(epoch)}"
             raise TypeError(msg)
 
@@ -99,7 +100,7 @@ class CelestialBody:
                 - position vector [x, y, z] in meters
                 - velocity vector [vx, vy, vz] in meters/second
         """
-        if not isinstance(epoch, (int, float)):
+        if not isinstance(epoch, int | float):
             msg = f"Epoch must be a number, got {type(epoch)}"
             raise TypeError(msg)
 
@@ -128,7 +129,7 @@ class CelestialBody:
                 - position vector [x, y, z] in meters
                 - velocity vector [vx, vy, vz] in meters/second
         """
-        if not isinstance(epoch, (int, float)):
+        if not isinstance(epoch, int | float):
             msg = f"Epoch must be a number, got {type(epoch)}"
             raise TypeError(msg)
 

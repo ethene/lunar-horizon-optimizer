@@ -17,16 +17,16 @@ import warnings
 warnings.warn(
     "mission_config.py is deprecated. Import from src.config.models instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export from the new models module for backward compatibility
-from .models import MissionConfig
-from .spacecraft import PayloadSpecification
-from .orbit import OrbitParameters
 from .costs import CostFactors
-from .isru import IsruCapabilities
 from .enums import IsruResourceType
+from .isru import IsruCapabilities
+from .models import MissionConfig
+from .orbit import OrbitParameters
+from .spacecraft import PayloadSpecification
 
 # Backward compatibility aliases
 IsruTarget = IsruCapabilities
@@ -38,5 +38,5 @@ __all__ = [
     "IsruTarget",
     "MissionConfig",
     "OrbitParameters",
-    "PayloadSpecification"
+    "PayloadSpecification",
 ]

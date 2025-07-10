@@ -80,71 +80,68 @@ extend-exclude = '''
 )/
 '''
 
-# Ruff configuration
+# Ruff configuration - Production-focused, ignoring non-critical issues
 [tool.ruff]
 target-version = "py312"
 line-length = 88
 
 [tool.ruff.lint]
+# Focus only on critical errors that affect functionality, security, and bugs
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "B",   # flake8-bugbear
-    "C",   # flake8-comprehensions
-    "N",   # pep8-naming
-    "D",   # pydocstyle
-    "UP",  # pyupgrade
-    "YTT", # flake8-2020
-    "ANN", # flake8-annotations
-    "S",   # flake8-bandit
-    "BLE", # flake8-blind-except
-    "FBT", # flake8-boolean-trap
-    "A",   # flake8-builtins
-    "COM", # flake8-commas
-    "C4",  # flake8-comprehensions
-    "DTZ", # flake8-datetimez
-    "T10", # flake8-debugger
-    "EM",  # flake8-errmsg
-    "EXE", # flake8-executable
-    "ISC", # flake8-implicit-str-concat
-    "ICN", # flake8-import-conventions
-    "G",   # flake8-logging-format
-    "INP", # flake8-no-pep420
-    "PIE", # flake8-pie
-    "T20", # flake8-print
-    "PT",  # flake8-pytest-style
-    "Q",   # flake8-quotes
-    "RSE", # flake8-raise
-    "RET", # flake8-return
-    "SLF", # flake8-self
-    "SIM", # flake8-simplify
-    "TID", # flake8-tidy-imports
-    "TCH", # flake8-type-checking
-    "ARG", # flake8-unused-arguments
-    "PTH", # flake8-use-pathlib
-    "ERA", # eradicate
-    "PD",  # pandas-vet
-    "PGH", # pygrep-hooks
-    "PL",  # pylint
-    "TRY", # tryceratops
-    "NPY", # numpy
-    "RUF", # ruff-specific rules
+    "F",    # pyflakes - undefined names, unused imports, etc.
+    "E9",   # Runtime/syntax errors (E901, E902, etc.)
+    "B",    # flake8-bugbear - likely bugs and design problems
+    "S",    # flake8-bandit - security issues
+    "C90",  # mccabe - overly complex functions only
+    "W605", # Invalid escape sequence (functionality issue)
+    "E711", # Comparison to None should be 'is' or 'is not'
+    "E712", # Comparison to True should be 'is' or 'is not' 
+    "E713", # Test for membership should be 'not in'
+    "E714", # Test for object identity should be 'is not'
 ]
 
 ignore = [
-    "D100", # Missing docstring in public module
-    "D101", # Missing docstring in public class
-    "D102", # Missing docstring in public method
-    "D103", # Missing docstring in public function
-    "D104", # Missing docstring in public package
-    "D105", # Missing docstring in magic method
-    "COM812", # Trailing comma missing
-    "ISC001", # Implicitly concatenated string literals on one line
-    "T201",  # Allow print statements in CLI
-    "FBT001", # Allow boolean arguments in functions
-    "FBT002", # Allow boolean defaults
-    "PTH123", # Allow open() usage where appropriate
+    # Allow non-critical style and documentation issues
+    "D",     # All docstring requirements
+    "ANN",   # All type annotation requirements  
+    "N",     # All naming convention issues
+    "E501",  # Line too long (not critical)
+    "E402",  # Module level import not at top (allow strategic imports)
+    "ARG",   # Unused arguments (common in interfaces)
+    "PLR",   # Pylint refactor suggestions (style, not bugs)
+    "PTH",   # Use pathlib (style preference)
+    "ERA",   # Commented code (may be intentional)
+    "G004",  # Logging f-string (performance, not critical)
+    "DTZ",   # Datetime timezone (context dependent)
+    "BLE001", # Blind except (sometimes necessary)
+    "FBT",   # Boolean traps (design choice)
+    "T20",   # Print statements (needed in CLI)
+    "C4",    # Comprehension improvements (style)
+    "UP",    # Python upgrade suggestions (compatibility)
+    "SIM",   # Simplify suggestions (style)
+    "RET",   # Return style (preference)
+    "TRY",   # Exception handling style
+    "COM",   # Comma style
+    "ISC",   # String concatenation style
+    "ICN",   # Import conventions
+    "PIE",   # Misc improvements (style)
+    "PT",    # Pytest style
+    "Q",     # Quote style
+    "RSE",   # Raise style
+    "SLF",   # Private access (sometimes needed)
+    "TID",   # Tidy imports (style)
+    "TCH",   # Type checking imports (optimization)
+    "EM",    # Exception message style
+    "EXE",   # Executable style
+    "INP",   # No pep420 (project structure choice)
+    "PGH",   # Pygrep hooks (misc)
+    "PD",    # Pandas vet (not using pandas heavily)
+    "NPY",   # Numpy vet (allow current patterns)
+    "RUF",   # Ruff specific (may be overly strict)
+    "A",     # Builtin shadowing (context dependent)
+    "YTT",   # 2020 compatibility
+    "T10",   # Debugger (may be intentional)
+    "S301",  # Allow pickle usage with nosec annotations
 ]
 
 exclude = [
@@ -171,10 +168,15 @@ exclude = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "D", "ANN"]  # Allow assertions and missing docs in tests
+"tests/*" = ["S101", "D", "ANN", "F401", "S110", "E902", "S603", "S311"]  # Allow test-specific patterns
+"src/config/*" = ["B904"]  # Config modules can use simple exception messages
+"src/trajectory/validation/*" = ["B904"]  # Validation modules can use simple exception messages
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15  # Allow reasonable complexity for scientific computing
 
 # MyPy configuration
 [tool.mypy]

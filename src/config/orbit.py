@@ -7,8 +7,9 @@ All parameters use consistent units:
 - Time: seconds (s)
 """
 
-from pydantic import BaseModel, Field, model_validator
 import numpy as np
+from pydantic import BaseModel, Field, model_validator
+
 
 class OrbitParameters(BaseModel):
     """Orbital parameters specification."""
@@ -16,42 +17,42 @@ class OrbitParameters(BaseModel):
     semi_major_axis: float = Field(
         ...,
         gt=0,
-        description="Semi-major axis (km)"
+        description="Semi-major axis (km)",
     )
 
     eccentricity: float = Field(
         ...,
         ge=0,
         lt=1,
-        description="Orbit eccentricity"
+        description="Orbit eccentricity",
     )
 
     inclination: float = Field(
         ...,
         ge=0,
         le=180,
-        description="Orbit inclination (degrees)"
+        description="Orbit inclination (degrees)",
     )
 
     raan: float = Field(
         default=0.0,
         ge=0,
         lt=360,
-        description="Right ascension of ascending node (degrees)"
+        description="Right ascension of ascending node (degrees)",
     )
 
     argument_of_periapsis: float = Field(
         default=0.0,
         ge=0,
         lt=360,
-        description="Argument of periapsis (degrees)"
+        description="Argument of periapsis (degrees)",
     )
 
     true_anomaly: float = Field(
         default=0.0,
         ge=0,
         lt=360,
-        description="True anomaly (degrees)"
+        description="True anomaly (degrees)",
     )
 
     @model_validator(mode="after")
@@ -63,7 +64,7 @@ class OrbitParameters(BaseModel):
                 "than Earth's radius (6378 km)"
             )
             raise ValueError(
-                msg
+                msg,
             )
         return self
 

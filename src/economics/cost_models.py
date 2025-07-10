@@ -4,10 +4,11 @@ This module provides detailed cost modeling for different mission phases
 including development, launch, and operational costs with parametric scaling.
 """
 
-import numpy as np
-from typing import Any
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 from src.config.costs import CostFactors
 
@@ -51,7 +52,7 @@ class MissionCostModel:
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=100000.0,
             development_cost=1e9,
-            contingency_percentage=20.0
+            contingency_percentage=20.0,
         )
 
         # Cost escalation factors (based on historical space mission data)
@@ -66,14 +67,14 @@ class MissionCostModel:
                 "simple": 1.0,      # Single spacecraft, simple operations
                 "moderate": 1.5,    # Multiple systems, moderate complexity
                 "complex": 2.5,     # Complex systems, high integration
-                "flagship": 4.0     # Flagship-class mission
+                "flagship": 4.0,     # Flagship-class mission
             },
             "schedule_pressure": {
                 "relaxed": 1.0,     # Normal development timeline
                 "nominal": 1.2,     # Slight schedule pressure
                 "aggressive": 1.8,  # Aggressive schedule
-                "crash": 3.0        # Crash program
-            }
+                "crash": 3.0,        # Crash program
+            },
         }
 
         logger.info("Initialized MissionCostModel with parametric scaling")
@@ -117,7 +118,7 @@ class MissionCostModel:
             spacecraft=base_costs.spacecraft * tech_factor * complexity_factor,
             operations=base_costs.operations * complexity_factor,
             ground_systems=base_costs.ground_systems * complexity_factor,
-            contingency=0.0  # Will be calculated below
+            contingency=0.0,  # Will be calculated below
         )
 
         # Add contingency
@@ -156,7 +157,7 @@ class MissionCostModel:
             launch=launch_cost,
             spacecraft=spacecraft_cost,
             operations=operations_cost,
-            ground_systems=ground_systems_cost
+            ground_systems=ground_systems_cost,
         )
 
     def _estimate_launch_cost(self, spacecraft_mass: float) -> float:
@@ -192,7 +193,7 @@ class MissionCostModel:
         base_cost = self.estimate_total_mission_cost(**base_params)
         results = {
             "base_cost": base_cost.total,
-            "sensitivities": {}
+            "sensitivities": {},
         }
 
         for param, (min_val, max_val) in sensitivity_ranges.items():
@@ -217,7 +218,7 @@ class MissionCostModel:
                 "parameter_values": param_values.tolist(),
                 "costs": costs,
                 "sensitivity_ratio": sensitivity,
-                "cost_range": (min(costs), max(costs))
+                "cost_range": (min(costs), max(costs)),
             }
 
         return results
@@ -239,29 +240,29 @@ class LaunchCostModel:
                 "leo_capacity": 22800,
                 "gto_capacity": 8300,
                 "tml_capacity": 4500,  # Trans-lunar injection
-                "reusable_discount": 0.7
+                "reusable_discount": 0.7,
             },
             "Falcon Heavy": {
                 "cost": 150,
                 "leo_capacity": 63800,
                 "gto_capacity": 26700,
                 "tml_capacity": 16800,
-                "reusable_discount": 0.75
+                "reusable_discount": 0.75,
             },
             "SLS Block 1": {
                 "cost": 2000,  # Estimated cost per launch
                 "leo_capacity": 95000,
                 "gto_capacity": 37000,
                 "tml_capacity": 26000,
-                "reusable_discount": 1.0  # Not reusable
+                "reusable_discount": 1.0,  # Not reusable
             },
             "Starship": {
                 "cost": 50,   # Projected cost
                 "leo_capacity": 150000,
                 "gto_capacity": 100000,
                 "tml_capacity": 100000,  # With refueling
-                "reusable_discount": 0.5
-            }
+                "reusable_discount": 0.5,
+            },
         }
 
         logger.info(f"Initialized LaunchCostModel with {len(self.launch_vehicles)} vehicle options")
@@ -305,7 +306,7 @@ class LaunchCostModel:
                     "capacity": specs[capacity_key],
                     "utilization": utilization,
                     "cost_per_kg": cost_per_kg,
-                    "reusable": use_reusable and specs["reusable_discount"] < 1.0
+                    "reusable": use_reusable and specs["reusable_discount"] < 1.0,
                 })
 
         if not viable_vehicles:
@@ -324,7 +325,7 @@ class LaunchCostModel:
             "optimal_vehicle": optimal_vehicle,
             "all_options": viable_vehicles,
             "payload_mass": payload_mass,
-            "destination": destination
+            "destination": destination,
         }
 
         logger.info(f"Optimal vehicle: {optimal_vehicle['name']} at ${optimal_vehicle['cost']:.1f}M "
@@ -360,7 +361,7 @@ class LaunchCostModel:
                 "vehicle": single_launch["optimal_vehicle"]["name"],
                 "total_cost": single_launch["optimal_vehicle"]["cost"],
                 "payload_per_launch": total_payload,
-                "total_utilization": single_launch["optimal_vehicle"]["utilization"]
+                "total_utilization": single_launch["optimal_vehicle"]["utilization"],
             })
 
         # Multi-launch options
@@ -385,7 +386,7 @@ class LaunchCostModel:
                     "vehicle": vehicle_name,
                     "total_cost": total_cost,
                     "payload_per_launch": payload_per_launch,
-                    "total_utilization": utilization
+                    "total_utilization": utilization,
                 })
 
         # Sort strategies by total cost
@@ -397,7 +398,7 @@ class LaunchCostModel:
             "optimal_strategy": optimal_strategy,
             "all_strategies": strategies,
             "total_payload": total_payload,
-            "destination": destination
+            "destination": destination,
         }
 
         if optimal_strategy:
@@ -423,18 +424,18 @@ class OperationalCostModel:
                 "mission_planning": 200000,       # Mission planning
                 "spacecraft_health": 150000,      # Spacecraft monitoring
                 "data_processing": 300000,        # Science data processing
-                "ground_communications": 100000   # Ground station costs
+                "ground_communications": 100000,   # Ground station costs
             },
             "science_operations": {
                 "science_team": 200000,           # Science team support
                 "data_analysis": 150000,          # Data analysis
-                "instrument_operations": 100000  # Instrument operations
+                "instrument_operations": 100000,  # Instrument operations
             },
             "administrative": {
                 "program_management": 150000,     # Program management
                 "systems_engineering": 100000,   # Systems engineering
-                "quality_assurance": 50000       # QA/Safety
-            }
+                "quality_assurance": 50000,       # QA/Safety
+            },
         }
 
         logger.info("Initialized OperationalCostModel")
@@ -460,14 +461,14 @@ class OperationalCostModel:
         phase_multipliers = {
             "commissioning": 1.5,  # Higher staffing during commissioning
             "nominal": 1.0,        # Baseline operations
-            "extended": 0.7        # Reduced staffing for mission extensions
+            "extended": 0.7,        # Reduced staffing for mission extensions
         }
 
         # Science level multipliers
         science_multipliers = {
             "minimal": 0.5,    # Minimal science operations
             "standard": 1.0,   # Standard science operations
-            "intensive": 1.5   # Intensive science operations
+            "intensive": 1.5,   # Intensive science operations
         }
 
         phase_factor = phase_multipliers.get(mission_phase, 1.0)
@@ -491,13 +492,13 @@ class OperationalCostModel:
                 total_cost = adjusted_cost * mission_duration_months
                 category_breakdown[subcat] = {
                     "monthly_cost": adjusted_cost,
-                    "total_cost": total_cost
+                    "total_cost": total_cost,
                 }
                 category_total += total_cost
 
             total_costs[category] = {
                 "breakdown": category_breakdown,
-                "total": category_total
+                "total": category_total,
             }
             monthly_total += category_total / mission_duration_months
 
@@ -510,7 +511,7 @@ class OperationalCostModel:
             "mission_duration_months": mission_duration_months,
             "mission_phase": mission_phase,
             "science_level": science_level,
-            "cost_per_month_actual": grand_total / mission_duration_months
+            "cost_per_month_actual": grand_total / mission_duration_months,
         }
 
         logger.info(f"Total operational cost: ${grand_total/1e6:.1f}M over {mission_duration_months} months")
@@ -534,32 +535,32 @@ class OperationalCostModel:
                 "description": "Increased automation of routine operations",
                 "affected_categories": ["mission_operations", "science_operations"],
                 "reduction_factor": 0.8,  # 20% reduction
-                "implementation_cost": 2000000  # $2M implementation cost
+                "implementation_cost": 2000000,  # $2M implementation cost
             },
             "remote_operations": {
                 "description": "Remote operations to reduce facility costs",
                 "affected_categories": ["administrative"],
                 "reduction_factor": 0.85,  # 15% reduction
-                "implementation_cost": 500000   # $0.5M implementation cost
+                "implementation_cost": 500000,   # $0.5M implementation cost
             },
             "data_processing_optimization": {
                 "description": "Optimized data processing workflows",
                 "affected_categories": ["mission_operations"],
                 "affected_subcategories": ["data_processing"],
                 "reduction_factor": 0.7,   # 30% reduction
-                "implementation_cost": 1000000  # $1M implementation cost
+                "implementation_cost": 1000000,  # $1M implementation cost
             },
             "extended_mission_efficiency": {
                 "description": "Efficiency improvements for extended mission",
                 "applicable_phases": ["extended"],
                 "reduction_factor": 0.6,   # 40% reduction vs nominal
-                "implementation_cost": 0   # No additional cost
-            }
+                "implementation_cost": 0,   # No additional cost
+            },
         }
 
         analysis_results = {
             "base_total_cost": base_costs["total_cost"],
-            "strategies": {}
+            "strategies": {},
         }
 
         for strategy_name, strategy in reduction_strategies.items():
@@ -591,14 +592,14 @@ class OperationalCostModel:
                 "implementation_cost": strategy["implementation_cost"],
                 "net_savings": net_savings,
                 "roi": roi,
-                "payback_months": strategy["implementation_cost"] / (savings / base_costs["mission_duration_months"]) if savings > 0 else float("inf")
+                "payback_months": strategy["implementation_cost"] / (savings / base_costs["mission_duration_months"]) if savings > 0 else float("inf"),
             }
 
         # Rank strategies by ROI
         ranked_strategies = sorted(
             analysis_results["strategies"].items(),
             key=lambda x: x[1]["roi"],
-            reverse=True
+            reverse=True,
         )
 
         analysis_results["recommended_order"] = [name for name, _ in ranked_strategies]
@@ -616,5 +617,5 @@ def create_cost_model_suite() -> dict[str, Any]:
     return {
         "mission_cost_model": MissionCostModel(),
         "launch_cost_model": LaunchCostModel(),
-        "operational_cost_model": OperationalCostModel()
+        "operational_cost_model": OperationalCostModel(),
     }

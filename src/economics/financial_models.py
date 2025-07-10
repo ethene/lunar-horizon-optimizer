@@ -4,11 +4,12 @@ This module provides fundamental financial analysis tools including ROI, NPV,
 and cash flow modeling for lunar mission economic evaluation.
 """
 
-import numpy as np
-from typing import Any
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import logging
+from typing import Any
+
+import numpy as np
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -365,7 +366,7 @@ class NPVAnalyzer:
             sensitivity_results[variable] = {
                 "variable_values": variable_values.tolist(),
                 "npv_values": npv_values,
-                "sensitivity": (max(npv_values) - min(npv_values)) / (max_val - min_val)
+                "sensitivity": (max(npv_values) - min(npv_values)) / (max_val - min_val),
             }
 
         return sensitivity_results
@@ -477,7 +478,7 @@ class ROICalculator:
         comparison = {
             "investments": investments,
             "rankings": {},
-            "best_options": {}
+            "best_options": {},
         }
 
         # Rank by different metrics
@@ -490,7 +491,7 @@ class ROICalculator:
                 sorted_investments = sorted(
                     investments.items(),
                     key=lambda x: x[1][metric],
-                    reverse=reverse_order
+                    reverse=reverse_order,
                 )
 
                 comparison["rankings"][metric] = [name for name, _ in sorted_investments]
@@ -512,7 +513,7 @@ def create_mission_cash_flow_model(mission_config: dict[str, Any]) -> CashFlowMo
     financial_params = FinancialParameters(
         discount_rate=mission_config.get("discount_rate", 0.08),
         inflation_rate=mission_config.get("inflation_rate", 0.03),
-        project_duration_years=mission_config.get("duration_years", 10)
+        project_duration_years=mission_config.get("duration_years", 10),
     )
 
     model = CashFlowModel(financial_params)
@@ -523,7 +524,7 @@ def create_mission_cash_flow_model(mission_config: dict[str, Any]) -> CashFlowMo
         model.add_development_costs(
             total_cost=dev_config["total_cost"],
             start_date=datetime.fromisoformat(dev_config["start_date"]),
-            duration_months=dev_config["duration_months"]
+            duration_months=dev_config["duration_months"],
         )
 
     # Add launch costs
@@ -532,7 +533,7 @@ def create_mission_cash_flow_model(mission_config: dict[str, Any]) -> CashFlowMo
         launch_dates = [datetime.fromisoformat(date) for date in launch_config["dates"]]
         model.add_launch_costs(
             cost_per_launch=launch_config["cost_per_launch"],
-            launch_dates=launch_dates
+            launch_dates=launch_dates,
         )
 
     # Add operational costs
@@ -541,7 +542,7 @@ def create_mission_cash_flow_model(mission_config: dict[str, Any]) -> CashFlowMo
         model.add_operational_costs(
             monthly_cost=ops_config["monthly_cost"],
             start_date=datetime.fromisoformat(ops_config["start_date"]),
-            duration_months=ops_config["duration_months"]
+            duration_months=ops_config["duration_months"],
         )
 
     # Add revenue streams
@@ -550,7 +551,7 @@ def create_mission_cash_flow_model(mission_config: dict[str, Any]) -> CashFlowMo
         model.add_revenue_stream(
             monthly_revenue=rev_config["monthly_revenue"],
             start_date=datetime.fromisoformat(rev_config["start_date"]),
-            duration_months=rev_config["duration_months"]
+            duration_months=rev_config["duration_months"],
         )
 
     return model

@@ -4,15 +4,16 @@ This module implements comprehensive Earth-Moon trajectory generation including
 Lambert solvers, patched conics approximation, and optimal timing calculations.
 """
 
+import logging
+from datetime import UTC, datetime, timedelta
+
 import numpy as np
 import pykep as pk
-import logging
-from datetime import datetime, timedelta, UTC
 
-from .constants import PhysicalConstants as PC
 from .celestial_bodies import CelestialBody
-from .models import Trajectory, OrbitState
+from .constants import PhysicalConstants as PC
 from .lunar_transfer import LunarTransfer
+from .models import OrbitState, Trajectory
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ class LambertSolver:
             # Use PyKEP's Lambert solver
             lambert = pk.lambert_problem(
                 r1.tolist(), r2.tolist(), time_of_flight, self.mu,
-                cw=direction > 0, max_revs=max_revolutions
+                cw=direction > 0, max_revs=max_revolutions,
             )
 
             if not lambert.get_v1():
@@ -81,7 +82,7 @@ class LambertSolver:
 
         except Exception as e:
             msg = f"Lambert problem solution failed: {e!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from e
 
     def solve_multiple_revolution(self,
                                 r1: np.ndarray,
@@ -183,7 +184,7 @@ class PatchedConicsApproximation:
 
         # Phase 2: Heliocentric transfer (simplified to Earth-Moon system)
         transfer_trajectory = self._calculate_earth_moon_transfer(
-            earth_escape, moon_arrival, transfer_time
+            earth_escape, moon_arrival, transfer_time,
         )
 
         # Phase 3: Moon capture trajectory
@@ -198,7 +199,7 @@ class PatchedConicsApproximation:
                            transfer_trajectory["deltav"] +
                            moon_capture["deltav"]),
             "transfer_time": transfer_time,
-            "method": "patched_conics"
+            "method": "patched_conics",
         }
 
         logger.info(f"Patched conics trajectory complete: "
@@ -233,7 +234,7 @@ class PatchedConicsApproximation:
             "escape_velocity": v_escape,
             "deltav": deltav_escape,
             "v_infinity": v_infinity,
-            "phase": "earth_escape"
+            "phase": "earth_escape",
         }
 
     def _calculate_earth_moon_transfer(self,
@@ -268,7 +269,7 @@ class PatchedConicsApproximation:
             "transfer_velocity": transfer_velocity,
             "transfer_time": transfer_time,
             "deltav": deltav_transfer,
-            "phase": "earth_moon_transfer"
+            "phase": "earth_moon_transfer",
         }
 
     def _calculate_moon_capture(self,
@@ -299,7 +300,7 @@ class PatchedConicsApproximation:
             "lunar_velocity": v_moon_orbit,
             "approach_velocity": v_approach,
             "deltav": deltav_capture,
-            "phase": "moon_capture"
+            "phase": "moon_capture",
         }
 
 
@@ -352,7 +353,7 @@ class OptimalTimingCalculator:
                         earth_orbit_alt=earth_orbit_alt,
                         moon_orbit_alt=moon_orbit_alt,
                         transfer_time=transfer_time,
-                        max_revolutions=0
+                        max_revolutions=0,
                     )
 
                     if total_dv < best_deltav:
@@ -375,7 +376,7 @@ class OptimalTimingCalculator:
             "optimal_deltav": best_deltav,
             "search_period_days": search_days,
             "earth_orbit_alt": earth_orbit_alt,
-            "moon_orbit_alt": moon_orbit_alt
+            "moon_orbit_alt": moon_orbit_alt,
         }
 
         logger.info(f"Optimal departure: {optimal_date.strftime('%Y-%m-%d')}, "
@@ -422,7 +423,7 @@ class OptimalTimingCalculator:
                 start_epoch=window_start,
                 search_days=min(search_step + 5, search_days),
                 earth_orbit_alt=300.0,
-                moon_orbit_alt=100.0
+                moon_orbit_alt=100.0,
             )
             windows.append(window_result)
 
@@ -454,7 +455,7 @@ class OptimalTimingCalculator:
             "reference_epoch": optimal_epoch,
             "time_variations": time_variations,
             "deltav_variations": [],
-            "sensitivity_slope": 0.0
+            "sensitivity_slope": 0.0,
         }
 
         reference_deltav = None
@@ -468,7 +469,7 @@ class OptimalTimingCalculator:
                     earth_orbit_alt=300.0,
                     moon_orbit_alt=100.0,
                     transfer_time=4.0,
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
 
                 if time_delta == 0.0:
@@ -517,7 +518,7 @@ def generate_earth_moon_trajectory(departure_epoch: float,
             earth_orbit_alt=earth_orbit_alt,
             moon_orbit_alt=moon_orbit_alt,
             transfer_time=transfer_time,
-            max_revolutions=0
+            max_revolutions=0,
         )
     if method == "patched_conics":
         # Create orbit states from position and velocity vectors
@@ -530,20 +531,20 @@ def generate_earth_moon_trajectory(departure_epoch: float,
             position=((PC.EARTH_RADIUS + earth_orbit_alt * 1000) / 1000, 0, 0),  # Convert to km
             velocity=(0, np.sqrt(PC.EARTH_MU / (PC.EARTH_RADIUS + earth_orbit_alt * 1000)) / 1000, 0),  # Convert to km/s
             epoch=departure_time,
-            mu=PC.EARTH_MU
+            mu=PC.EARTH_MU,
         )
 
         moon_state = OrbitState.from_state_vectors(
             position=((PC.MOON_RADIUS + moon_orbit_alt * 1000) / 1000, 0, 0),  # Convert to km
             velocity=(0, np.sqrt(PC.MOON_MU / (PC.MOON_RADIUS + moon_orbit_alt * 1000)) / 1000, 0),  # Convert to km/s
             epoch=arrival_time,
-            mu=PC.MOON_MU
+            mu=PC.MOON_MU,
         )
 
         # Use patched conics
         patched_conics = PatchedConicsApproximation()
         trajectory_data = patched_conics.calculate_trajectory(
-            earth_state, moon_state, transfer_time * 86400
+            earth_state, moon_state, transfer_time * 86400,
         )
 
         # Create trajectory object (simplified)
@@ -554,7 +555,7 @@ def generate_earth_moon_trajectory(departure_epoch: float,
             departure_pos=earth_state.position,
             departure_vel=earth_state.velocity(mu=PC.EARTH_MU),
             arrival_pos=moon_state.position,
-            arrival_vel=moon_state.velocity(mu=PC.MOON_MU)
+            arrival_vel=moon_state.velocity(mu=PC.MOON_MU),
         )
 
         return trajectory, trajectory_data["total_deltav"]
@@ -588,5 +589,5 @@ def find_optimal_launch_window(target_date: datetime,
         start_epoch=target_epoch - window_days // 2,
         search_days=window_days,
         earth_orbit_alt=earth_orbit_alt,
-        moon_orbit_alt=moon_orbit_alt
+        moon_orbit_alt=moon_orbit_alt,
     )

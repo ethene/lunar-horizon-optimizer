@@ -28,8 +28,9 @@ Reference Frames:
 - Time is referenced to J2000 epoch (2000-01-01 12:00:00 UTC)
 """
 
-import pykep as pk
 import numpy as np
+import pykep as pk
+
 
 class Units:
     """Unit conversion constants from PyKEP.
@@ -71,7 +72,7 @@ class PhysicalConstants:
 
     Moon constants are sourced from JPL DE440 ephemeris as they're not in PyKEP.
     """
-    
+
     # Common trajectory limits
     MIN_PERIGEE = 200e3  # m (minimum perigee altitude)
     MAX_APOGEE = 1000e3  # m (maximum apogee altitude)

@@ -326,4 +326,250 @@ class TestAnalyzer:
             print(f"  {check_type}: {status}")
             if results.get('issues'):
                 for issue in results['issues'][:3]:  # Show first 3 issues
-                    print(f"    - {issue}")\n    \n    def _check_realistic_ranges(self) -> Dict[str, Any]:\n        \"\"\"Check that test values are within realistic ranges.\"\"\"\n        issues = []\n        \n        # Check if realistic ranges are being validated in tests\n        for category, test_files in self.test_categories.items():\n            for test_file in test_files:\n                if self._test_file_exists(test_file):\n                    test_path = self.test_dir / test_file\n                    try:\n                        with open(test_path, 'r') as f:\n                            content = f.read()\n                            \n                        # Look for range validations\n                        if 'assert' in content and ('>' in content or '<' in content):\n                            # Good - has range checks\n                            pass\n                        else:\n                            issues.append(f\"{test_file}: Missing range validation checks\")\n                    except Exception as e:\n                        issues.append(f\"{test_file}: Could not analyze - {e}\")\n        \n        return {\n            'status': 'pass' if len(issues) < 3 else 'needs_attention',\n            'issues': issues,\n            'checked_ranges': list(self.realistic_ranges.keys())\n        }\n    \n    def _check_physical_constants(self) -> Dict[str, Any]:\n        \"\"\"Check that physical constants are reasonable.\"\"\"\n        issues = []\n        \n        try:\n            # Import and check constants\n            from trajectory.constants import PhysicalConstants as PC\n            \n            # Check Earth constants\n            if not (6.0e6 < PC.EARTH_RADIUS < 7.0e6):\n                issues.append(f\"Earth radius unrealistic: {PC.EARTH_RADIUS}\")\n            \n            if not (3.9e14 < PC.EARTH_MU < 4.1e14):\n                issues.append(f\"Earth mu unrealistic: {PC.EARTH_MU}\")\n            \n            # Check Moon constants\n            if not (1.5e6 < PC.MOON_RADIUS < 2.0e6):\n                issues.append(f\"Moon radius unrealistic: {PC.MOON_RADIUS}\")\n            \n            if not (4.8e12 < PC.MOON_MU < 5.0e12):\n                issues.append(f\"Moon mu unrealistic: {PC.MOON_MU}\")\n            \n            # Check Sun constants (if available)\n            if hasattr(PC, 'SUN_MU'):\n                if not (1.0e20 < PC.SUN_MU < 1.5e20):\n                    issues.append(f\"Sun mu unrealistic: {PC.SUN_MU}\")\n            \n        except Exception as e:\n            issues.append(f\"Could not import constants: {e}\")\n        \n        return {\n            'status': 'pass' if len(issues) == 0 else 'needs_attention',\n            'issues': issues\n        }\n    \n    def _check_calculation_consistency(self) -> Dict[str, Any]:\n        \"\"\"Check that calculations are consistent and sensible.\"\"\"\n        issues = []\n        \n        # Check if we can run basic calculations\n        try:\n            import numpy as np\n            \n            # Basic orbital mechanics sanity\n            earth_radius = 6.378e6  # m\n            earth_mu = 3.986e14     # m³/s²\n            \n            # Circular velocity at 400 km altitude\n            altitude = 400e3  # m\n            orbit_radius = earth_radius + altitude\n            circular_velocity = np.sqrt(earth_mu / orbit_radius)\n            \n            if not (7000 < circular_velocity < 8000):\n                issues.append(f\"LEO velocity unrealistic: {circular_velocity:.0f} m/s\")\n            \n            # Escape velocity\n            escape_velocity = np.sqrt(2 * earth_mu / earth_radius)\n            if not (11000 < escape_velocity < 12000):\n                issues.append(f\"Earth escape velocity unrealistic: {escape_velocity:.0f} m/s\")\n            \n        except Exception as e:\n            issues.append(f\"Could not perform basic calculations: {e}\")\n        \n        return {\n            'status': 'pass' if len(issues) == 0 else 'needs_attention',\n            'issues': issues\n        }\n    \n    def _check_result_validation(self) -> Dict[str, Any]:\n        \"\"\"Check that test results are being properly validated.\"\"\"\n        issues = []\n        \n        # Check test results for unrealistic values\n        for suite_name, result in self.test_results.items():\n            if result.get('status') == 'passed':\n                # Good - tests are passing\n                continue\n            elif result.get('status') == 'failed':\n                if result.get('failed', 0) > 0:\n                    issues.append(f\"{suite_name}: {result['failed']} tests failing\")\n        \n        return {\n            'status': 'pass' if len(issues) < 2 else 'needs_attention',\n            'issues': issues\n        }\n    \n    def _print_coverage_summary(self) -> None:\n        \"\"\"Print module coverage summary.\"\"\"\n        coverage = self.coverage_analysis\n        \n        print(f\"\\n📋 MODULE COVERAGE SUMMARY:\")\n        print(f\"  Source modules: {len(coverage['src_modules'])}\")\n        print(f\"  Test files: {len(coverage['test_files'])}\")\n        print(f\"  Coverage gaps: {len(coverage['coverage_gaps'])}\")\n        \n        if coverage['coverage_gaps']:\n            print(f\"\\n⚠️ MODULES WITHOUT DEDICATED TESTS:\")\n            for module in coverage['coverage_gaps'][:10]:  # Show first 10\n                print(f\"    - {module}\")\n            if len(coverage['coverage_gaps']) > 10:\n                print(f\"    ... and {len(coverage['coverage_gaps']) - 10} more\")\n    \n    def _generate_comprehensive_report(self) -> Dict[str, Any]:\n        \"\"\"Generate comprehensive test report.\"\"\"\n        # Calculate overall statistics\n        total_tests = sum(r.get('total', 0) for r in self.test_results.values())\n        total_passed = sum(r.get('passed', 0) for r in self.test_results.values())\n        total_failed = sum(r.get('failed', 0) for r in self.test_results.values())\n        total_skipped = sum(r.get('skipped', 0) for r in self.test_results.values())\n        total_time = sum(r.get('execution_time', 0) for r in self.test_results.values())\n        \n        pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0\n        \n        report = {\n            'analysis_date': datetime.now().isoformat(),\n            'environment': self._get_environment_info(),\n            'summary': {\n                'total_tests': total_tests,\n                'passed': total_passed,\n                'failed': total_failed,\n                'skipped': total_skipped,\n                'pass_rate': pass_rate,\n                'total_execution_time': total_time\n            },\n            'test_results': self.test_results,\n            'coverage_analysis': self.coverage_analysis,\n            'sanity_check_results': self.sanity_check_results,\n            'recommendations': self._generate_recommendations()\n        }\n        \n        return report\n    \n    def _generate_recommendations(self) -> List[str]:\n        \"\"\"Generate recommendations based on analysis.\"\"\"\n        recommendations = []\n        \n        # Test coverage recommendations\n        coverage_gaps = len(self.coverage_analysis.get('coverage_gaps', []))\n        if coverage_gaps > 5:\n            recommendations.append(f\"Create tests for {coverage_gaps} untested modules\")\n        \n        # Pass rate recommendations\n        total_tests = sum(r.get('total', 0) for r in self.test_results.values())\n        total_passed = sum(r.get('passed', 0) for r in self.test_results.values())\n        pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0\n        \n        if pass_rate < 90:\n            recommendations.append(f\"Improve pass rate from {pass_rate:.1f}% to 90%+\")\n        \n        # Sanity check recommendations\n        for check_type, results in self.sanity_check_results.items():\n            if results.get('status') != 'pass':\n                recommendations.append(f\"Address {check_type} issues\")\n        \n        # Module-specific recommendations\n        for suite_name, result in self.test_results.items():\n            if result.get('status') == 'not_found':\n                recommendations.append(f\"Create {suite_name} test suite\")\n            elif result.get('failed', 0) > 0:\n                recommendations.append(f\"Fix {result['failed']} failing tests in {suite_name}\")\n        \n        return recommendations\n    \n    def _save_report(self, report: Dict[str, Any]) -> None:\n        \"\"\"Save comprehensive report to file.\"\"\"\n        report_path = self.test_dir / 'comprehensive_test_analysis.json'\n        with open(report_path, 'w') as f:\n            json.dump(report, f, indent=2, default=str)\n        \n        print(f\"\\n📄 Comprehensive report saved to: {report_path}\")\n        \n        # Print summary\n        print(f\"\\n{'='*80}\")\n        print(f\"COMPREHENSIVE TEST ANALYSIS SUMMARY\")\n        print(f\"{'='*80}\")\n        \n        summary = report['summary']\n        print(f\"📊 OVERALL RESULTS:\")\n        print(f\"  Total tests: {summary['total_tests']}\")\n        print(f\"  Passed: {summary['passed']}\")\n        print(f\"  Failed: {summary['failed']}\")\n        print(f\"  Skipped: {summary['skipped']}\")\n        print(f\"  Pass rate: {summary['pass_rate']:.1f}%\")\n        print(f\"  Total execution time: {summary['total_execution_time']:.2f}s\")\n        \n        # Status assessment\n        if summary['pass_rate'] >= 90:\n            status = \"🟢 EXCELLENT\"\n        elif summary['pass_rate'] >= 80:\n            status = \"🟡 GOOD - Needs Minor Improvements\"\n        elif summary['pass_rate'] >= 70:\n            status = \"🟠 NEEDS ATTENTION\"\n        else:\n            status = \"🔴 CRITICAL - Major Issues\"\n        \n        print(f\"\\n🎯 OVERALL STATUS: {status}\")\n        \n        # Print key recommendations\n        recommendations = report['recommendations']\n        if recommendations:\n            print(f\"\\n📋 KEY RECOMMENDATIONS:\")\n            for i, rec in enumerate(recommendations[:5], 1):\n                print(f\"  {i}. {rec}\")\n            if len(recommendations) > 5:\n                print(f\"  ... and {len(recommendations) - 5} more (see full report)\")\n        \n        print(f\"\\n🏁 Analysis completed successfully\")\n\n\ndef main():\n    \"\"\"Main function to run comprehensive test analysis.\"\"\"\n    analyzer = TestAnalyzer()\n    analyzer.run_comprehensive_analysis()\n\n\nif __name__ == \"__main__\":\n    main()
+                    print(f"    - {issue}")
+    
+    def _check_realistic_ranges(self) -> Dict[str, Any]:
+        """Check that test values are within realistic ranges."""
+        issues = []
+        
+        # Check if realistic ranges are being validated in tests
+        for _category, test_files in self.test_categories.items():
+            for test_file in test_files:
+                if self._test_file_exists(test_file):
+                    test_path = self.test_dir / test_file
+                    try:
+                        with open(test_path, 'r') as f:
+                            content = f.read()
+                            
+                        # Look for range validations
+                        if 'assert' in content and ('>' in content or '<' in content):
+                            # Good - has range checks
+                            pass
+                        else:
+                            issues.append(f"{test_file}: Missing range validation checks")
+                    except Exception as e:
+                        issues.append(f"{test_file}: Could not analyze - {e}")
+        
+        return {
+            'status': 'pass' if len(issues) < 3 else 'needs_attention',
+            'issues': issues,
+            'checked_ranges': list(self.realistic_ranges.keys())
+        }
+    
+    def _check_physical_constants(self) -> Dict[str, Any]:
+        """Check that physical constants are reasonable."""
+        issues = []
+        
+        try:
+            # Import and check constants
+            from trajectory.constants import PhysicalConstants as PC
+            
+            # Check Earth constants
+            if not (6.0e6 < PC.EARTH_RADIUS < 7.0e6):
+                issues.append(f"Earth radius unrealistic: {PC.EARTH_RADIUS}")
+            
+            if not (3.9e14 < PC.EARTH_MU < 4.1e14):
+                issues.append(f"Earth mu unrealistic: {PC.EARTH_MU}")
+            
+            # Check Moon constants
+            if not (1.5e6 < PC.MOON_RADIUS < 2.0e6):
+                issues.append(f"Moon radius unrealistic: {PC.MOON_RADIUS}")
+            
+            if not (4.8e12 < PC.MOON_MU < 5.0e12):
+                issues.append(f"Moon mu unrealistic: {PC.MOON_MU}")
+            
+            # Check Sun constants (if available)
+            if hasattr(PC, 'SUN_MU'):
+                if not (1.0e20 < PC.SUN_MU < 1.5e20):
+                    issues.append(f"Sun mu unrealistic: {PC.SUN_MU}")
+            
+        except Exception as e:
+            issues.append(f"Could not import constants: {e}")
+        
+        return {
+            'status': 'pass' if len(issues) == 0 else 'needs_attention',
+            'issues': issues
+        }
+    
+    def _check_calculation_consistency(self) -> Dict[str, Any]:
+        """Check that calculations are consistent and sensible."""
+        issues = []
+        
+        # Check if we can run basic calculations
+        try:
+            import numpy as np
+            
+            # Basic orbital mechanics sanity
+            earth_radius = 6.378e6  # m
+            earth_mu = 3.986e14     # m³/s²
+            
+            # Circular velocity at 400 km altitude
+            altitude = 400e3  # m
+            orbit_radius = earth_radius + altitude
+            circular_velocity = np.sqrt(earth_mu / orbit_radius)
+            
+            if not (7000 < circular_velocity < 8000):
+                issues.append(f"LEO velocity unrealistic: {circular_velocity:.0f} m/s")
+            
+            # Escape velocity
+            escape_velocity = np.sqrt(2 * earth_mu / earth_radius)
+            if not (11000 < escape_velocity < 12000):
+                issues.append(f"Earth escape velocity unrealistic: {escape_velocity:.0f} m/s")
+            
+        except Exception as e:
+            issues.append(f"Could not perform basic calculations: {e}")
+        
+        return {
+            'status': 'pass' if len(issues) == 0 else 'needs_attention',
+            'issues': issues
+        }
+    
+    def _check_result_validation(self) -> Dict[str, Any]:
+        """Check that test results are being properly validated."""
+        issues = []
+        
+        # Check test results for unrealistic values
+        for suite_name, result in self.test_results.items():
+            if result.get('status') == 'passed':
+                # Good - tests are passing
+                continue
+            elif result.get('status') == 'failed':
+                if result.get('failed', 0) > 0:
+                    issues.append(f"{suite_name}: {result['failed']} tests failing")
+        
+        return {
+            'status': 'pass' if len(issues) < 2 else 'needs_attention',
+            'issues': issues
+        }
+    
+    def _print_coverage_summary(self) -> None:
+        """Print module coverage summary."""
+        coverage = self.coverage_analysis
+        
+        print("\n📋 MODULE COVERAGE SUMMARY:")
+        print(f"  Source modules: {len(coverage['src_modules'])}")
+        print(f"  Test files: {len(coverage['test_files'])}")
+        print(f"  Coverage gaps: {len(coverage['coverage_gaps'])}")
+        
+        if coverage['coverage_gaps']:
+            print("\n⚠️ MODULES WITHOUT DEDICATED TESTS:")
+            for module in coverage['coverage_gaps'][:10]:  # Show first 10
+                print(f"    - {module}")
+            if len(coverage['coverage_gaps']) > 10:
+                print(f"    ... and {len(coverage['coverage_gaps']) - 10} more")
+    
+    def _generate_comprehensive_report(self) -> Dict[str, Any]:
+        """Generate comprehensive test report."""
+        # Calculate overall statistics
+        total_tests = sum(r.get('total', 0) for r in self.test_results.values())
+        total_passed = sum(r.get('passed', 0) for r in self.test_results.values())
+        total_failed = sum(r.get('failed', 0) for r in self.test_results.values())
+        total_skipped = sum(r.get('skipped', 0) for r in self.test_results.values())
+        total_time = sum(r.get('execution_time', 0) for r in self.test_results.values())
+        
+        pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
+        
+        report = {
+            'analysis_date': datetime.now().isoformat(),
+            'environment': self._get_environment_info(),
+            'summary': {
+                'total_tests': total_tests,
+                'passed': total_passed,
+                'failed': total_failed,
+                'skipped': total_skipped,
+                'pass_rate': pass_rate,
+                'total_execution_time': total_time
+            },
+            'test_results': self.test_results,
+            'coverage_analysis': self.coverage_analysis,
+            'sanity_check_results': self.sanity_check_results,
+            'recommendations': self._generate_recommendations()
+        }
+        
+        return report
+    
+    def _generate_recommendations(self) -> List[str]:
+        """Generate recommendations based on analysis."""
+        recommendations = []
+        
+        # Test coverage recommendations
+        coverage_gaps = len(self.coverage_analysis.get('coverage_gaps', []))
+        if coverage_gaps > 5:
+            recommendations.append(f"Create tests for {coverage_gaps} untested modules")
+        
+        # Pass rate recommendations
+        total_tests = sum(r.get('total', 0) for r in self.test_results.values())
+        total_passed = sum(r.get('passed', 0) for r in self.test_results.values())
+        pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
+        
+        if pass_rate < 90:
+            recommendations.append(f"Improve pass rate from {pass_rate:.1f}% to 90%+")
+        
+        # Sanity check recommendations
+        for check_type, results in self.sanity_check_results.items():
+            if results.get('status') != 'pass':
+                recommendations.append(f"Address {check_type} issues")
+        
+        # Module-specific recommendations
+        for suite_name, result in self.test_results.items():
+            if result.get('status') == 'not_found':
+                recommendations.append(f"Create {suite_name} test suite")
+            elif result.get('failed', 0) > 0:
+                recommendations.append(f"Fix {result['failed']} failing tests in {suite_name}")
+        
+        return recommendations
+    
+    def _save_report(self, report: Dict[str, Any]) -> None:
+        """Save comprehensive report to file."""
+        report_path = self.test_dir / 'comprehensive_test_analysis.json'
+        with open(report_path, 'w') as f:
+            json.dump(report, f, indent=2, default=str)
+        
+        print(f"\n📄 Comprehensive report saved to: {report_path}")
+        
+        # Print summary
+        print(f"\n{'='*80}")
+        print("COMPREHENSIVE TEST ANALYSIS SUMMARY")
+        print(f"{'='*80}")
+        
+        summary = report['summary']
+        print("📊 OVERALL RESULTS:")
+        print(f"  Total tests: {summary['total_tests']}")
+        print(f"  Passed: {summary['passed']}")
+        print(f"  Failed: {summary['failed']}")
+        print(f"  Skipped: {summary['skipped']}")
+        print(f"  Pass rate: {summary['pass_rate']:.1f}%")
+        print(f"  Total execution time: {summary['total_execution_time']:.2f}s")
+        
+        # Status assessment
+        if summary['pass_rate'] >= 90:
+            status = "🟢 EXCELLENT"
+        elif summary['pass_rate'] >= 80:
+            status = "🟡 GOOD - Needs Minor Improvements"
+        elif summary['pass_rate'] >= 70:
+            status = "🟠 NEEDS ATTENTION"
+        else:
+            status = "🔴 CRITICAL - Major Issues"
+        
+        print(f"\n🎯 OVERALL STATUS: {status}")
+        
+        # Print key recommendations
+        recommendations = report['recommendations']
+        if recommendations:
+            print("\n📋 KEY RECOMMENDATIONS:")
+            for i, rec in enumerate(recommendations[:5], 1):
+                print(f"  {i}. {rec}")
+            if len(recommendations) > 5:
+                print(f"  ... and {len(recommendations) - 5} more (see full report)")
+        
+        print("\n🏁 Analysis completed successfully")
+
+
+def main():
+    """Main function to run comprehensive test analysis."""
+    analyzer = TestAnalyzer()
+    analyzer.run_comprehensive_analysis()
+
+
+if __name__ == "__main__":
+    main()

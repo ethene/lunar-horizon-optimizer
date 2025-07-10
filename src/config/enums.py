@@ -5,6 +5,7 @@ This module contains all enum definitions used across the configuration models.
 
 from enum import Enum
 
+
 class IsruResourceType(str, Enum):
     """Types of resources that can be extracted via ISRU."""
 

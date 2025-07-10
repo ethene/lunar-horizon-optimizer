@@ -5,12 +5,13 @@ including multiple transfer opportunities, launch window optimization,
 and trajectory performance metrics.
 """
 
-import numpy as np
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 
-from .constants import PhysicalConstants as PC
+import numpy as np
+
 from .celestial_bodies import CelestialBody
+from .constants import PhysicalConstants as PC
 from .lunar_transfer import LunarTransfer
 from .models import Trajectory
 
@@ -62,7 +63,7 @@ class TrajectoryWindowAnalyzer:
 
         self.celestial = CelestialBody()
         self.lunar_transfer = LunarTransfer(
-            min_earth_alt, max_earth_alt, min_moon_alt, max_moon_alt
+            min_earth_alt, max_earth_alt, min_moon_alt, max_moon_alt,
         )
 
         logger.info(f"Initialized TrajectoryWindowAnalyzer with altitude ranges: "
@@ -110,7 +111,7 @@ class TrajectoryWindowAnalyzer:
                         earth_orbit_alt=earth_orbit_alt,
                         moon_orbit_alt=moon_orbit_alt,
                         transfer_time=transfer_time,
-                        max_revolutions=0
+                        max_revolutions=0,
                     )
 
                     # Calculate C3 energy (characteristic energy)
@@ -123,7 +124,7 @@ class TrajectoryWindowAnalyzer:
                         arrival_date=arrival_date,
                         total_dv=total_dv,
                         c3_energy=c3_energy,
-                        trajectory=trajectory
+                        trajectory=trajectory,
                     )
 
                     windows.append(window)
@@ -171,7 +172,7 @@ class TrajectoryWindowAnalyzer:
             end_date=end_date,
             earth_orbit_alt=earth_orbit_alt,
             moon_orbit_alt=moon_orbit_alt,
-            time_step=0.5  # Higher resolution for optimization
+            time_step=0.5,  # Higher resolution for optimization
         )
 
         if not windows:
@@ -208,7 +209,7 @@ class TrajectoryWindowAnalyzer:
             "altitude_variations": altitude_variations,
             "altitude_dv_changes": [],
             "time_variations": time_variations,
-            "time_dv_changes": []
+            "time_dv_changes": [],
         }
 
         # Analyze altitude sensitivity
@@ -219,7 +220,7 @@ class TrajectoryWindowAnalyzer:
                     earth_orbit_alt=300.0 + alt_delta,  # Base + variation
                     moon_orbit_alt=100.0,
                     transfer_time=window.transfer_time,
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
                 dv_change = dv - window.total_dv
                 results["altitude_dv_changes"].append(dv_change)
@@ -234,7 +235,7 @@ class TrajectoryWindowAnalyzer:
                     earth_orbit_alt=300.0,
                     moon_orbit_alt=100.0,
                     transfer_time=window.transfer_time + time_delta,
-                    max_revolutions=0
+                    max_revolutions=0,
                 )
                 dv_change = dv - window.total_dv
                 results["time_dv_changes"].append(dv_change)
@@ -287,7 +288,7 @@ def generate_multiple_transfer_options(start_date: datetime,
     windows = analyzer.find_transfer_windows(
         start_date=start_date,
         end_date=end_date,
-        time_step=2.0  # Faster analysis for multiple options
+        time_step=2.0,  # Faster analysis for multiple options
     )
 
     # Return top options
@@ -318,7 +319,7 @@ def analyze_launch_opportunities(target_year: int = 2025) -> dict[str, list[Tran
         opportunities = analyzer.find_transfer_windows(
             start_date=start_date,
             end_date=end_date,
-            time_step=5.0  # Weekly analysis
+            time_step=5.0,  # Weekly analysis
         )
 
         month_name = start_date.strftime("%B")

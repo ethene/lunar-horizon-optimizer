@@ -4,8 +4,10 @@ This module defines default values and limits used in trajectory generation
 and optimization. All values are in SI units (meters, m/s) unless otherwise noted.
 """
 
-from .constants import PhysicalConstants as PC
 from src.utils.unit_conversions import m_to_km
+
+from .constants import PhysicalConstants as PC
+
 
 class TransferDefaults:
     """Default values and limits for transfer trajectory generation.
@@ -67,7 +69,7 @@ class TransferDefaults:
                 f"and {cls.MAX_EARTH_ORBIT} km"
             )
             raise ValueError(
-                msg
+                msg,
             )
 
     @classmethod
@@ -87,7 +89,7 @@ class TransferDefaults:
                 f"and {cls.MAX_MOON_ORBIT} km"
             )
             raise ValueError(
-                msg
+                msg,
             )
 
     @classmethod
@@ -107,5 +109,5 @@ class TransferDefaults:
                 f"and {cls.MAX_TRANSFER_TIME} days"
             )
             raise ValueError(
-                msg
+                msg,
             )

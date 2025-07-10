@@ -4,18 +4,19 @@ This module implements numerical integrators, n-body propagation, and
 trajectory serialization/comparison utilities for the Earth-Moon system.
 """
 
-import numpy as np
-from typing import Any
-from collections.abc import Callable
-from scipy.integrate import solve_ivp
 import json
-import pickle  # nosec B403 - Used for trajectory serialization in controlled environment
 import logging
+import pickle  # nosec B403 - Used for trajectory serialization in controlled environment
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
-from .constants import PhysicalConstants as PC
+import numpy as np
+from scipy.integrate import solve_ivp
+
 from .celestial_bodies import CelestialBody
+from .constants import PhysicalConstants as PC
 from .models import Trajectory
 
 # Configure logging
@@ -77,11 +78,11 @@ class NumericalIntegrator:
 
         if self.method in self.scipy_methods:
             return self._integrate_scipy(
-                dynamics_function, initial_state, time_span, t_eval, **kwargs
+                dynamics_function, initial_state, time_span, t_eval, **kwargs,
             )
         if self.method in self.custom_methods:
             return self._integrate_custom(
-                dynamics_function, initial_state, time_span, num_points, **kwargs
+                dynamics_function, initial_state, time_span, num_points, **kwargs,
             )
         msg = f"Unknown integration method: {self.method}"
         raise ValueError(msg)
@@ -101,7 +102,7 @@ class NumericalIntegrator:
             t_eval=t_eval,
             rtol=self.rtol,
             atol=self.atol,
-            dense_output=True
+            dense_output=True,
         )
 
         if not solution.success:
@@ -119,11 +120,11 @@ class NumericalIntegrator:
         """Integrate using custom methods."""
         if self.method == "RK4":
             return self._integrate_rk4(
-                dynamics_function, initial_state, time_span, num_points, **kwargs
+                dynamics_function, initial_state, time_span, num_points, **kwargs,
             )
         if self.method == "Verlet":
             return self._integrate_verlet(
-                dynamics_function, initial_state, time_span, num_points, **kwargs
+                dynamics_function, initial_state, time_span, num_points, **kwargs,
             )
         msg = f"Custom method {self.method} not implemented"
         raise NotImplementedError(msg)
@@ -238,7 +239,7 @@ class EarthMoonNBodyPropagator:
         self.mu = {
             "earth": PC.EARTH_MU,
             "moon": PC.MOON_MU,
-            "sun": PC.SUN_MU
+            "sun": PC.SUN_MU,
         }
 
         logger.info(f"Initialized Earth-Moon n-body propagator "
@@ -277,7 +278,7 @@ class EarthMoonNBodyPropagator:
             initial_state=initial_state,
             time_span=time_span,
             num_points=num_points,
-            reference_epoch=reference_epoch
+            reference_epoch=reference_epoch,
         )
 
         # Extract position and velocity
@@ -303,7 +304,7 @@ class EarthMoonNBodyPropagator:
             "potential_energy": potential_energy,
             "total_energy": total_energy,
             "propagation_time": propagation_time,
-            "num_points": num_points
+            "num_points": num_points,
         }
 
         logger.info(f"Propagation completed: {len(times)} points generated")
@@ -421,12 +422,12 @@ class EarthMoonNBodyPropagator:
 
         # N-body propagation
         nbody_result = self.propagate_spacecraft(
-            initial_position, initial_velocity, 10000.0, propagation_time
+            initial_position, initial_velocity, 10000.0, propagation_time,
         )
 
         # Two-body propagation using Kepler's laws
         twobody_result = self._propagate_twobody(
-            initial_position, initial_velocity, propagation_time
+            initial_position, initial_velocity, propagation_time,
         )
 
         # Calculate differences
@@ -445,7 +446,7 @@ class EarthMoonNBodyPropagator:
             "final_position_error": pos_error[-1],
             "max_velocity_error": np.max(vel_error),
             "final_velocity_error": vel_error[-1],
-            "propagation_time": propagation_time
+            "propagation_time": propagation_time,
         }
 
         logger.info(f"Comparison complete: max position error = {np.max(pos_error)/1000:.1f} km")
@@ -470,13 +471,13 @@ class EarthMoonNBodyPropagator:
         times, states = self.integrator.integrate_trajectory(
             dynamics_function=twobody_dynamics,
             initial_state=initial_state,
-            time_span=time_span
+            time_span=time_span,
         )
 
         return {
             "times": times,
             "positions": states[:3, :],
-            "velocities": states[3:, :]
+            "velocities": states[3:, :],
         }
 
 
@@ -658,7 +659,7 @@ class TrajectoryIO:
                     "departure_epoch": data.get("departure_epoch"),
                     "arrival_epoch": data.get("arrival_epoch"),
                     "save_timestamp": data.get("save_timestamp"),
-                    "metadata": data.get("metadata", {})
+                    "metadata": data.get("metadata", {}),
                 }
                 trajectories.append(info)
 
@@ -680,9 +681,9 @@ class TrajectoryIO:
                 {
                     "epoch": m.epoch,
                     "delta_v": m.delta_v,
-                    "name": m.name
+                    "name": m.name,
                 } for m in trajectory.maneuvers
-            ]
+            ],
         }
 
     def _dict_to_trajectory(self, data: dict[str, Any]) -> Trajectory:
@@ -693,7 +694,7 @@ class TrajectoryIO:
             departure_pos=tuple(data["departure_pos"]),
             departure_vel=tuple(data["departure_vel"]),
             arrival_pos=tuple(data["arrival_pos"]),
-            arrival_vel=tuple(data["arrival_vel"])
+            arrival_vel=tuple(data["arrival_vel"]),
         )
 
         # Add maneuvers if present
@@ -702,7 +703,7 @@ class TrajectoryIO:
             maneuver = Maneuver(
                 epoch=maneuver_data["epoch"],
                 delta_v=tuple(maneuver_data["delta_v"]),
-                name=maneuver_data["name"]
+                name=maneuver_data["name"],
             )
             trajectory.add_maneuver(maneuver)
 
@@ -804,24 +805,24 @@ class TrajectoryComparison:
                     "transfer_time": time1,
                     "num_maneuvers": len(trajectory1.maneuvers),
                     "departure_epoch": trajectory1.departure_epoch,
-                    "arrival_epoch": trajectory1.arrival_epoch
+                    "arrival_epoch": trajectory1.arrival_epoch,
                 },
                 label2: {
                     "total_deltav": dv2,
                     "transfer_time": time2,
                     "num_maneuvers": len(trajectory2.maneuvers),
                     "departure_epoch": trajectory2.departure_epoch,
-                    "arrival_epoch": trajectory2.arrival_epoch
-                }
+                    "arrival_epoch": trajectory2.arrival_epoch,
+                },
             },
             "differences": {
                 "deltav_difference": abs(dv1 - dv2),
                 "time_difference": abs(time1 - time2),
                 "departure_position_difference": dep_pos_diff,
-                "arrival_position_difference": arr_pos_diff
+                "arrival_position_difference": arr_pos_diff,
             },
             "best_deltav": label1 if dv1 < dv2 else label2,
-            "best_time": label1 if time1 < time2 else label2
+            "best_time": label1 if time1 < time2 else label2,
         }
 
         logger.info(f"Comparison complete: ΔV difference = {comparison['differences']['deltav_difference']:.1f} m/s")
@@ -843,13 +844,13 @@ class TrajectoryComparison:
         # Position accuracy
         pos_errors = np.linalg.norm(
             computed_trajectory["positions"] - reference_trajectory["positions"],
-            axis=0
+            axis=0,
         )
 
         # Velocity accuracy
         vel_errors = np.linalg.norm(
             computed_trajectory["velocities"] - reference_trajectory["velocities"],
-            axis=0
+            axis=0,
         )
 
         return {
@@ -860,7 +861,7 @@ class TrajectoryComparison:
             "rms_velocity_error": np.sqrt(np.mean(vel_errors**2)),
             "final_velocity_error": vel_errors[-1],
             "mean_position_error": np.mean(pos_errors),
-            "mean_velocity_error": np.mean(vel_errors)
+            "mean_velocity_error": np.mean(vel_errors),
         }
 
 

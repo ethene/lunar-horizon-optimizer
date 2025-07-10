@@ -4,8 +4,9 @@ This module handles the calculation of target states for lunar orbit insertion,
 including position and velocity calculations relative to the Moon.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 from .constants import PhysicalConstants as PC
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 def calculate_target_state(
     moon_pos: np.ndarray,
     moon_vel: np.ndarray,
-    orbit_radius: float
+    orbit_radius: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Calculate target state for lunar orbit insertion.
 

@@ -4,8 +4,9 @@ This module provides functions for validating trajectory constraints,
 including complete trajectory validation and safety checks.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 import pykep as pk
 
 from src.trajectory.constants import PhysicalConstants

@@ -526,12 +526,6 @@ class TestCostIntegration:
             "moon_orbit_alt": 100    # km
         }
 
-        mission_params = {
-            "spacecraft_mass": 5000,  # kg
-            "mission_duration": 5,    # years
-            "technology_readiness": 3,
-            "complexity": "moderate"
-        }
 
         try:
             total_cost = self.cost_calculator.calculate_mission_cost(

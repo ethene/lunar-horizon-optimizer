@@ -12,38 +12,43 @@ Date: July 2025
 Version: 1.0.0-rc1
 """
 
-from typing import Any
-from datetime import datetime, timedelta
+import json
 import logging
 from dataclasses import dataclass
-import json
+from datetime import datetime, timedelta
+from typing import Any
 
-# Task 3: Trajectory Generation
-from src.trajectory.lunar_transfer import LunarTransfer
-from src.trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
-from src.trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
+from src.config.costs import CostFactors
+
+# Configuration
+from src.config.mission_config import MissionConfig
+from src.config.spacecraft import SpacecraftConfig
+from src.economics.cost_models import MissionCostModel
+
+# Task 5: Economic Analysis
+from src.economics.financial_models import (
+    CashFlowModel,
+    FinancialParameters,
+    NPVAnalyzer,
+)
+from src.economics.isru_benefits import ISRUBenefitAnalyzer
+from src.economics.reporting import EconomicReporter, FinancialSummary
+from src.economics.sensitivity_analysis import EconomicSensitivityAnalyzer
 
 # Task 4: Global Optimization
 from src.optimization.global_optimizer import GlobalOptimizer, LunarMissionProblem
 from src.optimization.pareto_analysis import ParetoAnalyzer
+from src.trajectory.earth_moon_trajectories import generate_earth_moon_trajectory
 
-# Task 5: Economic Analysis
-from src.economics.financial_models import CashFlowModel, NPVAnalyzer, FinancialParameters
-from src.economics.cost_models import MissionCostModel
-from src.economics.isru_benefits import ISRUBenefitAnalyzer
-from src.economics.sensitivity_analysis import EconomicSensitivityAnalyzer
-from src.economics.reporting import EconomicReporter, FinancialSummary
+# Task 3: Trajectory Generation
+from src.trajectory.lunar_transfer import LunarTransfer
+from src.trajectory.transfer_window_analysis import TrajectoryWindowAnalyzer
 
 # Task 6: Visualization
 from src.visualization.dashboard import ComprehensiveDashboard, MissionAnalysisData
-from src.visualization.trajectory_visualization import TrajectoryVisualizer
-from src.visualization.optimization_visualization import OptimizationVisualizer
 from src.visualization.economic_visualization import EconomicVisualizer
-
-# Configuration
-from src.config.mission_config import MissionConfig
-from src.config.costs import CostFactors
-from src.config.spacecraft import SpacecraftConfig
+from src.visualization.optimization_visualization import OptimizationVisualizer
+from src.visualization.trajectory_visualization import TrajectoryVisualizer
 
 # Utilities
 
@@ -127,7 +132,7 @@ class LunarHorizonOptimizer:
             discount_rate=0.08,
             inflation_rate=0.03,
             tax_rate=0.25,
-            project_duration_years=10
+            project_duration_years=10,
         )
         self.npv_analyzer = NPVAnalyzer(financial_params)
         self.cost_model = MissionCostModel()
@@ -183,7 +188,7 @@ class LunarHorizonOptimizer:
             optimization_results,
             include_sensitivity,
             include_isru,
-            verbose
+            verbose,
         )
 
         # Step 4: Generate Visualizations
@@ -193,7 +198,7 @@ class LunarHorizonOptimizer:
             trajectory_results,
             optimization_results,
             economic_results,
-            mission_name
+            mission_name,
         )
 
         # Step 5: Compile Results
@@ -208,10 +213,10 @@ class LunarHorizonOptimizer:
                 "configuration": {
                     "mission_config": self.mission_config.__dict__,
                     "cost_factors": self.cost_factors.__dict__,
-                    "optimization_config": opt_config.__dict__
+                    "optimization_config": opt_config.__dict__,
                 },
-                "performance_metrics": self._calculate_performance_metrics()
-            }
+                "performance_metrics": self._calculate_performance_metrics(),
+            },
         )
 
         if verbose:
@@ -230,7 +235,7 @@ class LunarHorizonOptimizer:
             earth_orbit_alt=400.0,
             moon_orbit_alt=100.0,
             transfer_time=4.5,
-            method="lambert"
+            method="lambert",
         )
 
         results["baseline"] = {
@@ -238,7 +243,7 @@ class LunarHorizonOptimizer:
             "total_dv": baseline_dv,
             "transfer_time": 4.5,
             "earth_orbit_alt": 400.0,
-            "moon_orbit_alt": 100.0
+            "moon_orbit_alt": 100.0,
         }
 
         # Transfer window analysis
@@ -250,13 +255,13 @@ class LunarHorizonOptimizer:
             end_date=end_date,
             earth_orbit_alt=400.0,
             moon_orbit_alt=100.0,
-            time_step=2.0
+            time_step=2.0,
         )
 
         results["transfer_windows"] = {
             "windows": transfer_windows,
             "analysis_period": f"{start_date} to {end_date}",
-            "best_window": min(transfer_windows, key=lambda w: w.total_dv) if transfer_windows else None
+            "best_window": min(transfer_windows, key=lambda w: w.total_dv) if transfer_windows else None,
         }
 
         if verbose:
@@ -276,7 +281,7 @@ class LunarHorizonOptimizer:
             max_moon_alt=opt_config.max_moon_alt,
             min_transfer_time=opt_config.min_transfer_time,
             max_transfer_time=opt_config.max_transfer_time,
-            reference_epoch=10000.0
+            reference_epoch=10000.0,
         )
 
         # Run optimization
@@ -284,7 +289,7 @@ class LunarHorizonOptimizer:
             problem=problem,
             population_size=opt_config.population_size,
             num_generations=opt_config.num_generations,
-            seed=opt_config.seed
+            seed=opt_config.seed,
         )
 
         optimization_results = optimizer.optimize(verbose=verbose)
@@ -297,14 +302,14 @@ class LunarHorizonOptimizer:
             ([0.6, 0.2, 0.2], "Delta-V Focused"),
             ([0.2, 0.6, 0.2], "Time Focused"),
             ([0.2, 0.2, 0.6], "Cost Focused"),
-            ([0.33, 0.33, 0.34], "Balanced")
+            ([0.33, 0.33, 0.34], "Balanced"),
         ]
 
         best_solutions = {}
         for weights, label in preference_sets:
             solutions = optimizer.get_best_solutions(
                 num_solutions=3,
-                preference_weights=weights
+                preference_weights=weights,
             )
             best_solutions[label] = solutions
 
@@ -313,7 +318,7 @@ class LunarHorizonOptimizer:
             "analyzed_results": analyzed_results,
             "best_solutions": best_solutions,
             "pareto_front_size": len(optimization_results.get("pareto_solutions", [])),
-            "optimization_config": opt_config.__dict__
+            "optimization_config": opt_config.__dict__,
         }
 
         if verbose:
@@ -344,7 +349,7 @@ class LunarHorizonOptimizer:
             isru_analysis = self.isru_analyzer.analyze_isru_economics(
                 resource_name="water_ice",
                 facility_scale="commercial",
-                operation_duration_months=60
+                operation_duration_months=60,
             )
             results["isru_analysis"] = isru_analysis
 
@@ -357,17 +362,17 @@ class LunarHorizonOptimizer:
             base_params = {
                 "cost_multiplier": 1.0,
                 "revenue_multiplier": 1.0,
-                "development_duration_multiplier": 1.0
+                "development_duration_multiplier": 1.0,
             }
 
             distributions = {
                 "cost_multiplier": {"type": "triangular", "min": 0.8, "mode": 1.0, "max": 1.5},
                 "revenue_multiplier": {"type": "normal", "mean": 1.0, "std": 0.2},
-                "development_duration_multiplier": {"type": "uniform", "min": 0.9, "max": 1.3}
+                "development_duration_multiplier": {"type": "uniform", "min": 0.9, "max": 1.3},
             }
 
             mc_results = self.sensitivity_analyzer.monte_carlo_simulation(
-                base_params, distributions, 1000
+                base_params, distributions, 1000,
             )
             results["sensitivity_analysis"] = mc_results
 
@@ -380,7 +385,7 @@ class LunarHorizonOptimizer:
         if economic_analyses:
             best_analysis = economic_analyses[0]
             exec_summary = self.economic_reporter.generate_executive_summary(
-                best_analysis["financial_summary"]
+                best_analysis["financial_summary"],
             )
             results["executive_summary"] = exec_summary
 
@@ -396,7 +401,7 @@ class LunarHorizonOptimizer:
             discount_rate=0.08,
             inflation_rate=0.03,
             tax_rate=0.25,
-            project_duration_years=8
+            project_duration_years=8,
         )
 
         cash_model = CashFlowModel(financial_params)
@@ -411,7 +416,7 @@ class LunarHorizonOptimizer:
             mission_duration_years=mission_duration,
             technology_readiness=3,
             complexity="moderate",
-            schedule="nominal"
+            schedule="nominal",
         )
 
         # Add cash flows
@@ -436,7 +441,7 @@ class LunarHorizonOptimizer:
             return_on_investment=(annual_revenue * 4 - cost_breakdown.total) / cost_breakdown.total,
             payback_period_years=payback,
             mission_duration_years=mission_duration,
-            probability_of_success=0.75
+            probability_of_success=0.75,
         )
 
         return {
@@ -444,7 +449,7 @@ class LunarHorizonOptimizer:
             "solution": solution,
             "cost_breakdown": cost_breakdown,
             "financial_summary": financial_summary,
-            "cash_model": cash_model
+            "cash_model": cash_model,
         }
 
     def _create_visualizations(self, trajectory_results: dict[str, Any],
@@ -460,7 +465,7 @@ class LunarHorizonOptimizer:
             trajectory_data=trajectory_results.get("baseline", {}),
             optimization_results=optimization_results.get("analyzed_results"),
             financial_summary=economic_results.get("solution_analyses", [{}])[0].get("financial_summary"),
-            cost_breakdown=economic_results.get("solution_analyses", [{}])[0].get("cost_breakdown")
+            cost_breakdown=economic_results.get("solution_analyses", [{}])[0].get("cost_breakdown"),
         )
 
         # Executive dashboard
@@ -485,7 +490,7 @@ class LunarHorizonOptimizer:
             baseline_trajectory = trajectory_results.get("baseline", {}).get("trajectory")
             if baseline_trajectory and hasattr(baseline_trajectory, "trajectory_data"):
                 traj_plot = self.trajectory_viz.create_3d_trajectory_plot(
-                    baseline_trajectory.trajectory_data
+                    baseline_trajectory.trajectory_data,
                 )
                 visualizations["trajectory_plot"] = traj_plot
         except Exception as e:
@@ -497,7 +502,7 @@ class LunarHorizonOptimizer:
             if opt_result:
                 pareto_plot = self.optimization_viz.create_pareto_front_plot(
                     opt_result,
-                    objective_names=["Delta-V (m/s)", "Transfer Time (days)", "Cost ($)"]
+                    objective_names=["Delta-V (m/s)", "Transfer Time (days)", "Cost ($)"],
                 )
                 visualizations["pareto_plot"] = pareto_plot
         except Exception as e:
@@ -533,7 +538,7 @@ class LunarHorizonOptimizer:
                 "trajectory": True,
                 "optimization": True,
                 "economics": True,
-                "visualization": True
+                "visualization": True,
             },
             "version": "1.0.0-rc1",
             "capabilities": [
@@ -541,30 +546,20 @@ class LunarHorizonOptimizer:
                 "Multi-objective optimization",
                 "Economic analysis with NPV/IRR",
                 "Interactive visualization",
-                "Integrated workflow"
-            ]
+                "Integrated workflow",
+            ],
         }
 
     def _print_analysis_summary(self, results: AnalysisResults) -> None:
         """Print a summary of analysis results."""
-        print("\n" + "="*60)
-        print(f"LUNAR MISSION ANALYSIS SUMMARY: {results.mission_name}")
-        print("="*60)
-
         # Trajectory summary
         baseline = results.trajectory_results.get("baseline", {})
         if baseline:
-            print("📊 TRAJECTORY ANALYSIS:")
-            print(f"   • Baseline ΔV: {baseline.get('total_dv', 0):.0f} m/s")
-            print(f"   • Transfer time: {baseline.get('transfer_time', 0):.1f} days")
-            print(f"   • Earth orbit: {baseline.get('earth_orbit_alt', 0):.0f} km")
-            print(f"   • Moon orbit: {baseline.get('moon_orbit_alt', 0):.0f} km")
+            pass
 
         # Optimization summary
         opt_results = results.optimization_results
-        pareto_size = opt_results.get("pareto_front_size", 0)
-        print("\n🎯 OPTIMIZATION RESULTS:")
-        print(f"   • Pareto solutions: {pareto_size}")
+        opt_results.get("pareto_front_size", 0)
 
         # Economic summary
         econ_analyses = results.economic_analysis.get("solution_analyses", [])
@@ -572,20 +567,11 @@ class LunarHorizonOptimizer:
             best_analysis = econ_analyses[0]
             financial_summary = best_analysis.get("financial_summary")
             if financial_summary:
-                print("\n💰 ECONOMIC ANALYSIS (Best Solution):")
-                print(f"   • NPV: ${financial_summary.net_present_value/1e6:.1f}M")
-                print(f"   • IRR: {financial_summary.internal_rate_of_return:.1%}")
-                print(f"   • ROI: {financial_summary.return_on_investment:.1%}")
-                print(f"   • Payback: {financial_summary.payback_period_years:.1f} years")
+                pass
 
         # Visualization summary
-        viz_count = len([v for v in results.visualization_assets.values() if v is not None])
-        print("\n📈 VISUALIZATION ASSETS:")
-        print(f"   • Created visualizations: {viz_count}")
+        len([v for v in results.visualization_assets.values() if v is not None])
 
-        print("\n" + "="*60)
-        print("Analysis completed successfully! 🚀")
-        print("="*60)
 
     def export_results(self, results: AnalysisResults, output_dir: str = "output") -> None:
         """Export analysis results to files."""
@@ -625,7 +611,7 @@ class LunarHorizonOptimizer:
             earth_orbit_alt=400.0,
             moon_orbit_alt=100.0,
             transfer_time=4.5,
-            departure_epoch=10000.0
+            departure_epoch=10000.0,
         )
 
     @staticmethod
@@ -635,7 +621,7 @@ class LunarHorizonOptimizer:
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=100000.0,
             development_cost=1e9,
-            contingency_percentage=20.0
+            contingency_percentage=20.0,
         )
 
     @staticmethod
@@ -647,15 +633,12 @@ class LunarHorizonOptimizer:
             propellant_mass=3000.0,
             payload_mass=1000.0,
             power_system_mass=500.0,
-            propulsion_isp=320.0
+            propulsion_isp=320.0,
         )
 
 
 def main() -> AnalysisResults:
     """Main function demonstrating the integrated Lunar Horizon Optimizer."""
-    print("🚀 Lunar Horizon Optimizer - Integrated Mission Analysis")
-    print("="*60)
-
     # Initialize system
     optimizer = LunarHorizonOptimizer()
 
@@ -663,7 +646,7 @@ def main() -> AnalysisResults:
     opt_config = OptimizationConfig(
         population_size=50,  # Reduced for demo
         num_generations=25,  # Reduced for demo
-        seed=42
+        seed=42,
     )
 
     # Run comprehensive analysis
@@ -672,7 +655,7 @@ def main() -> AnalysisResults:
         optimization_config=opt_config,
         include_sensitivity=True,
         include_isru=True,
-        verbose=True
+        verbose=True,
     )
 
     # Export results
@@ -680,14 +663,11 @@ def main() -> AnalysisResults:
 
     # Display visualizations if available
     if results.visualization_assets.get("executive_dashboard"):
-        print("\n📈 Opening executive dashboard...")
         results.visualization_assets["executive_dashboard"].show()
 
     if results.visualization_assets.get("technical_dashboard"):
-        print("📊 Opening technical dashboard...")
         results.visualization_assets["technical_dashboard"].show()
 
-    print("\n✅ Integrated mission analysis completed successfully!")
     return results
 
 

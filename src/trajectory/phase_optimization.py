@@ -4,9 +4,10 @@ This module handles the optimization of departure phase angles for lunar transfe
 including initial position calculation and transfer solution evaluation.
 """
 
+import logging
+
 import numpy as np
 import pykep as pk
-import logging
 
 from .target_state import calculate_target_state
 
@@ -45,7 +46,7 @@ def calculate_initial_position(r_park: float,
         radial = radial / radial_norm
     except Exception as e:
         msg = f"Failed to calculate radial vector: {e!s}"
-        raise ValueError(msg)
+        raise ValueError(msg) from e
 
     # Calculate initial position
     return r_park * (np.cos(phase) * ref_dir + np.sin(phase) * radial)
@@ -56,7 +57,7 @@ def evaluate_transfer_solution(
     moon_vel: np.ndarray,
     transfer_time: float,
     orbit_radius: float,
-    max_revs: int = 0
+    max_revs: int = 0,
 ) -> tuple[float, np.ndarray | None, np.ndarray | None]:
     """Evaluate a transfer solution for given initial conditions.
 
@@ -136,7 +137,7 @@ def evaluate_transfer_solution(
             transfer_time,
             mu_km,
             False,  # retrograde flag
-            max_revs
+            max_revs,
         )
 
         # Get all v1 and v2 vectors
@@ -207,7 +208,7 @@ def find_optimal_phase(
     transfer_time: float,
     orbit_radius: float,
     max_revs: int = 0,
-    num_samples: int = 360
+    num_samples: int = 360,
 ) -> tuple[float, np.ndarray]:
     """Find the optimal phase angle for lunar transfer departure.
 
@@ -250,7 +251,7 @@ def find_optimal_phase(
 
         # Evaluate transfer solution
         dv, v1, v2 = evaluate_transfer_solution(
-            r1, moon_pos, moon_vel, transfer_time, orbit_radius, max_revs
+            r1, moon_pos, moon_vel, transfer_time, orbit_radius, max_revs,
         )
 
         if dv < best_dv:

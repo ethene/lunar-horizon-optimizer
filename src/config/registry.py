@@ -4,11 +4,11 @@ This module provides functionality for managing and accessing configuration temp
 and default configurations for different mission types.
 """
 
-from pathlib import Path
 import logging
+from pathlib import Path
 
-from .models import MissionConfig
 from .loader import ConfigLoader, ConfigurationError
+from .models import MissionConfig
 
 logger = logging.getLogger(__name__)
 
@@ -41,20 +41,20 @@ class ConfigRegistry:
                 "dry_mass": 2000.0,
                 "payload_mass": 1000.0,
                 "max_propellant_mass": 3000.0,
-                "specific_impulse": 320.0
+                "specific_impulse": 320.0,
             },
             "cost_factors": {
                 "launch_cost_per_kg": 10000.0,
                 "operations_cost_per_day": 50000.0,
                 "development_cost": 10000000.0,
-                "contingency_percentage": 20.0
+                "contingency_percentage": 20.0,
             },
             "mission_duration_days": 180.0,
             "target_orbit": {
                 "semi_major_axis": 384400.0,
                 "eccentricity": 0.0,
-                "inclination": 0.0
-            }
+                "inclination": 0.0,
+            },
         })
 
         # ISRU mission template
@@ -65,28 +65,28 @@ class ConfigRegistry:
                 "dry_mass": 3000.0,
                 "payload_mass": 1500.0,
                 "max_propellant_mass": 4000.0,
-                "specific_impulse": 320.0
+                "specific_impulse": 320.0,
             },
             "cost_factors": {
                 "launch_cost_per_kg": 10000.0,
                 "operations_cost_per_day": 75000.0,
                 "development_cost": 15000000.0,
-                "contingency_percentage": 25.0
+                "contingency_percentage": 25.0,
             },
             "mission_duration_days": 365.0,
             "target_orbit": {
                 "semi_major_axis": 384400.0,
                 "eccentricity": 0.0,
-                "inclination": 0.0
+                "inclination": 0.0,
             },
             "isru_targets": [
                 {
                     "resource_type": "water",
                     "target_rate": 5.0,
                     "setup_time_days": 30.0,
-                    "market_value_per_kg": 1000.0
-                }
-            ]
+                    "market_value_per_kg": 1000.0,
+                },
+            ],
         })
 
         # Copy default templates to main templates dict

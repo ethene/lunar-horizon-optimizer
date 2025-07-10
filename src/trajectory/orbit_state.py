@@ -4,15 +4,17 @@ This module provides the OrbitState class for representing and manipulating orbi
 integrating with PyKEP for calculations and using utility functions from elements.py.
 """
 
+import logging
 from dataclasses import dataclass
+from datetime import datetime
+
 import numpy as np
 import pykep as pk
-from datetime import datetime
-import logging
+
+from src.utils.unit_conversions import km_to_m
 
 from .elements import velocity_at_point
-from .trajectory_physics import validate_vector_units, validate_basic_orbital_mechanics
-from src.utils.unit_conversions import km_to_m
+from .trajectory_physics import validate_basic_orbital_mechanics, validate_vector_units
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -103,7 +105,7 @@ class OrbitState:
             self.semi_major_axis,
             self.eccentricity,
             self.true_anomaly,
-            mu
+            mu,
         )
 
         # Convert to vector in orbital plane
@@ -111,7 +113,7 @@ class OrbitState:
         v_pqw = np.array([
             v_r * np.cos(true_anomaly_rad) - v_t * np.sin(true_anomaly_rad),
             v_r * np.sin(true_anomaly_rad) + v_t * np.cos(true_anomaly_rad),
-            0
+            0,
         ])
 
         # Transform to inertial frame
@@ -128,19 +130,19 @@ class OrbitState:
         R_argp = np.array([
             [np.cos(argp), -np.sin(argp), 0],
             [np.sin(argp), np.cos(argp), 0],
-            [0, 0, 1]
+            [0, 0, 1],
         ])
 
         R_inc = np.array([
             [1, 0, 0],
             [0, np.cos(inc), -np.sin(inc)],
-            [0, np.sin(inc), np.cos(inc)]
+            [0, np.sin(inc), np.cos(inc)],
         ])
 
         R_raan = np.array([
             [np.cos(raan), -np.sin(raan), 0],
             [np.sin(raan), np.cos(raan), 0],
-            [0, 0, 1]
+            [0, 0, 1],
         ])
 
         # Combine rotation matrices
@@ -232,7 +234,7 @@ class OrbitState:
             raan=np.degrees(raan),
             arg_periapsis=np.degrees(argp),
             true_anomaly=np.degrees(ta),
-            epoch=epoch
+            epoch=epoch,
         )
 
     def to_pykep(self, mu: float) -> pk.planet:
@@ -258,7 +260,7 @@ class OrbitState:
             np.radians(self.inclination),
             np.radians(self.raan),
             np.radians(self.arg_periapsis),
-            np.radians(self.true_anomaly)
+            np.radians(self.true_anomaly),
         ]
 
         return pk.planet.keplerian(
@@ -268,7 +270,7 @@ class OrbitState:
             0.0,  # Self gravitational parameter
             1.0,  # Radius (not used)
             1.0,  # Safe radius (not used)
-            "temp"
+            "temp",
         )
 
     def get_state_vectors(self, mu: float = pk.MU_EARTH) -> tuple[np.ndarray, np.ndarray]:

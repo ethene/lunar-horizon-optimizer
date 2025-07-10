@@ -4,13 +4,14 @@ This module implements n-body gravitational dynamics for more accurate
 Earth-Moon trajectory calculations, completing Task 3 requirements.
 """
 
-import numpy as np
-from scipy.integrate import solve_ivp
-import pykep as pk
 import logging
 
-from .constants import PhysicalConstants as PC
+import numpy as np
+import pykep as pk
+from scipy.integrate import solve_ivp
+
 from .celestial_bodies import CelestialBody
+from .constants import PhysicalConstants as PC
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class NBodyPropagator:
         self.mu = {
             "earth": PC.EARTH_MU,
             "moon": PC.MOON_MU,
-            "sun": PC.SUN_MU
+            "sun": PC.SUN_MU,
         }
 
         logger.info(f"Initialized N-body propagator with bodies: {self.bodies}")
@@ -85,7 +86,7 @@ class NBodyPropagator:
                 t_eval=t_eval,
                 rtol=1e-12,
                 atol=1e-15,
-                args=(time_span[0],)  # Reference epoch for celestial body positions
+                args=(time_span[0],),  # Reference epoch for celestial body positions
             )
 
             if not solution.success:
@@ -97,7 +98,7 @@ class NBodyPropagator:
 
         except Exception as e:
             msg = f"N-body propagation failed: {e!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from e
 
     def _nbody_dynamics(self, t: float, state: np.ndarray, epoch: float) -> np.ndarray:
         """Compute derivatives for n-body gravitational dynamics.
@@ -194,7 +195,7 @@ class NBodyPropagator:
             "rms_position_error_m": np.sqrt(np.mean(pos_error**2)),
             "max_velocity_error_ms": np.max(vel_error),
             "final_velocity_error_ms": vel_error[-1],
-            "rms_velocity_error_ms": np.sqrt(np.mean(vel_error**2))
+            "rms_velocity_error_ms": np.sqrt(np.mean(vel_error**2)),
         }
 
 
@@ -240,7 +241,7 @@ class HighFidelityPropagator:
             # Use PyKEP two-body propagation
             logger.debug("Using PyKEP two-body propagation")
             final_pos, final_vel = pk.propagate_lagrangian(
-                initial_position, initial_velocity, time_of_flight, PC.EARTH_MU
+                initial_position, initial_velocity, time_of_flight, PC.EARTH_MU,
             )
             return np.array(final_pos), np.array(final_vel)
 
@@ -250,7 +251,7 @@ class HighFidelityPropagator:
         time_span = (0.0, time_of_flight)
 
         _, trajectory = self.nbody_propagator.propagate_trajectory(
-            initial_state, time_span, num_points=100
+            initial_state, time_span, num_points=100,
         )
 
         final_position = trajectory[:3, -1]
@@ -278,12 +279,12 @@ class HighFidelityPropagator:
         # PyKEP two-body
         try:
             pos_2body, vel_2body = pk.propagate_lagrangian(
-                initial_position, initial_velocity, time_of_flight, PC.EARTH_MU
+                initial_position, initial_velocity, time_of_flight, PC.EARTH_MU,
             )
             results["twobody"] = {
                 "position": np.array(pos_2body),
                 "velocity": np.array(vel_2body),
-                "success": True
+                "success": True,
             }
         except Exception as e:
             results["twobody"] = {"success": False, "error": str(e)}
@@ -291,12 +292,12 @@ class HighFidelityPropagator:
         # N-body
         try:
             pos_nbody, vel_nbody = self.propagate_adaptive(
-                initial_position, initial_velocity, time_of_flight
+                initial_position, initial_velocity, time_of_flight,
             )
             results["nbody"] = {
                 "position": pos_nbody,
                 "velocity": vel_nbody,
-                "success": True
+                "success": True,
             }
         except Exception as e:
             results["nbody"] = {"success": False, "error": str(e)}
@@ -310,7 +311,7 @@ class HighFidelityPropagator:
                 "position_difference_m": pos_diff,
                 "velocity_difference_ms": vel_diff,
                 "position_difference_km": pos_diff / 1000,
-                "velocity_difference_kms": vel_diff / 1000
+                "velocity_difference_kms": vel_diff / 1000,
             }
 
         return results
@@ -335,10 +336,10 @@ def enhanced_trajectory_propagation(initial_position: np.ndarray,
     if high_fidelity:
         propagator = HighFidelityPropagator(use_nbody=True)
         return propagator.propagate_adaptive(
-            initial_position, initial_velocity, time_of_flight
+            initial_position, initial_velocity, time_of_flight,
         )
     # Standard PyKEP propagation
     final_pos, final_vel = pk.propagate_lagrangian(
-        initial_position, initial_velocity, time_of_flight, PC.EARTH_MU
+        initial_position, initial_velocity, time_of_flight, PC.EARTH_MU,
     )
     return np.array(final_pos), np.array(final_vel)

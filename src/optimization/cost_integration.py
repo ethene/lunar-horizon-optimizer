@@ -4,8 +4,9 @@ This module provides cost calculation capabilities for the multi-objective
 optimization, integrating mission cost factors with trajectory parameters.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 from src.config.costs import CostFactors
 
@@ -30,7 +31,7 @@ class CostCalculator:
         self.cost_factors = cost_factors or CostFactors(
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=50000.0,
-            development_cost=500000000.0
+            development_cost=500000000.0,
         )
 
         # Mission parameters for cost calculations
@@ -216,8 +217,8 @@ class CostCalculator:
             "cost_factors": {
                 "propellant_fraction": propellant_cost / total_cost,
                 "launch_fraction": launch_cost / total_cost,
-                "operations_fraction": operations_cost / total_cost
-            }
+                "operations_fraction": operations_cost / total_cost,
+            },
         }
 
 
@@ -254,7 +255,7 @@ class EconomicObjectives:
             Total mission cost [cost units]
         """
         return self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt
+            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
         )
 
     def minimize_cost_per_kg(self,
@@ -277,7 +278,7 @@ class EconomicObjectives:
             Cost per kg of payload [cost units/kg]
         """
         total_cost = self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt
+            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
         )
         return total_cost / payload_mass
 
@@ -301,7 +302,7 @@ class EconomicObjectives:
             Negative cost efficiency (for minimization)
         """
         total_cost = self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt
+            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
         )
 
         # Simple efficiency metric: inverse of normalized cost and delta-v
@@ -330,7 +331,7 @@ class EconomicObjectives:
             Negative ROI (for minimization)
         """
         total_cost = self.cost_calculator.calculate_mission_cost(
-            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt
+            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt,
         )
 
         roi = (mission_revenue - total_cost) / total_cost if total_cost > 0 else 0.0
@@ -359,7 +360,7 @@ def create_cost_calculator(launch_cost_per_kg: float = 10000.0,
         launch_cost_per_kg=launch_cost_per_kg,
         operations_cost_per_day=operations_cost_per_day,
         development_cost=development_cost,
-        contingency_percentage=contingency_percentage
+        contingency_percentage=contingency_percentage,
     )
 
     return CostCalculator(cost_factors)

@@ -13,6 +13,7 @@ from .constants import PhysicalConstants as PC
 from .defaults import TransferDefaults as TD
 from .orbit_state import OrbitState
 
+
 @dataclass
 class TransferParameters:
     """Parameters for generating transfer trajectories.
@@ -49,28 +50,28 @@ class TransferParameters:
         if not TD.MIN_TOF <= self.tof_days <= TD.MAX_TOF:
             msg = f"Time of flight must be between {TD.MIN_TOF} and {TD.MAX_TOF} days"
             raise ValueError(
-                msg
+                msg,
             )
 
         # Initial orbit validation
         if self.initial_orbit < PC.MIN_PERIGEE:
             msg = f"Initial orbit altitude must be at least {PC.MIN_PERIGEE} km"
             raise ValueError(
-                msg
+                msg,
             )
 
         # Final orbit validation
         if self.final_orbit > PC.MAX_APOGEE:
             msg = f"Final orbit radius cannot exceed {PC.MAX_APOGEE} km"
             raise ValueError(
-                msg
+                msg,
             )
 
         # Delta-v constraints validation
         if not 0 < self.min_tli_dv <= self.max_tli_dv:
             msg = "min_tli_dv must be positive and not greater than max_tli_dv"
             raise ValueError(
-                msg
+                msg,
             )
 
         # Revolutions validation
@@ -91,5 +92,5 @@ class TransferParameters:
         return OrbitState(
             radius=radius,
             velocity=velocity,
-            inclination=TD.DEFAULT_INCLINATION
+            inclination=TD.DEFAULT_INCLINATION,
         )

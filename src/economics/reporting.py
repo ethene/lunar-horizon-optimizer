@@ -4,13 +4,13 @@ This module provides comprehensive reporting capabilities for economic analysis
 results, including financial summaries, executive reports, and data export.
 """
 
-import json
 import csv
-from typing import Any
-from dataclasses import dataclass, asdict
+import json
+import logging
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-import logging
+from typing import Any
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -229,7 +229,7 @@ Analysis Timestamp: {datetime.now().isoformat()}
                 "roi": 0.25,
                 "risk": 0.2,
                 "payback": 0.15,
-                "strategic_value": 0.1
+                "strategic_value": 0.1,
             }
 
         report = f"""
@@ -380,24 +380,24 @@ ALTERNATIVE OVERVIEW
                 "irr": financial_summary.internal_rate_of_return,
                 "roi": financial_summary.return_on_investment,
                 "payback_years": financial_summary.payback_period_years,
-                "success_probability": financial_summary.probability_of_success
+                "success_probability": financial_summary.probability_of_success,
             },
             "cost_breakdown": {
                 "Development": financial_summary.development_cost,
                 "Launch": financial_summary.launch_cost,
                 "Operations": financial_summary.operational_cost,
-                "Contingency": financial_summary.contingency_cost
+                "Contingency": financial_summary.contingency_cost,
             },
             "revenue_breakdown": {
                 "Primary Revenue": financial_summary.primary_revenue,
                 "Secondary Revenue": financial_summary.secondary_revenue,
-                "ISRU Benefits": financial_summary.isru_benefits
+                "ISRU Benefits": financial_summary.isru_benefits,
             },
             "risk_metrics": {
                 "Value at Risk (5%)": financial_summary.value_at_risk_5_percent,
                 "Expected Shortfall": financial_summary.expected_shortfall,
-                "Probability of Success": financial_summary.probability_of_success
-            }
+                "Probability of Success": financial_summary.probability_of_success,
+            },
         }
 
         # Add time series data if available
@@ -414,7 +414,7 @@ ALTERNATIVE OVERVIEW
                     name: {
                         "sensitivity": data["sensitivity"],
                         "parameter_values": data["parameter_values"],
-                        "npv_values": data["npv_values"]
+                        "npv_values": data["npv_values"],
                     }
                     for name, data in sens_analysis["variables"].items()
                 }
@@ -448,7 +448,7 @@ ALTERNATIVE OVERVIEW
             "recommendation": recommendation,
             "risk_level": risk_level,
             "justification": justification,
-            "score": total_score
+            "score": total_score,
         }
 
     def _generate_key_insights(self,
@@ -664,5 +664,5 @@ def create_financial_summary_from_analysis(analysis_results: dict[str, Any]) -> 
         spacecraft_mass_kg=mission_data.get("spacecraft_mass", 0),
         launch_date=mission_data.get("launch_date", ""),
 
-        confidence_level=analysis_results.get("confidence_level", 0.8)
+        confidence_level=analysis_results.get("confidence_level", 0.8),
     )

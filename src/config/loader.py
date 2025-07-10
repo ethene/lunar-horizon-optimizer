@@ -13,6 +13,7 @@ from pydantic import ValidationError
 
 from .models import MissionConfig
 
+
 class ConfigurationError(Exception):
     """Exception raised for configuration-related errors."""
 
@@ -56,7 +57,7 @@ class ConfigLoader:
                 f"Supported formats: {', '.join(self.SUPPORTED_FORMATS)}"
             )
             raise ConfigurationError(
-                msg
+                msg,
             )
 
         try:
@@ -127,7 +128,7 @@ class ConfigLoader:
                 error_messages.append(f"{location}: {error['msg']}")
 
             raise ConfigurationError(
-                "Configuration validation failed:\n" + "\n".join(error_messages)
+                "Configuration validation failed:\n" + "\n".join(error_messages),
             )
 
     def save_config(self, config: MissionConfig, file_path: str | Path) -> None:
@@ -149,7 +150,7 @@ class ConfigLoader:
                 f"Supported formats: {', '.join(self.SUPPORTED_FORMATS)}"
             )
             raise ConfigurationError(
-                msg
+                msg,
             )
 
         try:
@@ -179,19 +180,19 @@ class ConfigLoader:
                 "dry_mass": 2000.0,
                 "payload_mass": 1000.0,
                 "max_propellant_mass": 3000.0,
-                "specific_impulse": 320.0
+                "specific_impulse": 320.0,
             },
             "cost_factors": {
                 "launch_cost_per_kg": 10000.0,
                 "operations_cost_per_day": 50000.0,
                 "development_cost": 10000000.0,
-                "contingency_percentage": 20.0
+                "contingency_percentage": 20.0,
             },
             "mission_duration_days": 180.0,
             "target_orbit": {
                 "semi_major_axis": 384400.0,
                 "eccentricity": 0.0,
-                "inclination": 0.0
-            }
+                "inclination": 0.0,
+            },
         }
         return cls(default_config=default_config)

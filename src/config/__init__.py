@@ -1,11 +1,11 @@
 """Configuration package for mission parameters."""
 
 from .models import (
+    CostFactors,
+    IsruResourceType,
+    IsruTarget,
     MissionConfig,
     PayloadSpecification,
-    CostFactors,
-    IsruTarget,
-    IsruResourceType,
 )
 
 __all__ = [

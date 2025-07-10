@@ -9,14 +9,15 @@ Author: Lunar Horizon Optimizer Team
 Date: July 2025
 """
 
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from typing import Any
-from dataclasses import dataclass
 
+from src.economics.cost_models import CostBreakdown, MissionCostModel
 from src.economics.financial_models import CashFlowModel
-from src.economics.cost_models import MissionCostModel, CostBreakdown
 from src.economics.isru_benefits import ISRUBenefitAnalyzer
 from src.economics.reporting import FinancialSummary
 
@@ -83,7 +84,7 @@ class EconomicVisualizer:
         self,
         financial_summary: FinancialSummary,
         cash_flow_model: CashFlowModel | None = None,
-        cost_breakdown: CostBreakdown | None = None
+        cost_breakdown: CostBreakdown | None = None,
     ) -> go.Figure:
         """
         Create comprehensive financial dashboard.
@@ -106,15 +107,15 @@ class EconomicVisualizer:
                 "Cash Flow Timeline",
                 "Cost Breakdown",
                 "ROI Analysis",
-                "Risk Assessment"
+                "Risk Assessment",
             ],
             specs=[
                 [{"type": "indicator"}, {"type": "bar"}],
                 [{"type": "scatter"}, {"type": "pie"}],
-                [{"type": "bar"}, {"type": "scatter"}]
+                [{"type": "bar"}, {"type": "scatter"}],
             ],
             vertical_spacing=0.12,
-            horizontal_spacing=0.1
+            horizontal_spacing=0.1,
         )
 
         # 1. Key Financial Metrics (Indicators)
@@ -146,13 +147,13 @@ class EconomicVisualizer:
             title={
                 "text": f"Financial Dashboard - {self.config.title}",
                 "x": 0.5,
-                "font": {"size": 20, "family": self.config.font_family}
+                "font": {"size": 20, "family": self.config.font_family},
             },
             template=self.config.theme,
             height=self.config.height,
             width=self.config.width,
             showlegend=self.config.show_legend,
-            font={"family": self.config.font_family, "color": self.config.text_color}
+            font={"family": self.config.font_family, "color": self.config.text_color},
         )
 
         return fig
@@ -160,7 +161,7 @@ class EconomicVisualizer:
     def create_cost_analysis_dashboard(
         self,
         cost_breakdown: CostBreakdown,
-        comparison_scenarios: list[dict[str, Any]] | None = None
+        comparison_scenarios: list[dict[str, Any]] | None = None,
     ) -> go.Figure:
         """
         Create detailed cost analysis dashboard.
@@ -179,12 +180,12 @@ class EconomicVisualizer:
                 "Cost Category Breakdown",
                 "Cost Trends Over Time",
                 "Cost per Unit Analysis",
-                "Scenario Comparison"
+                "Scenario Comparison",
             ],
             specs=[
                 [{"type": "pie"}, {"type": "scatter"}],
-                [{"type": "bar"}, {"type": "bar"}]
-            ]
+                [{"type": "bar"}, {"type": "bar"}],
+            ],
         )
 
         # 1. Cost Category Breakdown (Pie Chart)
@@ -195,7 +196,7 @@ class EconomicVisualizer:
             cost_breakdown.spacecraft,
             cost_breakdown.operations,
             cost_breakdown.ground_systems,
-            cost_breakdown.contingency
+            cost_breakdown.contingency,
         ]
 
         colors = [self.config.primary_color, self.config.secondary_color,
@@ -209,9 +210,9 @@ class EconomicVisualizer:
                 marker={"colors": colors},
                 textinfo="label+percent+value",
                 texttemplate="%{label}<br>%{percent}<br>$%{value:.1f}M",
-                hovertemplate="%{label}<br>Cost: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>"
+                hovertemplate="%{label}<br>Cost: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>",
             ),
-            row=1, col=1
+            row=1, col=1,
         )
 
         # 2. Cost Trends Over Time (simulated)
@@ -226,9 +227,9 @@ class EconomicVisualizer:
                 mode="lines+markers",
                 name="Development Costs",
                 line={"color": self.config.primary_color, "width": 3},
-                marker={"size": 8}
+                marker={"size": 8},
             ),
-            row=1, col=2
+            row=1, col=2,
         )
 
         fig.add_trace(
@@ -238,9 +239,9 @@ class EconomicVisualizer:
                 mode="lines+markers",
                 name="Operations Costs",
                 line={"color": self.config.secondary_color, "width": 3},
-                marker={"size": 8}
+                marker={"size": 8},
             ),
-            row=1, col=2
+            row=1, col=2,
         )
 
         # 3. Cost per Unit Analysis
@@ -249,7 +250,7 @@ class EconomicVisualizer:
             cost_breakdown.launch / 5000,  # Assuming 5000 kg payload
             cost_breakdown.total / 1000,   # Assuming 1000 kg lunar payload
             cost_breakdown.operations / 365,  # Per day
-            cost_breakdown.total / 4       # Assuming 4 crew members
+            cost_breakdown.total / 4,       # Assuming 4 crew members
         ]
 
         fig.add_trace(
@@ -259,9 +260,9 @@ class EconomicVisualizer:
                 marker={"color": [self.config.primary_color, self.config.secondary_color,
                                   self.config.success_color, self.config.warning_color]},
                 text=[f"${v:.1f}K" for v in unit_costs],
-                textposition="auto"
+                textposition="auto",
             ),
-            row=2, col=1
+            row=2, col=1,
         )
 
         # 4. Scenario Comparison
@@ -281,9 +282,9 @@ class EconomicVisualizer:
                     y=scenario_costs,
                     marker={"color": colors_scenarios},
                     text=[f"${v:.0f}M" for v in scenario_costs],
-                    textposition="auto"
+                    textposition="auto",
                 ),
-                row=2, col=2
+                row=2, col=2,
             )
         else:
             self._add_placeholder_chart(fig, "No Comparison Scenarios Available", row=2, col=2)
@@ -293,7 +294,7 @@ class EconomicVisualizer:
             title=f"Cost Analysis Dashboard - Total: ${cost_breakdown.total:.0f}M",
             template=self.config.theme,
             height=800,
-            width=1400
+            width=1400,
         )
 
         return fig
@@ -301,7 +302,7 @@ class EconomicVisualizer:
     def create_isru_analysis_dashboard(
         self,
         isru_analysis: dict[str, Any],
-        resource_name: str = "water_ice"
+        resource_name: str = "water_ice",
     ) -> go.Figure:
         """
         Create ISRU economic analysis dashboard.
@@ -320,12 +321,12 @@ class EconomicVisualizer:
                 f"ISRU {resource_name.title()} Economics",
                 "Production Timeline",
                 "Break-even Analysis",
-                "Revenue Streams"
+                "Revenue Streams",
             ],
             specs=[
                 [{"type": "indicator"}, {"type": "scatter"}],
-                [{"type": "scatter"}, {"type": "pie"}]
-            ]
+                [{"type": "scatter"}, {"type": "pie"}],
+            ],
         )
 
         # Extract data
@@ -346,9 +347,9 @@ class EconomicVisualizer:
                 title={"text": "ISRU NPV ($M)"},
                 number={"suffix": "M", "font": {"size": 20}},
                 delta={"reference": 0, "position": "bottom"},
-                domain={"x": [0, 0.5], "y": [0.7, 1]}
+                domain={"x": [0, 0.5], "y": [0.7, 1]},
             ),
-            row=1, col=1
+            row=1, col=1,
         )
 
         fig.add_trace(
@@ -362,13 +363,13 @@ class EconomicVisualizer:
                     "steps": [
                         {"range": [0, 25], "color": "lightgray"},
                         {"range": [25, 50], "color": "yellow"},
-                        {"range": [50, 100], "color": "lightgreen"}
+                        {"range": [50, 100], "color": "lightgreen"},
                     ],
-                    "threshold": {"line": {"color": "red", "width": 4}, "thickness": 0.75, "value": 90}
+                    "threshold": {"line": {"color": "red", "width": 4}, "thickness": 0.75, "value": 90},
                 },
-                domain={"x": [0, 0.5], "y": [0, 0.6]}
+                domain={"x": [0, 0.5], "y": [0, 0.6]},
             ),
-            row=1, col=1
+            row=1, col=1,
         )
 
         # 2. Production Timeline
@@ -384,9 +385,9 @@ class EconomicVisualizer:
                     mode="lines+markers",
                     name="Monthly Production",
                     line={"color": self.config.primary_color, "width": 3},
-                    yaxis="y"
+                    yaxis="y",
                 ),
-                row=1, col=2
+                row=1, col=2,
             )
 
             fig.add_trace(
@@ -396,9 +397,9 @@ class EconomicVisualizer:
                     mode="lines+markers",
                     name="Cumulative Production",
                     line={"color": self.config.secondary_color, "width": 3},
-                    yaxis="y2"
+                    yaxis="y2",
                 ),
-                row=1, col=2
+                row=1, col=2,
             )
         else:
             self._add_placeholder_chart(fig, "Production Data Not Available", row=1, col=2)
@@ -423,22 +424,22 @@ class EconomicVisualizer:
                     mode="lines+markers",
                     name="Cumulative Cash Flow",
                     line={"color": self.config.success_color, "width": 3},
-                    fill="tonexty"
+                    fill="tonexty",
                 ),
-                row=2, col=1
+                row=2, col=1,
             )
 
             # Add break-even line
             fig.add_hline(
                 y=0, line_dash="dash", line_color="red",
-                annotation_text="Break-even", row=2, col=1
+                annotation_text="Break-even", row=2, col=1,
             )
 
             if break_even_month:
                 fig.add_vline(
                     x=break_even_month, line_dash="dash", line_color="green",
                     annotation_text=f"Break-even: Month {break_even_month}",
-                    row=2, col=1
+                    row=2, col=1,
                 )
         else:
             self._add_placeholder_chart(fig, "Break-even Data Not Available", row=2, col=1)
@@ -453,9 +454,9 @@ class EconomicVisualizer:
                     labels=stream_names,
                     values=stream_values,
                     textinfo="label+percent",
-                    hovertemplate="%{label}<br>Revenue: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>"
+                    hovertemplate="%{label}<br>Revenue: $%{value:.1f}M<br>Percentage: %{percent}<extra></extra>",
                 ),
-                row=2, col=2
+                row=2, col=2,
             )
         else:
             self._add_placeholder_chart(fig, "Revenue Stream Data Not Available", row=2, col=2)
@@ -465,7 +466,7 @@ class EconomicVisualizer:
             title=f"ISRU Economic Analysis - {resource_name.title()}",
             template=self.config.theme,
             height=900,
-            width=1400
+            width=1400,
         )
 
         return fig
@@ -473,7 +474,7 @@ class EconomicVisualizer:
     def create_sensitivity_analysis_dashboard(
         self,
         sensitivity_results: dict[str, Any],
-        monte_carlo_results: dict[str, Any] | None = None
+        monte_carlo_results: dict[str, Any] | None = None,
     ) -> go.Figure:
         """
         Create sensitivity and risk analysis dashboard.
@@ -492,12 +493,12 @@ class EconomicVisualizer:
                 "Parameter Sensitivity",
                 "Monte Carlo Distribution",
                 "Risk Metrics",
-                "Scenario Analysis"
+                "Scenario Analysis",
             ],
             specs=[
                 [{"type": "bar"}, {"type": "histogram"}],
-                [{"type": "table"}, {"type": "scatter"}]
-            ]
+                [{"type": "table"}, {"type": "scatter"}],
+            ],
         )
 
         # 1. Parameter Sensitivity
@@ -517,9 +518,9 @@ class EconomicVisualizer:
                     y=list(sens_sorted),
                     marker={"color": colors},
                     text=[f"{s:.2f}" for s in sens_sorted],
-                    textposition="auto"
+                    textposition="auto",
                 ),
-                row=1, col=1
+                row=1, col=1,
             )
         else:
             self._add_placeholder_chart(fig, "Sensitivity Data Not Available", row=1, col=1)
@@ -534,9 +535,9 @@ class EconomicVisualizer:
                     nbinsx=50,
                     name="NPV Distribution",
                     marker={"color": self.config.primary_color, "opacity": 0.7},
-                    histnorm="probability density"
+                    histnorm="probability density",
                 ),
-                row=1, col=2
+                row=1, col=2,
             )
 
             # Add mean and percentiles
@@ -562,7 +563,7 @@ class EconomicVisualizer:
                 ["Value at Risk (5%)", f"${risk_metrics.get('value_at_risk_5%', 0)/1e6:.1f}M"],
                 ["Expected Shortfall", f"${risk_metrics.get('expected_shortfall', 0)/1e6:.1f}M"],
                 ["Standard Deviation", f"${risk_metrics.get('std_deviation', 0)/1e6:.1f}M"],
-                ["Coefficient of Variation", f"{risk_metrics.get('coefficient_variation', 0):.2f}"]
+                ["Coefficient of Variation", f"{risk_metrics.get('coefficient_variation', 0):.2f}"],
             ]
 
             fig.add_trace(
@@ -571,16 +572,16 @@ class EconomicVisualizer:
                         "values": ["Risk Metric", "Value"],
                         "fill_color": self.config.primary_color,
                         "align": "left",
-                        "font": {"color": "white", "size": 12}
+                        "font": {"color": "white", "size": 12},
                     },
                     cells={
                         "values": list(zip(*metrics_data, strict=False)),
                         "fill_color": "lightblue",
                         "align": "left",
-                        "font": {"size": 11}
-                    }
+                        "font": {"size": 11},
+                    },
                 ),
-                row=2, col=1
+                row=2, col=1,
             )
         else:
             self._add_placeholder_chart(fig, "Risk Metrics Not Available", row=2, col=1)
@@ -604,11 +605,11 @@ class EconomicVisualizer:
                         "color": scenario_npvs,
                         "colorscale": "RdYlGn",
                         "showscale": True,
-                        "colorbar": {"title": "NPV ($M)"}
+                        "colorbar": {"title": "NPV ($M)"},
                     },
-                    name="Scenarios"
+                    name="Scenarios",
                 ),
-                row=2, col=2
+                row=2, col=2,
             )
         else:
             self._add_placeholder_chart(fig, "Scenario Data Not Available", row=2, col=2)
@@ -618,7 +619,7 @@ class EconomicVisualizer:
             title="Economic Sensitivity & Risk Analysis",
             template=self.config.theme,
             height=900,
-            width=1400
+            width=1400,
         )
 
         return fig
@@ -628,7 +629,7 @@ class EconomicVisualizer:
         fig: go.Figure,
         financial_summary: FinancialSummary,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add financial KPI indicators."""
         fig.add_trace(
@@ -638,9 +639,9 @@ class EconomicVisualizer:
                 title={"text": "NPV ($M)"},
                 number={"suffix": "M", "font": {"size": 16}},
                 delta={"reference": 0, "position": "bottom"},
-                domain={"x": [0, 0.25], "y": [0.8, 1]}
+                domain={"x": [0, 0.25], "y": [0.8, 1]},
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
         fig.add_trace(
@@ -649,9 +650,9 @@ class EconomicVisualizer:
                 value=financial_summary.internal_rate_of_return * 100,
                 title={"text": "IRR (%)"},
                 number={"suffix": "%", "font": {"size": 16}},
-                domain={"x": [0.25, 0.5], "y": [0.8, 1]}
+                domain={"x": [0.25, 0.5], "y": [0.8, 1]},
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
         fig.add_trace(
@@ -660,9 +661,9 @@ class EconomicVisualizer:
                 value=financial_summary.payback_period_years,
                 title={"text": "Payback (Years)"},
                 number={"suffix": " yr", "font": {"size": 16}},
-                domain={"x": [0, 0.25], "y": [0.4, 0.7]}
+                domain={"x": [0, 0.25], "y": [0.4, 0.7]},
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
         fig.add_trace(
@@ -676,12 +677,12 @@ class EconomicVisualizer:
                     "steps": [
                         {"range": [0, 50], "color": "lightgray"},
                         {"range": [50, 80], "color": "yellow"},
-                        {"range": [80, 100], "color": "lightgreen"}
-                    ]
+                        {"range": [80, 100], "color": "lightgreen"},
+                    ],
                 },
-                domain={"x": [0.25, 0.5], "y": [0.4, 0.7]}
+                domain={"x": [0.25, 0.5], "y": [0.4, 0.7]},
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_investment_revenue_chart(
@@ -689,14 +690,14 @@ class EconomicVisualizer:
         fig: go.Figure,
         financial_summary: FinancialSummary,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add investment vs revenue bar chart."""
         categories = ["Investment", "Revenue", "Net Benefit"]
         values = [
             financial_summary.total_investment / 1e6,
             financial_summary.total_revenue / 1e6,
-            financial_summary.net_present_value / 1e6
+            financial_summary.net_present_value / 1e6,
         ]
         colors = [self.config.danger_color, self.config.success_color, self.config.primary_color]
 
@@ -707,9 +708,9 @@ class EconomicVisualizer:
                 marker={"color": colors},
                 text=[f"${v:.0f}M" for v in values],
                 textposition="auto",
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_cash_flow_timeline(
@@ -717,7 +718,7 @@ class EconomicVisualizer:
         fig: go.Figure,
         cash_flow_model: CashFlowModel,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add cash flow timeline chart."""
         # Extract cash flows (simplified - would need actual implementation)
@@ -733,9 +734,9 @@ class EconomicVisualizer:
                 mode="lines",
                 name="Monthly Cash Flow",
                 line={"color": self.config.primary_color, "width": 2},
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
         fig.add_trace(
@@ -746,9 +747,9 @@ class EconomicVisualizer:
                 name="Cumulative Cash Flow",
                 line={"color": self.config.secondary_color, "width": 2},
                 yaxis="y2",
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_cost_breakdown_pie(
@@ -756,7 +757,7 @@ class EconomicVisualizer:
         fig: go.Figure,
         cost_breakdown: CostBreakdown,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add cost breakdown pie chart."""
         labels = ["Development", "Launch", "Spacecraft", "Operations", "Ground", "Contingency"]
@@ -766,7 +767,7 @@ class EconomicVisualizer:
             cost_breakdown.spacecraft,
             cost_breakdown.operations,
             cost_breakdown.ground_systems,
-            cost_breakdown.contingency
+            cost_breakdown.contingency,
         ]
 
         fig.add_trace(
@@ -774,9 +775,9 @@ class EconomicVisualizer:
                 labels=labels,
                 values=values,
                 textinfo="label+percent",
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_roi_analysis(
@@ -784,7 +785,7 @@ class EconomicVisualizer:
         fig: go.Figure,
         financial_summary: FinancialSummary,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add ROI analysis chart."""
         years = list(range(1, 11))
@@ -797,9 +798,9 @@ class EconomicVisualizer:
                 marker={"color": self.config.success_color},
                 text=[f"{v:.1%}" for v in roi_values],
                 textposition="auto",
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_risk_assessment(
@@ -807,7 +808,7 @@ class EconomicVisualizer:
         fig: go.Figure,
         financial_summary: FinancialSummary,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add risk assessment scatter plot."""
         # Simulated risk vs return analysis
@@ -825,11 +826,11 @@ class EconomicVisualizer:
                 marker={
                     "size": 15,
                     "color": [self.config.success_color, self.config.primary_color,
-                          self.config.warning_color, self.config.danger_color]
+                          self.config.warning_color, self.config.danger_color],
                 },
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_placeholder_chart(
@@ -837,7 +838,7 @@ class EconomicVisualizer:
         fig: go.Figure,
         message: str,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add placeholder for missing data."""
         fig.add_annotation(
@@ -846,7 +847,7 @@ class EconomicVisualizer:
             yref=f"y{col if row > 1 or col > 1 else ''}",
             x=0.5, y=0.5, showarrow=False,
             font={"size": 14, "color": "gray"},
-            row=row, col=col
+            row=row, col=col,
         )
 
 
@@ -856,7 +857,7 @@ def create_quick_financial_dashboard(
     roi: float,
     payback_years: float,
     total_investment: float,
-    total_revenue: float
+    total_revenue: float,
 ) -> go.Figure:
     """
     Quick function to create a simple financial dashboard.
@@ -882,7 +883,7 @@ def create_quick_financial_dashboard(
         return_on_investment=roi,
         payback_period_years=payback_years,
         mission_duration_years=8,
-        probability_of_success=0.75
+        probability_of_success=0.75,
     )
 
     # Create visualizer and dashboard

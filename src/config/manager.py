@@ -15,16 +15,16 @@ import warnings
 warnings.warn(
     "manager.py is deprecated. Import from src.config.management package instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export from the new management modules for backward compatibility
 from .management.config_manager import ConfigManager
-from .management.template_manager import TemplateManager
 from .management.file_operations import FileOperations
+from .management.template_manager import TemplateManager
 
 __all__ = [
     "ConfigManager",
     "FileOperations",
-    "TemplateManager"
+    "TemplateManager",
 ]

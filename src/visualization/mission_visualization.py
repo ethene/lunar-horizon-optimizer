@@ -9,15 +9,15 @@ Author: Lunar Horizon Optimizer Team
 Date: July 2025
 """
 
-import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-from typing import Any
 from dataclasses import dataclass
-import pandas as pd
 from datetime import datetime, timedelta
+from typing import Any
 
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 @dataclass
@@ -116,7 +116,7 @@ class MissionVisualizer:
         self,
         phases: list[MissionPhase],
         milestones: list[MissionMilestone],
-        title: str | None = None
+        title: str | None = None,
     ) -> go.Figure:
         """
         Create comprehensive mission timeline visualization.
@@ -154,7 +154,7 @@ class MissionVisualizer:
     def create_resource_utilization_chart(
         self,
         phases: list[MissionPhase],
-        resource_types: list[str] | None = None
+        resource_types: list[str] | None = None,
     ) -> go.Figure:
         """
         Create resource utilization visualization.
@@ -186,7 +186,7 @@ class MissionVisualizer:
             rows=len(resource_types), cols=1,
             subplot_titles=[f"{res.title()} Utilization" for res in resource_types],
             vertical_spacing=0.1,
-            shared_xaxes=True
+            shared_xaxes=True,
         )
 
         # Generate timeline data
@@ -218,9 +218,9 @@ class MissionVisualizer:
                     name=resource_type.title(),
                     fill="tonexty" if idx == 0 else "tonexty",
                     line={"color": colors[idx % len(colors)], "width": 2},
-                    showlegend=True
+                    showlegend=True,
                 ),
-                row=idx + 1, col=1
+                row=idx + 1, col=1,
             )
 
             # Add peak utilization annotation
@@ -234,7 +234,7 @@ class MissionVisualizer:
                 showarrow=True,
                 arrowhead=2,
                 arrowcolor=colors[idx % len(colors)],
-                row=idx + 1, col=1
+                row=idx + 1, col=1,
             )
 
         # Update layout
@@ -243,14 +243,14 @@ class MissionVisualizer:
             template=self.config.theme,
             height=200 * len(resource_types) + 200,
             width=self.config.width,
-            showlegend=True
+            showlegend=True,
         )
 
         return fig
 
     def create_critical_path_analysis(
         self,
-        phases: list[MissionPhase]
+        phases: list[MissionPhase],
     ) -> go.Figure:
         """
         Create critical path analysis visualization.
@@ -286,8 +286,8 @@ class MissionVisualizer:
                     hovertemplate=f"<b>{phase.name}</b><br>"
                                 f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
                                 f"Critical: {'Yes' if phase.critical_path else 'No'}<br>"
-                                f"Risk: {phase.risk_level}<extra></extra>"
-                )
+                                f"Risk: {phase.risk_level}<extra></extra>",
+                ),
             )
 
         # Add dependency arrows
@@ -301,7 +301,7 @@ class MissionVisualizer:
             template=self.config.theme,
             height=max(600, len(phases) * 40),
             width=self.config.width,
-            showlegend=False
+            showlegend=False,
         )
 
         return fig
@@ -310,7 +310,7 @@ class MissionVisualizer:
         self,
         phases: list[MissionPhase],
         milestones: list[MissionMilestone],
-        current_date: datetime | None = None
+        current_date: datetime | None = None,
     ) -> go.Figure:
         """
         Create comprehensive mission dashboard.
@@ -334,13 +334,13 @@ class MissionVisualizer:
                 "Mission Timeline",
                 "Phase Status",
                 "Upcoming Milestones",
-                "Risk Assessment"
+                "Risk Assessment",
             ],
             specs=[
                 [{"type": "scatter", "colspan": 2}, None],
-                [{"type": "bar"}, {"type": "table"}]
+                [{"type": "bar"}, {"type": "table"}],
             ],
-            vertical_spacing=0.15
+            vertical_spacing=0.15,
         )
 
         # 1. Mission Timeline (Top, full width)
@@ -358,7 +358,7 @@ class MissionVisualizer:
             template=self.config.theme,
             height=900,
             width=self.config.width,
-            showlegend=True
+            showlegend=True,
         )
 
         return fig
@@ -366,7 +366,7 @@ class MissionVisualizer:
     def create_risk_timeline(
         self,
         phases: list[MissionPhase],
-        risk_events: list[dict[str, Any]] | None = None
+        risk_events: list[dict[str, Any]] | None = None,
     ) -> go.Figure:
         """
         Create risk assessment timeline.
@@ -386,7 +386,7 @@ class MissionVisualizer:
             "Low": "#2ECC71",
             "Medium": "#F39C12",
             "High": "#E74C3C",
-            "Critical": "#8E44AD"
+            "Critical": "#8E44AD",
         }
 
         # Add phase risk levels
@@ -403,8 +403,8 @@ class MissionVisualizer:
                     marker={"size": 10, "color": color},
                     hovertemplate=f"<b>{phase.name}</b><br>"
                                 f"Risk Level: {phase.risk_level}<br>"
-                                f"Duration: {(phase.end_date - phase.start_date).days} days<extra></extra>"
-                )
+                                f"Duration: {(phase.end_date - phase.start_date).days} days<extra></extra>",
+                ),
             )
 
         # Add risk events if provided
@@ -420,7 +420,7 @@ class MissionVisualizer:
                         line_dash="dash",
                         line_color=risk_colors.get(event_risk, "#95A5A6"),
                         annotation_text=event_name,
-                        annotation_position="top"
+                        annotation_position="top",
                     )
 
         # Update layout
@@ -431,7 +431,7 @@ class MissionVisualizer:
             template=self.config.theme,
             height=max(600, len(phases) * 40),
             width=self.config.width,
-            showlegend=True
+            showlegend=True,
         )
 
         return fig
@@ -454,8 +454,8 @@ class MissionVisualizer:
                                 f"End: {phase.end_date.strftime('%Y-%m-%d')}<br>"
                                 f"Duration: {(phase.end_date - phase.start_date).days} days<br>"
                                 f"Category: {phase.category}<br>"
-                                f"Cost: ${phase.cost/1e6:.1f}M<extra></extra>"
-                )
+                                f"Cost: ${phase.cost/1e6:.1f}M<extra></extra>",
+                ),
             )
 
     def _add_milestones(self, fig: go.Figure, milestones: list[MissionMilestone]) -> None:
@@ -481,13 +481,13 @@ class MissionVisualizer:
                         "size": self.config.milestone_size,
                         "color": self.config.milestone_color,
                         "symbol": "diamond",
-                        "line": {"width": 2, "color": "white"}
+                        "line": {"width": 2, "color": "white"},
                     },
                     hovertemplate=f"<b>{milestone.name}</b><br>"
                                 f"Date: {milestone.date.strftime('%Y-%m-%d')}<br>"
                                 f"Category: {milestone.category}<br>"
-                                f"Description: {milestone.description}<extra></extra>"
-                )
+                                f"Description: {milestone.description}<extra></extra>",
+                ),
             )
 
     def _add_dependencies(self, fig: go.Figure, phases: list[MissionPhase]) -> None:
@@ -512,7 +512,7 @@ class MissionVisualizer:
                         arrowsize=1,
                         arrowwidth=2,
                         arrowcolor="gray",
-                        opacity=0.6
+                        opacity=0.6,
                     )
 
     def _add_dashboard_timeline(
@@ -522,7 +522,7 @@ class MissionVisualizer:
         milestones: list[MissionMilestone],
         current_date: datetime,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add simplified timeline for dashboard."""
         # Add current date line
@@ -532,7 +532,7 @@ class MissionVisualizer:
             line_color="red",
             annotation_text="Today",
             annotation_position="top",
-            row=row
+            row=row,
         )
 
         # Add key phases only (first 5)
@@ -546,9 +546,9 @@ class MissionVisualizer:
                     mode="lines",
                     name=phase.name,
                     line={"color": color, "width": 6},
-                    showlegend=False
+                    showlegend=False,
                 ),
-                row=row, col=col
+                row=row, col=col,
             )
 
     def _add_phase_status_chart(
@@ -557,7 +557,7 @@ class MissionVisualizer:
         phases: list[MissionPhase],
         current_date: datetime,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add phase status bar chart."""
         # Calculate phase status
@@ -582,9 +582,9 @@ class MissionVisualizer:
                 marker={"color": colors},
                 text=counts,
                 textposition="auto",
-                showlegend=False
+                showlegend=False,
             ),
-            row=row, col=col
+            row=row, col=col,
         )
 
     def _add_upcoming_milestones_table(
@@ -593,7 +593,7 @@ class MissionVisualizer:
         milestones: list[MissionMilestone],
         current_date: datetime,
         row: int,
-        col: int
+        col: int,
     ) -> None:
         """Add upcoming milestones table."""
         # Filter upcoming milestones
@@ -608,7 +608,7 @@ class MissionVisualizer:
                     milestone.name,
                     milestone.date.strftime("%Y-%m-%d"),
                     f"{days_until} days",
-                    milestone.category
+                    milestone.category,
                 ])
 
             fig.add_trace(
@@ -617,16 +617,16 @@ class MissionVisualizer:
                         "values": ["Milestone", "Date", "Days Until", "Category"],
                         "fill_color": self.config.development_color,
                         "align": "left",
-                        "font": {"color": "white", "size": 12}
+                        "font": {"color": "white", "size": 12},
                     },
                     cells={
                         "values": list(zip(*table_data, strict=False)),
                         "fill_color": "lightblue",
                         "align": "left",
-                        "font": {"size": 11}
-                    }
+                        "font": {"size": 11},
+                    },
                 ),
-                row=row, col=col
+                row=row, col=col,
             )
         else:
             # Add empty table message
@@ -635,7 +635,7 @@ class MissionVisualizer:
                 xref=f"x{col}", yref=f"y{col}",
                 x=0.5, y=0.5, showarrow=False,
                 font={"size": 14, "color": "gray"},
-                row=row, col=col
+                row=row, col=col,
             )
 
     def _calculate_critical_path(self, phases: list[MissionPhase]) -> list[MissionPhase]:
@@ -677,7 +677,7 @@ class MissionVisualizer:
                         ay=phase.name,
                         arrowhead=2,
                         arrowcolor=arrow_color,
-                        arrowwidth=2 if phase.critical_path else 1
+                        arrowwidth=2 if phase.critical_path else 1,
                     )
 
     def _get_phase_color(self, category: str) -> str:
@@ -687,7 +687,7 @@ class MissionVisualizer:
             "Testing": self.config.testing_color,
             "Launch": self.config.launch_color,
             "Operations": self.config.operations_color,
-            "Completion": self.config.completion_color
+            "Completion": self.config.completion_color,
         }
         return color_map.get(category, "#95A5A6")
 
@@ -695,7 +695,7 @@ class MissionVisualizer:
         self,
         fig: go.Figure,
         phases: list[MissionPhase],
-        title: str
+        title: str,
     ) -> None:
         """Configure timeline layout."""
         fig.update_layout(
@@ -707,7 +707,7 @@ class MissionVisualizer:
             width=self.config.width,
             showlegend=False,
             font={"family": self.config.font_family},
-            hovermode="closest"
+            hovermode="closest",
         )
 
         # Set y-axis to show all phases
@@ -721,7 +721,7 @@ class MissionVisualizer:
             text=message,
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font={"size": 16, "color": "gray"}
+            font={"size": 16, "color": "gray"},
         )
         return fig
 
@@ -744,7 +744,7 @@ def create_sample_mission_timeline() -> go.Figure:
             end_date=base_date + timedelta(days=365),
             category="Development",
             cost=50e6,
-            risk_level="Medium"
+            risk_level="Medium",
         ),
         MissionPhase(
             name="Spacecraft Development",
@@ -753,7 +753,7 @@ def create_sample_mission_timeline() -> go.Figure:
             category="Development",
             dependencies=["Mission Design"],
             cost=200e6,
-            risk_level="High"
+            risk_level="High",
         ),
         MissionPhase(
             name="Integration & Testing",
@@ -762,7 +762,7 @@ def create_sample_mission_timeline() -> go.Figure:
             category="Testing",
             dependencies=["Spacecraft Development"],
             cost=75e6,
-            risk_level="Medium"
+            risk_level="Medium",
         ),
         MissionPhase(
             name="Launch Campaign",
@@ -771,7 +771,7 @@ def create_sample_mission_timeline() -> go.Figure:
             category="Launch",
             dependencies=["Integration & Testing"],
             cost=100e6,
-            risk_level="High"
+            risk_level="High",
         ),
         MissionPhase(
             name="Lunar Operations",
@@ -780,8 +780,8 @@ def create_sample_mission_timeline() -> go.Figure:
             category="Operations",
             dependencies=["Launch Campaign"],
             cost=150e6,
-            risk_level="Medium"
-        )
+            risk_level="Medium",
+        ),
     ]
 
     # Define sample milestones
@@ -790,26 +790,26 @@ def create_sample_mission_timeline() -> go.Figure:
             name="PDR",
             date=base_date + timedelta(days=120),
             category="Design",
-            description="Preliminary Design Review"
+            description="Preliminary Design Review",
         ),
         MissionMilestone(
             name="CDR",
             date=base_date + timedelta(days=240),
             category="Design",
-            description="Critical Design Review"
+            description="Critical Design Review",
         ),
         MissionMilestone(
             name="Launch",
             date=base_date + timedelta(days=900),
             category="Launch",
-            description="Mission Launch"
+            description="Mission Launch",
         ),
         MissionMilestone(
             name="Lunar Arrival",
             date=base_date + timedelta(days=906),
             category="Operations",
-            description="Lunar Orbit Insertion"
-        )
+            description="Lunar Orbit Insertion",
+        ),
     ]
 
     # Create visualizer and timeline
