@@ -3,6 +3,7 @@
 An integrated differentiable trajectory optimization and economic analysis platform for LEO-Moon missions. This platform combines high-fidelity n-body dynamics with economic performance metrics to optimize lunar mission trajectories for both physical feasibility and financial returns.
 
 **Project Status**: ✅ **Feature Complete** - All 10 planned tasks implemented  
+**Getting Started**: See [USER_GUIDE.md](docs/USER_GUIDE.md) for complete user guide  
 **Documentation**: See [PROJECT_STATUS.md](docs/PROJECT_STATUS.md) for detailed status  
 **Version**: 1.0.0
 

@@ -1,0 +1,44 @@
+# Basic Lunar Mission Configuration
+# Use this as a starting point for your mission analysis
+
+mission:
+  name: "Basic Lunar Cargo Mission"
+  description: "Standard cargo delivery to lunar orbit"
+  
+spacecraft:
+  dry_mass: 2000  # kg
+  payload_mass: 1000  # kg
+  propulsion:
+    isp: 450  # seconds (chemical propulsion)
+    thrust: 10000  # N
+    
+trajectory:
+  departure_date: "2026-01-15"
+  arrival_date: "2026-01-25"
+  departure_orbit:
+    altitude: 400  # km (LEO)
+    inclination: 28.5  # degrees
+  arrival_orbit:
+    altitude: 100  # km (LLO - Low Lunar Orbit)
+    inclination: 90  # degrees (polar)
+    
+economics:
+  launch_cost: 50000000  # USD
+  spacecraft_cost: 30000000  # USD
+  operations_cost: 20000000  # USD
+  payload_value: 150000000  # USD
+  discount_rate: 0.08  # 8% annual
+  
+constraints:
+  max_delta_v: 4500  # m/s
+  max_mission_duration: 30  # days
+  min_payload_mass: 500  # kg
+  
+optimization:
+  objectives:
+    - minimize: "total_delta_v"
+      weight: 0.3
+    - minimize: "mission_duration"
+      weight: 0.3
+    - minimize: "total_cost"
+      weight: 0.4
