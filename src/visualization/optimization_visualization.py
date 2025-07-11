@@ -98,12 +98,18 @@ class OptimizationVisualizer:
             Plotly Figure with Pareto front visualization
         """
         pareto_solutions = optimization_result.pareto_solutions
-        all_solutions = optimization_result.all_solutions
+        # Use pareto_solutions as all_solutions since that's what we have in real implementation
+        all_solutions = pareto_solutions
 
         if not pareto_solutions:
             return self._create_empty_plot("No Pareto solutions found")
 
-        n_objectives = len(pareto_solutions[0]["objectives"])
+        # Handle both list and dict objective formats
+        first_objectives = pareto_solutions[0]["objectives"]
+        if isinstance(first_objectives, dict):
+            n_objectives = len(first_objectives)
+        else:
+            n_objectives = len(first_objectives)
 
         if objective_names is None:
             objective_names = [f"Objective {i+1}" for i in range(n_objectives)]
@@ -571,33 +577,21 @@ class OptimizationVisualizer:
         preference_weights: list[float],
         objective_names: list[str] | None = None,
     ) -> go.Figure:
-        """
-        Create preference-based solution ranking visualization.
-
-        Args:
-            pareto_solutions: List of Pareto-optimal solutions
-            preference_weights: User preference weights for objectives
-            objective_names: Names for objectives
-
-        Returns
-        -------
-            Plotly Figure with preference analysis
-        """
+        """Create preference-based solution ranking visualization."""
         if not pareto_solutions:
             return self._create_empty_plot("No Pareto solutions provided")
 
-        n_objectives = len(pareto_solutions[0]["objectives"])
-
-        if objective_names is None:
-            objective_names = [f"Objective {i+1}" for i in range(n_objectives)]
+        # Setup initial data
+        n_objectives, objective_names = self._setup_preference_data(
+            pareto_solutions, objective_names
+        )
 
         # Rank solutions by preference
         ranked_solutions = self.pareto_analyzer.rank_solutions_by_preference(
-            pareto_solutions,
-            preference_weights,
+            pareto_solutions, preference_weights
         )
 
-        # Create visualization
+        # Create subplot structure
         fig = make_subplots(
             rows=2,
             cols=2,
@@ -609,11 +603,40 @@ class OptimizationVisualizer:
             ],
         )
 
-        # Extract data
+        # Add all subplot components
+        self._add_preference_ranking_plot(fig, ranked_solutions)
+        self._add_weighted_objectives_plot(
+            fig, ranked_solutions, objective_names, preference_weights, n_objectives
+        )
+        self._add_sensitivity_plot(
+            fig, pareto_solutions, preference_weights, objective_names
+        )
+        self._add_top_solutions_plot(fig, ranked_solutions, objective_names)
+
+        # Update layout
+        fig.update_layout(
+            title=f"Preference Analysis (Weights: {preference_weights})",
+            template=self.config.theme,
+            height=1000,
+            width=1400,
+        )
+        return fig
+
+    def _setup_preference_data(self, pareto_solutions, objective_names):
+        """Setup initial data for preference analysis."""
+        first_objectives = pareto_solutions[0]["objectives"]
+        n_objectives = len(first_objectives)
+
+        if objective_names is None:
+            objective_names = [f"Objective {i+1}" for i in range(n_objectives)]
+
+        return n_objectives, objective_names
+
+    def _add_preference_ranking_plot(self, fig, ranked_solutions):
+        """Add preference ranking bar plot."""
         scores = [score for score, _ in ranked_solutions]
         solution_indices = list(range(len(ranked_solutions)))
 
-        # Plot 1: Preference-Based Ranking
         fig.add_trace(
             go.Bar(
                 x=solution_indices,
@@ -632,17 +655,19 @@ class OptimizationVisualizer:
             col=1,
         )
 
-        # Plot 2: Weighted Objective Values
+    def _add_weighted_objectives_plot(
+        self, fig, ranked_solutions, objective_names, preference_weights, n_objectives
+    ):
+        """Add weighted objectives scatter plot."""
         colors = px.colors.qualitative.Set1[:n_objectives]
+        solution_indices = list(range(len(ranked_solutions)))
+
         for obj_idx, (obj_name, weight, color) in enumerate(
             zip(objective_names, preference_weights, colors, strict=False)
         ):
-            weighted_values = []
-            for _, solution in ranked_solutions:
-                obj_val = solution["objectives"][obj_idx]
-                # Normalize and weight (simplified)
-                weighted_val = obj_val * weight
-                weighted_values.append(weighted_val)
+            weighted_values = self._calculate_weighted_values(
+                ranked_solutions, obj_idx, weight
+            )
 
             fig.add_trace(
                 go.Scatter(
@@ -657,20 +682,36 @@ class OptimizationVisualizer:
                 col=2,
             )
 
-        # Plot 3: Preference Sensitivity Analysis
-        # Vary weights slightly and show impact
-        sensitivity_data = self._calculate_preference_sensitivity(
-            pareto_solutions,
-            preference_weights,
-        )
+    def _calculate_weighted_values(self, ranked_solutions, obj_idx, weight):
+        """Calculate weighted values for an objective."""
+        weighted_values = []
+        for _, solution in ranked_solutions:
+            obj_val = self._extract_objective_value(solution["objectives"], obj_idx)
+            weighted_values.append(obj_val * weight)
+        return weighted_values
 
-        weight_variations = sensitivity_data["weight_variations"]
-        ranking_changes = sensitivity_data["ranking_changes"]
+    def _extract_objective_value(self, objectives, obj_idx):
+        """Extract objective value handling both dict and list formats."""
+        if isinstance(objectives, dict):
+            # Dictionary format - get by standard keys
+            key_mapping = {0: "delta_v", 1: "time", 2: "cost"}
+            return objectives.get(key_mapping.get(obj_idx, ""), 0)
+        else:
+            # List format - get by index
+            return objectives[obj_idx] if obj_idx < len(objectives) else 0
+
+    def _add_sensitivity_plot(
+        self, fig, pareto_solutions, preference_weights, objective_names
+    ):
+        """Add sensitivity analysis heatmap."""
+        sensitivity_data = self._calculate_preference_sensitivity(
+            pareto_solutions, preference_weights
+        )
 
         fig.add_trace(
             go.Heatmap(
-                z=ranking_changes,
-                x=[f"±{v:.1%}" for v in weight_variations],
+                z=sensitivity_data["ranking_changes"],
+                x=[f"±{v:.1%}" for v in sensitivity_data["weight_variations"]],
                 y=objective_names,
                 colorscale="RdBu",
                 name="Ranking Sensitivity",
@@ -681,34 +722,23 @@ class OptimizationVisualizer:
             col=1,
         )
 
-        # Plot 4: Top Solutions Comparison
+    def _add_top_solutions_plot(self, fig, ranked_solutions, objective_names):
+        """Add top solutions comparison plot."""
         top_n = min(5, len(ranked_solutions))
         top_solutions = ranked_solutions[:top_n]
+        labels = [f"Sol {i+1}" for i in range(top_n)]
 
         for obj_idx, obj_name in enumerate(objective_names):
-            values = [sol["objectives"][obj_idx] for _, sol in top_solutions]
-            labels = [f"Sol {i+1}" for i in range(top_n)]
+            values = [
+                self._extract_objective_value(sol["objectives"], obj_idx)
+                for _, sol in top_solutions
+            ]
 
             fig.add_trace(
-                go.Bar(
-                    x=labels,
-                    y=values,
-                    name=f"Top {obj_name}",
-                    showlegend=False,
-                ),
+                go.Bar(x=labels, y=values, name=f"Top {obj_name}", showlegend=False),
                 row=2,
                 col=2,
             )
-
-        # Update layout
-        fig.update_layout(
-            title=f"Preference Analysis (Weights: {preference_weights})",
-            template=self.config.theme,
-            height=1000,
-            width=1400,
-        )
-
-        return fig
 
     def _create_2d_pareto_plot(
         self,
@@ -837,10 +867,28 @@ class OptimizationVisualizer:
                     ),
                 )
 
-        # Plot Pareto front
-        obj1_pareto = [sol["objectives"][0] for sol in pareto_solutions]
-        obj2_pareto = [sol["objectives"][1] for sol in pareto_solutions]
-        obj3_pareto = [sol["objectives"][2] for sol in pareto_solutions]
+        # Plot Pareto front - handle both list and dict objective formats
+        def get_objective_values(solutions, index_or_key):
+            """Extract objective values handling both list and dict formats."""
+            values = []
+            for sol in solutions:
+                obj = sol["objectives"]
+                if isinstance(obj, dict):
+                    # Dictionary format - get by key
+                    if index_or_key == 0:
+                        values.append(obj.get("delta_v", 0))
+                    elif index_or_key == 1:
+                        values.append(obj.get("time", 0))
+                    elif index_or_key == 2:
+                        values.append(obj.get("cost", 0))
+                else:
+                    # List format - get by index
+                    values.append(obj[index_or_key])
+            return values
+
+        obj1_pareto = get_objective_values(pareto_solutions, 0)
+        obj2_pareto = get_objective_values(pareto_solutions, 1)
+        obj3_pareto = get_objective_values(pareto_solutions, 2)
 
         fig.add_trace(
             go.Scatter3d(

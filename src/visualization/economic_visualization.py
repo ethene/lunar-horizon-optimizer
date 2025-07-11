@@ -490,22 +490,34 @@ class EconomicVisualizer:
                 col=1,
             )
 
-            # Add break-even line
-            fig.add_hline(
-                y=0,
-                line_dash="dash",
-                line_color="red",
-                annotation_text="Break-even",
-                row=2,
-                col=1,
-            )
+            # Add break-even line as a horizontal trace
+            if months:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[min(months), max(months)],
+                        y=[0, 0],
+                        mode="lines",
+                        name="Break-even",
+                        line={"color": "red", "dash": "dash", "width": 2},
+                        showlegend=True,
+                    ),
+                    row=2,
+                    col=1,
+                )
 
-            if break_even_month:
-                fig.add_vline(
-                    x=break_even_month,
-                    line_dash="dash",
-                    line_color="green",
-                    annotation_text=f"Break-even: Month {break_even_month}",
+            if break_even_month and cumulative_cf:
+                # Add break-even vertical line as a trace
+                y_max = max(cumulative_cf) if cumulative_cf else 0
+                y_min = min(cumulative_cf) if cumulative_cf else 0
+                fig.add_trace(
+                    go.Scatter(
+                        x=[break_even_month, break_even_month],
+                        y=[y_min, y_max],
+                        mode="lines",
+                        name=f"Break-even Month {break_even_month}",
+                        line={"color": "green", "dash": "dash", "width": 2},
+                        showlegend=True,
+                    ),
                     row=2,
                     col=1,
                 )

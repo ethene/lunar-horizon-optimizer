@@ -97,6 +97,29 @@ class CostCalculator:
 
         return total_cost
 
+    def calculate_trajectory_cost(
+        self,
+        total_dv: float,
+        transfer_time: float,
+        earth_orbit_alt: float,
+        moon_orbit_alt: float,
+    ) -> float:
+        """Calculate trajectory cost (alias for calculate_mission_cost for backward compatibility).
+
+        Args:
+            total_dv: Total delta-v requirement [m/s]
+            transfer_time: Total transfer time [days]
+            earth_orbit_alt: Earth parking orbit altitude [km]
+            moon_orbit_alt: Lunar orbit altitude [km]
+
+        Returns
+        -------
+            Total trajectory cost [USD]
+        """
+        return self.calculate_mission_cost(
+            total_dv, transfer_time, earth_orbit_alt, moon_orbit_alt
+        )
+
     def _calculate_propellant_cost(self, total_dv: float) -> float:
         """Calculate propellant-related costs.
 

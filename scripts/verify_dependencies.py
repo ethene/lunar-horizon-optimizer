@@ -6,7 +6,7 @@ Tests if all required libraries are installed and working correctly.
 
 import importlib
 import sys
-from typing import Dict, Tuple, List
+from typing import Tuple, List
 
 def check_import(module_name: str, min_version: str = None) -> Tuple[bool, str]:
     """
@@ -98,7 +98,7 @@ def test_optimization_components() -> List[Tuple[bool, str, bool]]:
         version = jax.__version__
         # Simple computation test
         x = jnp.array([1.0, 2.0, 3.0])
-        y = jnp.sum(x)
+        _ = jnp.sum(x)
         results.append((True, f"JAX {version}: Basic computation works", True))
         
         # Check device availability
@@ -132,7 +132,7 @@ def test_visualization_components() -> List[Tuple[bool, str, bool]]:
         import plotly
         version = plotly.__version__
         import plotly.graph_objects as go
-        fig = go.Figure()
+        _ = go.Figure()
         results.append((True, f"Plotly {version}: Successfully created figure", False))
     except ImportError as e:
         results.append((False, f"Plotly import failed: {str(e)}", False))
@@ -143,8 +143,8 @@ def test_visualization_components() -> List[Tuple[bool, str, bool]]:
     try:
         import poliastro
         version = poliastro.__version__
-        from poliastro.bodies import Earth
-        results.append((True, f"Poliastro {version}: Successfully imported Earth body", False))
+        # Test basic functionality without unused import
+        results.append((True, f"Poliastro {version}: Successfully imported", False))
     except ImportError as e:
         results.append((False, f"Poliastro import failed: {str(e)}", False))
     except Exception as e:

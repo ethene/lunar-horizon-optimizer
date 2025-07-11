@@ -15,14 +15,17 @@ import argparse
 import json
 import logging
 import sys
+import os
 from datetime import UTC, datetime
 from typing import Any
 
-from src.config.costs import CostFactors
-from src.config.models import MissionConfig
-from src.config.orbit import OrbitParameters
-from src.config.spacecraft import PayloadSpecification
-from src.lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from config.costs import CostFactors
+from config.models import MissionConfig
+from config.orbit import OrbitParameters
+from config.spacecraft import PayloadSpecification
+from lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig
 import contextlib
 
 

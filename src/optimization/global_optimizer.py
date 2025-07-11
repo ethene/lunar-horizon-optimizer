@@ -93,6 +93,18 @@ class LunarMissionProblem:
         """
         earth_alt, moon_alt, transfer_time = x
 
+        # Validate bounds - return penalty if out of bounds
+        if (
+            earth_alt < self.min_earth_alt
+            or earth_alt > self.max_earth_alt
+            or moon_alt < self.min_moon_alt
+            or moon_alt > self.max_moon_alt
+            or transfer_time < self.min_transfer_time
+            or transfer_time > self.max_transfer_time
+        ):
+            # Return large penalty values for out-of-bounds inputs
+            return [1e12, 1e12, 1e12]
+
         # Create cache key for this parameter combination
         cache_key = self._create_cache_key(earth_alt, moon_alt, transfer_time)
 
@@ -154,6 +166,24 @@ class LunarMissionProblem:
             Number of objectives (3: delta_v, time, cost)
         """
         return 3
+
+    def get_nec(self) -> int:
+        """Get number of equality constraints.
+
+        Returns
+        -------
+            Number of equality constraints (0 for this problem)
+        """
+        return 0
+
+    def get_nic(self) -> int:
+        """Get number of inequality constraints.
+
+        Returns
+        -------
+            Number of inequality constraints (0 for this problem)
+        """
+        return 0
 
     def get_name(self) -> str:
         """Get problem name.

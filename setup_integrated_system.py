@@ -16,9 +16,7 @@ import os
 import sys
 import subprocess
 import json
-import shutil
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
 import importlib.util
 
 
@@ -150,7 +148,7 @@ class LunarOptimizerSetup:
         print(f"{Colors.BLUE}🔬 Checking conda packages...{Colors.END}")
         
         all_available = True
-        for package, min_version in self.conda_packages:
+        for package, _min_version in self.conda_packages:
             try:
                 spec = importlib.util.find_spec(package)
                 if spec is not None:
@@ -212,7 +210,7 @@ class LunarOptimizerSetup:
                 return False
             
             try:
-                optimizer = LunarHorizonOptimizer()
+                _ = LunarHorizonOptimizer()
                 print(f"   {Colors.GREEN}✅ Optimizer initialization successful{Colors.END}")
             except Exception as e:
                 print(f"   {Colors.YELLOW}⚠️  Optimizer initialization warning: {e}{Colors.END}")
@@ -469,17 +467,17 @@ For more help, see the comprehensive documentation in the docs/ directory.
         print(f"\n{Colors.CYAN}{Colors.BOLD}NEXT STEPS{Colors.END}")
         print("="*30)
         print(f"{Colors.WHITE}1. Quick Start:{Colors.END}")
-        print(f"   cd output && python quickstart.py")
+        print("   cd output && python quickstart.py")
         print(f"\n{Colors.WHITE}2. CLI Usage:{Colors.END}")
-        print(f"   cd src && python cli.py validate")
-        print(f"   cd src && python cli.py sample")
+        print("   cd src && python cli.py validate")
+        print("   cd src && python cli.py sample")
         print(f"\n{Colors.WHITE}3. Full Analysis:{Colors.END}")
-        print(f"   cd src && python cli.py analyze --config ../output/example_mission_config.json")
+        print("   cd src && python cli.py analyze --config ../output/example_mission_config.json")
         print(f"\n{Colors.WHITE}4. Documentation:{Colors.END}")
-        print(f"   See output/USER_GUIDE.md for detailed instructions")
-        print(f"   See docs/ directory for comprehensive documentation")
+        print("   See output/USER_GUIDE.md for detailed instructions")
+        print("   See docs/ directory for comprehensive documentation")
         print(f"\n{Colors.WHITE}5. Integration Testing:{Colors.END}")
-        print(f"   pytest tests/test_task_7_mvp_integration.py -v")
+        print("   pytest tests/test_task_7_mvp_integration.py -v")
     
     def run_full_setup(self):
         """Run complete setup process."""

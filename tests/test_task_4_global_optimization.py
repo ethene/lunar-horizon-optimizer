@@ -257,8 +257,8 @@ class TestGlobalOptimizer:
             # Create a minimal real optimizer for fast testing
             fast_optimizer = GlobalOptimizer(
                 problem=self.problem,
-                population_size=8,   # Minimum for NSGA-II (multiple of 4, >=5)
-                num_generations=1,   # Just 1 generation for speed
+                population_size=8,  # Minimum for NSGA-II (multiple of 4, >=5)
+                num_generations=1,  # Just 1 generation for speed
                 seed=42,
             )
 
@@ -274,24 +274,24 @@ class TestGlobalOptimizer:
             # Check that we got some results
             pareto_solutions = results["pareto_solutions"]
             assert isinstance(pareto_solutions, list)
-            
+
             # With real trajectory generation, we might get some solutions
             if len(pareto_solutions) > 0:
                 # Check individual solution structure
                 solution = pareto_solutions[0]
-                
+
                 # Check for either dictionary or list format (both are valid)
                 if "parameters" in solution:
                     params = solution["parameters"]
                     objectives = solution["objectives"]
-                    
+
                     if isinstance(params, dict):
                         assert "earth_orbit_alt" in params
-                        assert "moon_orbit_alt" in params  
+                        assert "moon_orbit_alt" in params
                         assert "transfer_time" in params
                     else:
                         assert len(params) == 3
-                        
+
                     if isinstance(objectives, dict):
                         assert "delta_v" in objectives
                         assert "time" in objectives
@@ -330,13 +330,13 @@ class TestGlobalOptimizer:
             # Note: NSGA-II requires population_size >= 5 and multiple of 4
             small_optimizer = GlobalOptimizer(
                 problem=self.problem,
-                population_size=8,   # Minimum valid size for NSGA-II (multiple of 4, >= 5)
-                num_generations=2,   # Just a few generations
+                population_size=8,  # Minimum valid size for NSGA-II (multiple of 4, >= 5)
+                num_generations=2,  # Just a few generations
                 seed=42,
             )
 
             # Run optimization to get real population
-            results = small_optimizer.optimize(verbose=False)
+            _ = small_optimizer.optimize(verbose=False)
 
             # Test get_best_solutions with the real optimization results
             if small_optimizer.population is not None:
@@ -351,7 +351,7 @@ class TestGlobalOptimizer:
                     solution = best_solutions[0]
                     assert "parameters" in solution or "parameter_vector" in solution
                     assert "objectives" in solution or "objective_vector" in solution
-                    
+
                     # Check that solution has reasonable structure
                     if "parameters" in solution:
                         params = solution["parameters"]
@@ -360,8 +360,10 @@ class TestGlobalOptimizer:
                             assert "moon_orbit_alt" in params
                             assert "transfer_time" in params
                         else:
-                            assert len(params) == 3  # earth_alt, moon_alt, transfer_time
-                    
+                            assert (
+                                len(params) == 3
+                            )  # earth_alt, moon_alt, transfer_time
+
                     if "objectives" in solution:
                         objectives = solution["objectives"]
                         if isinstance(objectives, dict):
@@ -407,15 +409,27 @@ class TestParetoAnalyzer:
             ),
             "pareto_solutions": [
                 {
-                    "parameters": {"earth_orbit_alt": 400, "moon_orbit_alt": 100, "transfer_time": 4.5},
+                    "parameters": {
+                        "earth_orbit_alt": 400,
+                        "moon_orbit_alt": 100,
+                        "transfer_time": 4.5,
+                    },
                     "objectives": {"delta_v": 3200, "time": 4.5 * 86400, "cost": 150e6},
                 },
                 {
-                    "parameters": {"earth_orbit_alt": 600, "moon_orbit_alt": 200, "transfer_time": 5.0},
+                    "parameters": {
+                        "earth_orbit_alt": 600,
+                        "moon_orbit_alt": 200,
+                        "transfer_time": 5.0,
+                    },
                     "objectives": {"delta_v": 3800, "time": 5.0 * 86400, "cost": 180e6},
                 },
                 {
-                    "parameters": {"earth_orbit_alt": 350, "moon_orbit_alt": 80, "transfer_time": 6.0},
+                    "parameters": {
+                        "earth_orbit_alt": 350,
+                        "moon_orbit_alt": 80,
+                        "transfer_time": 6.0,
+                    },
                     "objectives": {"delta_v": 3000, "time": 6.0 * 86400, "cost": 200e6},
                 },
             ],
@@ -441,16 +455,28 @@ class TestParetoAnalyzer:
         # Create test solutions with correct format
         test_solutions = [
             {
-                "parameters": {"earth_orbit_alt": 400, "moon_orbit_alt": 100, "transfer_time": 4.5},
-                "objectives": {"delta_v": 3200, "time": 4.5 * 86400, "cost": 150e6}
+                "parameters": {
+                    "earth_orbit_alt": 400,
+                    "moon_orbit_alt": 100,
+                    "transfer_time": 4.5,
+                },
+                "objectives": {"delta_v": 3200, "time": 4.5 * 86400, "cost": 150e6},
             },
             {
-                "parameters": {"earth_orbit_alt": 600, "moon_orbit_alt": 200, "transfer_time": 5.0},
-                "objectives": {"delta_v": 3800, "time": 5.0 * 86400, "cost": 180e6}
+                "parameters": {
+                    "earth_orbit_alt": 600,
+                    "moon_orbit_alt": 200,
+                    "transfer_time": 5.0,
+                },
+                "objectives": {"delta_v": 3800, "time": 5.0 * 86400, "cost": 180e6},
             },
             {
-                "parameters": {"earth_orbit_alt": 350, "moon_orbit_alt": 80, "transfer_time": 6.0},
-                "objectives": {"delta_v": 3000, "time": 6.0 * 86400, "cost": 200e6}
+                "parameters": {
+                    "earth_orbit_alt": 350,
+                    "moon_orbit_alt": 80,
+                    "transfer_time": 6.0,
+                },
+                "objectives": {"delta_v": 3000, "time": 6.0 * 86400, "cost": 200e6},
             },
         ]
 
@@ -716,7 +742,9 @@ class TestTask4Integration:
                 contingency_percentage=20.0,
             )
             problem = LunarMissionProblem(cost_factors=cost_factors)
-            optimizer = GlobalOptimizer(problem, population_size=20, num_generations=5)  # 20 is multiple of 4
+            optimizer = GlobalOptimizer(
+                problem, population_size=20, num_generations=5
+            )  # 20 is multiple of 4
             analyzer = ParetoAnalyzer()
 
             # Test integration points
@@ -728,8 +756,16 @@ class TestTask4Integration:
                 "pareto_front": np.array([[3200, 4.5 * 86400, 150e6]]),
                 "pareto_solutions": [
                     {
-                        "parameters": {"earth_orbit_alt": 400, "moon_orbit_alt": 100, "transfer_time": 4.5},
-                        "objectives": {"delta_v": 3200, "time": 4.5 * 86400, "cost": 150e6},
+                        "parameters": {
+                            "earth_orbit_alt": 400,
+                            "moon_orbit_alt": 100,
+                            "transfer_time": 4.5,
+                        },
+                        "objectives": {
+                            "delta_v": 3200,
+                            "time": 4.5 * 86400,
+                            "cost": 150e6,
+                        },
                     }
                 ],
                 "statistics": {"num_evaluations": 100},
@@ -780,7 +816,7 @@ class TestTask4Integration:
                 },
                 "optimizer_params": {
                     "population_size": 8,  # Minimum for NSGA-II
-                    "num_generations": 1   # Just 1 generation for speed
+                    "num_generations": 1,  # Just 1 generation for speed
                 },
                 "verbose": False,
             }
@@ -876,9 +912,9 @@ class TestTask4Performance:
             )
             problem = LunarMissionProblem(cost_factors=cost_factors)
             optimizer = GlobalOptimizer(
-                problem, 
-                population_size=8,   # Minimum for NSGA-II
-                num_generations=1    # Just 1 generation for speed
+                problem,
+                population_size=8,  # Minimum for NSGA-II
+                num_generations=1,  # Just 1 generation for speed
             )
 
             # Run real optimization (fast with minimal parameters)

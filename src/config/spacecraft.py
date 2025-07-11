@@ -75,43 +75,32 @@ class PayloadSpecification(BaseModel):
 
 class SpacecraftConfig(BaseModel):
     """Complete spacecraft configuration including payload, propulsion, and subsystems."""
-    
+
     name: str = Field(
-        default="Default Spacecraft",
-        description="Name of the spacecraft configuration"
-    )
-    
-    dry_mass: float = Field(
-        ...,
-        gt=0,
-        description="Dry mass of the spacecraft without propellant (kg)"
-    )
-    
-    propellant_mass: float = Field(
-        ...,
-        gt=0,
-        description="Propellant mass capacity (kg)"
-    )
-    
-    payload_mass: float = Field(
-        ...,
-        gt=0,
-        description="Mass of the mission payload (kg)"
-    )
-    
-    power_system_mass: float = Field(
-        ...,
-        gt=0,
-        description="Mass of the power system (kg)"
-    )
-    
-    propulsion_isp: float = Field(
-        ...,
-        gt=0,
-        description="Specific impulse of the propulsion system (seconds)"
+        default="Default Spacecraft", description="Name of the spacecraft configuration"
     )
 
-    @model_validator(mode="after") 
+    dry_mass: float = Field(
+        ..., gt=0, description="Dry mass of the spacecraft without propellant (kg)"
+    )
+
+    propellant_mass: float = Field(
+        ..., gt=0, description="Propellant mass capacity (kg)"
+    )
+
+    payload_mass: float = Field(
+        ..., gt=0, description="Mass of the mission payload (kg)"
+    )
+
+    power_system_mass: float = Field(
+        ..., gt=0, description="Mass of the power system (kg)"
+    )
+
+    propulsion_isp: float = Field(
+        ..., gt=0, description="Specific impulse of the propulsion system (seconds)"
+    )
+
+    @model_validator(mode="after")
     def validate_spacecraft_masses(self) -> "SpacecraftConfig":
         """Validate spacecraft mass relationships."""
         total_dry_mass = self.payload_mass + self.power_system_mass
@@ -128,7 +117,7 @@ class SpacecraftConfig(BaseModel):
         """Total spacecraft mass including propellant."""
         return self.dry_mass + self.propellant_mass
 
-    @property 
+    @property
     def mass_ratio(self) -> float:
         """Mass ratio for rocket equation calculations."""
         return self.total_mass / self.dry_mass

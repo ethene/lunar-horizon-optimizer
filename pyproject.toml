@@ -171,6 +171,9 @@ exclude = [
 "tests/*" = ["S101", "D", "ANN", "F401", "S110", "E902", "S603", "S311"]  # Allow test-specific patterns
 "src/config/*" = ["B904"]  # Config modules can use simple exception messages
 "src/trajectory/validation/*" = ["B904"]  # Validation modules can use simple exception messages
+"scripts/*" = ["S603", "S108", "S103", "F401", "F841"]  # Allow development scripts flexibility
+"setup_*.py" = ["S603", "S108", "S103", "F401", "F841"]  # Allow setup scripts flexibility
+"src/optimization/differentiable/*" = ["F401", "B023", "S110", "S108"]  # Allow JAX-specific patterns
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

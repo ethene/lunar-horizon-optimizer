@@ -21,8 +21,8 @@ from typing import Any
 from src.config.costs import CostFactors
 
 # Configuration
-from src.config.mission_config import MissionConfig
-from src.config.spacecraft import SpacecraftConfig
+from src.config.models import MissionConfig
+from src.config.spacecraft import SpacecraftConfig, PayloadSpecification
 from src.economics.cost_models import MissionCostModel
 
 # Task 5: Economic Analysis
@@ -673,12 +673,32 @@ class LunarHorizonOptimizer:
     @staticmethod
     def _create_default_mission_config() -> MissionConfig:
         """Create default mission configuration."""
+        from src.config.models import MissionConfig
+        from src.config.orbit import OrbitParameters
+
+        payload = PayloadSpecification(
+            dry_mass=5000.0,
+            max_propellant_mass=3000.0,
+            payload_mass=1000.0,
+            specific_impulse=320.0,
+        )
+
+        cost_factors = LunarHorizonOptimizer._create_default_cost_factors()
+
+        # Use Earth departure orbit (400 km altitude = 6778 km semi-major axis)
+        target_orbit = OrbitParameters(
+            semi_major_axis=6778.0,  # Earth radius + 400 km altitude
+            inclination=0.0,
+            eccentricity=0.0,
+        )
+
         return MissionConfig(
             name="Default Lunar Mission",
-            earth_orbit_alt=400.0,
-            moon_orbit_alt=100.0,
-            transfer_time=4.5,
-            departure_epoch=10000.0,
+            description="Default integrated mission configuration",
+            payload=payload,
+            cost_factors=cost_factors,
+            mission_duration_days=4.5,
+            target_orbit=target_orbit,
         )
 
     @staticmethod
