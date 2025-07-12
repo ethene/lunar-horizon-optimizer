@@ -30,7 +30,7 @@ except ImportError:
 
 # Test constants and fixtures
 EARTH_MU = 3.986004418e14  # m³/s²
-MOON_MU = 4.9048695e12  # m³/s²
+MOON_MU = 4.902800118e12  # m³/s²  # Fixed to match constants.py
 EARTH_RADIUS = 6378137.0  # m
 MOON_RADIUS = 1737400.0  # m
 
@@ -147,16 +147,24 @@ class TestPatchedConicsApproximation:
 
     def test_earth_moon_trajectory_calculation(self):
         """Test Earth-Moon trajectory calculation."""
-        # Define test orbit states
+        # Define test orbit states using orbital elements
         earth_departure = self.OrbitState(
-            position=(EARTH_RADIUS + 400000, 0, 0),
-            velocity=(0, np.sqrt(EARTH_MU / (EARTH_RADIUS + 400000)), 0),
+            semi_major_axis=(EARTH_RADIUS + 400000) / 1000,  # Convert to km
+            eccentricity=0.0,
+            inclination=0.0,
+            raan=0.0,
+            arg_periapsis=0.0,
+            true_anomaly=0.0,
             epoch=10000.0,
         )
 
         moon_arrival = self.OrbitState(
-            position=(MOON_RADIUS + 100000, 0, 0),
-            velocity=(0, np.sqrt(MOON_MU / (MOON_RADIUS + 100000)), 0),
+            semi_major_axis=(MOON_RADIUS + 100000) / 1000,  # Convert to km
+            eccentricity=0.0,
+            inclination=0.0,
+            raan=0.0,
+            arg_periapsis=0.0,
+            true_anomaly=0.0,
             epoch=10004.5,
         )
 
@@ -429,14 +437,27 @@ class TestTrajectoryIO:
 
     def test_trajectory_save_load_json(self):
         """Test trajectory save and load in JSON format."""
-        # Create test trajectory
-        trajectory = self.Trajectory(
-            departure_epoch=10000.0,
-            arrival_epoch=10004.5,
-            departure_pos=(7000.0, 0.0, 0.0),
-            departure_vel=(0.0, 7.5, 0.0),
-            arrival_pos=(1900.0, 0.0, 0.0),
-            arrival_vel=(0.0, 1.6, 0.0),
+        # Create test trajectory using concrete class
+        from datetime import datetime
+        from trajectory.orbit_state import OrbitState
+        from trajectory.lunar_transfer import LunarTransfer
+
+        # Create initial state
+        initial_state = OrbitState(
+            semi_major_axis=7000.0,
+            eccentricity=0.0,
+            inclination=0.0,
+            raan=0.0,
+            arg_periapsis=0.0,
+            true_anomaly=0.0,
+            epoch=datetime(2020, 1, 1),
+        )
+
+        # Create concrete trajectory
+        trajectory = LunarTransfer(
+            initial_state=initial_state,
+            target_altitude=100.0,
+            maneuvers=[],
         )
 
         # Add test maneuver

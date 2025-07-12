@@ -89,6 +89,20 @@ class ConfigRegistry:
                         "target_rate": 5.0,
                         "setup_time_days": 30.0,
                         "market_value_per_kg": 1000.0,
+                        "mass": 2000.0,
+                        "base_power": 5.0,
+                        "extraction_rates": {
+                            "water": {
+                                "resource_type": "water",
+                                "max_rate": 10.0,
+                                "efficiency": 75.0,
+                                "power_per_kg": 2.0,
+                            }
+                        },
+                        "processing_efficiency": 85.0,
+                        "startup_time_days": 7.0,
+                        "maintenance_downtime": 2.0,
+                        "max_storage_capacity": {"water": 1000.0},
                     },
                 ],
             }

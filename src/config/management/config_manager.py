@@ -57,6 +57,16 @@ class ConfigManager:
         """
         return self._active_config
 
+    @property
+    def registry(self):
+        """Get the configuration registry from the template manager.
+
+        Returns
+        -------
+            ConfigRegistry instance used by the template manager.
+        """
+        return self.template_manager.registry
+
     def load_config(self, file_path: Path) -> MissionConfig:
         """Load a configuration from file and set as active.
 

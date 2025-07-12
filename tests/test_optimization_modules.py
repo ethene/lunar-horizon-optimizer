@@ -162,8 +162,19 @@ class TestLunarMissionProblem:
         ]
 
         for test_case in test_cases:
-            with patch("trajectory.lunar_transfer.LunarTransfer", SimpleLunarTransfer):
+            # Replace the problem's LunarTransfer instance with SimpleLunarTransfer
+            original_transfer = problem.lunar_transfer
+            problem.lunar_transfer = SimpleLunarTransfer(
+                min_earth_alt=problem.min_earth_alt,
+                max_earth_alt=problem.max_earth_alt,
+                min_moon_alt=problem.min_moon_alt,
+                max_moon_alt=problem.max_moon_alt,
+            )
+            try:
                 fitness = problem.fitness(test_case)
+            finally:
+                # Restore original transfer
+                problem.lunar_transfer = original_transfer
 
                 # Validate fitness structure
                 assert len(fitness) == 3, f"Expected 3 objectives, got {len(fitness)}"

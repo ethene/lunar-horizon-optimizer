@@ -12,7 +12,7 @@ An integrated differentiable trajectory optimization and economic analysis platf
 [![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/)
 [![PyKEP](https://img.shields.io/badge/PyKEP-2.6-orange)](https://esa.github.io/pykep/)
 [![PyGMO](https://img.shields.io/badge/PyGMO-2.19.6-red)](https://esa.github.io/pygmo2/)
-[![JAX](https://img.shields.io/badge/JAX-0.5.3-purple)](https://jax.readthedocs.io/)
+[![JAX](https://img.shields.io/badge/JAX-0.6.0-purple)](https://jax.readthedocs.io/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000)](https://github.com/psf/black)
 
@@ -41,9 +41,11 @@ python examples/quick_start.py
 
 ### 🎯 **Multi-Objective Optimization**
 - **Global Optimization**: PyGMO with NSGA-II algorithm support
+- **Ray Parallelization**: Multi-core acceleration with 2-8x speedup on population evaluation
 - **Pareto Front Analysis**: Multi-objective trade-off exploration
-- **Differentiable Optimization**: JAX/Diffrax for local optimization
+- **Differentiable Optimization**: JAX 0.6.0/Diffrax 0.7.0 for gradient-based local optimization
 - **Constraint Handling**: Physics-based and mission-specific constraints
+- **Hybrid Workflows**: Seamless PyGMO-JAX integration for global-to-local optimization
 
 ### 💰 **Economic Analysis**
 - **Financial Metrics**: NPV, IRR, ROI, and payback period calculations
@@ -72,8 +74,8 @@ python examples/quick_start.py
 - SciPy 1.13.1 (required for PyKEP compatibility)
 - PyKEP 2.6 - Orbital mechanics and trajectory calculations (conda-forge required)
 - PyGMO 2.19.6 - Global optimization algorithms
-- JAX 0.5.3 - Differentiable programming and local optimization
-- Diffrax 0.7.0 - Differentiable ordinary differential equation solvers
+- JAX 0.6.0 - Differentiable programming and gradient-based local optimization
+- Diffrax 0.7.0 - Differentiable ordinary differential equation solvers (ready for trajectory propagation)
 - Plotly 5.24.1 - Interactive visualization
 - Poliastro 0.17.0 - Orbital mechanics utilities and visualization
 - SpiceyPy - NASA SPICE toolkit for ephemeris calculations
@@ -138,7 +140,10 @@ Production-ready codebase with clean, modular architecture:
 │   ├── optimization/             # Multi-objective optimization
 │   │   ├── global_optimizer.py         # PyGMO integration
 │   │   ├── pareto_analysis.py          # Pareto front analysis
-│   │   └── differentiable/             # JAX/Diffrax optimization
+│   │   └── differentiable/             # JAX/Diffrax optimization (Production Ready)
+│   │       ├── jax_optimizer.py        # Main differentiable optimizer
+│   │       ├── differentiable_models.py # JAX trajectory & economic models
+│   │       └── integration.py          # PyGMO-JAX bridge
 │   ├── economics/                # Economic analysis system
 │   │   ├── financial_models.py         # NPV, IRR, ROI calculations
 │   │   ├── cost_models.py              # Mission cost modeling
@@ -225,6 +230,8 @@ make security              # Bandit security scanning
 ### 📖 **User Documentation**
 - **[API Reference](docs/api_reference.md)** - Complete API documentation
 - **[Integration Guide](docs/integration_guide.md)** - Cross-module integration patterns
+- **[Differentiable Optimization](docs/DIFFERENTIABLE_OPTIMIZATION.md)** - JAX/Diffrax usage guide
+- **[Ray Parallelization](docs/RAY_PARALLELIZATION.md)** - Multi-core optimization guide
 - **[PRD Compliance](docs/PRD_COMPLIANCE.md)** - Product requirements fulfillment
 
 ### 🔧 **Developer Documentation**

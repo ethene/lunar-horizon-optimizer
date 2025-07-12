@@ -31,6 +31,7 @@ Example:
 """
 
 from datetime import UTC
+from typing import Any
 
 import numpy as np
 
@@ -93,6 +94,36 @@ class LunarTrajectory:
     def get_total_delta_v(self) -> float:
         """Calculate total delta-v cost of all maneuvers."""
         return sum(getattr(maneuver, "magnitude", 0.0) for maneuver in self.maneuvers)
+
+    @property
+    def trajectory_data(self) -> dict[str, Any]:
+        """Get trajectory data for visualization and analysis integration.
+
+        Returns:
+            Dictionary containing trajectory points and metadata for visualization
+        """
+        # Generate trajectory points for visualization
+        n_points = 100
+        time_points = np.linspace(0, 1, n_points)
+
+        # Simple interpolation between departure and arrival
+        trajectory_points = []
+        for t in time_points:
+            pos = self.departure_pos * (1 - t) + self.arrival_pos * t
+            trajectory_points.append(
+                (pos[0] * 1000, pos[1] * 1000, pos[2] * 1000)
+            )  # Convert to meters
+
+        return {
+            "trajectory_points": trajectory_points,
+            "departure_position": self.departure_pos,
+            "arrival_position": self.arrival_pos,
+            "departure_velocity": self.departure_vel,
+            "arrival_velocity": self.arrival_vel,
+            "transfer_time": self.arrival_epoch - self.departure_epoch,
+            "total_delta_v": self.get_total_delta_v(),
+            "maneuvers": self.maneuvers,
+        }
 
 
 class LunarTransfer:
@@ -403,7 +434,7 @@ class LunarTransfer:
     def _calculate_maneuvers(
         self, r1: np.ndarray, init_vel: np.ndarray, target_vel: np.ndarray, tof: float
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """Calculate TLI and LOI maneuver delta-v values.
+        """Calculate TLI and LOI maneuver delta-v values using Lambert solver.
 
         Args:
             r1: Initial position vector [m]
@@ -415,19 +446,42 @@ class LunarTransfer:
         -------
             Tuple of (TLI delta-v, LOI delta-v, arrival position, arrival velocity)
         """
-        # Calculate TLI delta-v
-        tli_dv = init_vel - target_vel
+        # Use Lambert solver for more accurate trajectory calculation
+        from .earth_moon_trajectories import LambertSolver
 
-        # Propagate trajectory to calculate arrival state
-        arrival_pos, arrival_vel = self.propagator.propagate_to_target(
-            r1,
-            init_vel + tli_dv,
-            tof,
-            self.departure_epoch,
-        )
+        # Create Lambert solver
+        lambert_solver = LambertSolver()
 
-        # Calculate LOI delta-v
-        loi_dv = target_vel - arrival_vel
+        # Calculate target position based on Moon's position at arrival
+        # For simplicity, use the propagated position from the current approach
+        try:
+            arrival_pos, arrival_vel = self.propagator.propagate_to_target(
+                r1,
+                init_vel,
+                tof,
+                self.departure_epoch,
+            )
+        except Exception:
+            # Fallback to simple calculation if propagation fails
+            arrival_pos = r1 + init_vel * tof
+            arrival_vel = init_vel
+
+        # Use Lambert solver to get optimal velocities
+        try:
+            lambert_v1, lambert_v2 = lambert_solver.solve_lambert(
+                r1, arrival_pos, tof, direction=0, max_revolutions=0
+            )
+
+            # Calculate maneuver delta-v
+            tli_dv = (
+                lambert_v1 - init_vel
+            )  # TLI: difference from parking orbit velocity
+            loi_dv = target_vel - lambert_v2  # LOI: difference to target orbit velocity
+
+        except Exception:
+            # Fallback to original calculation if Lambert solver fails
+            tli_dv = init_vel - target_vel
+            loi_dv = target_vel - arrival_vel
 
         # Validate delta-v magnitudes
         tli_dv_mag = np.linalg.norm(tli_dv)

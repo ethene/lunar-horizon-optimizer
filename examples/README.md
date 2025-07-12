@@ -23,6 +23,7 @@ This directory contains comprehensive examples demonstrating the Lunar Horizon O
 | [`simple_trajectory_test.py`](#simple_trajectory_testpy) | Trajectory integration validation | ⭐⭐⭐ | ~10s |
 | [`advanced_trajectory_test.py`](#advanced_trajectory_testpy) | Comprehensive trajectory testing | ⭐⭐⭐⭐ | ~120s |
 | [`final_integration_test.py`](#final_integration_testpy) | Complete system integration | ⭐⭐⭐⭐⭐ | ~30s |
+| [`differentiable_optimization_demo.py`](#differentiable_optimization_demopy) | JAX/Diffrax differentiable optimization | ⭐⭐⭐⭐ | ~45s |
 
 ### Configuration Examples
 
@@ -212,6 +213,43 @@ python examples/final_integration_test.py
 - Cross-module communication
 - Performance optimization
 - Compliance validation
+
+---
+
+### `differentiable_optimization_demo.py`
+
+**🎯 Purpose**: Comprehensive demonstration of JAX/Diffrax differentiable optimization
+
+**Features Demonstrated**:
+- JAX and Diffrax availability verification
+- Differentiable trajectory and economic models
+- Gradient-based optimization with automatic differentiation
+- JIT compilation for performance optimization
+- Batch optimization for multiple starting points
+- PyGMO-JAX integration for hybrid optimization
+- Performance comparison vs numerical methods
+- Advanced JAX features (grad, vmap, jit)
+
+**Usage**:
+```bash
+conda activate py312
+python examples/differentiable_optimization_demo.py
+```
+
+**Expected Output**:
+- JAX/Diffrax system verification
+- Differentiable model demonstrations
+- Gradient-based optimization results
+- Batch optimization performance metrics
+- PyGMO-JAX hybrid optimization
+- Performance comparison analysis
+
+**Key Learning Points**:
+- Understanding JAX automatic differentiation
+- Implementing gradient-based optimization
+- Leveraging JIT compilation for performance
+- Integrating global and local optimization methods
+- Using advanced JAX features for optimization
 
 ---
 

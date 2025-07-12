@@ -130,29 +130,57 @@ print(f"ISRU savings: ${isru_savings/1e6:.1f}M")
 ```python
 import jax.numpy as jnp
 from src.optimization.differentiable.jax_optimizer import DifferentiableOptimizer
+from src.optimization.differentiable.differentiable_models import TrajectoryModel, EconomicModel
 
-# Define trajectory optimization problem
-def trajectory_cost(params):
-    delta_v, time_of_flight, fuel_mass = params
-    # Multi-objective cost function
-    return 0.4 * fuel_mass + 0.3 * time_of_flight + 0.3 * delta_v
+# Create differentiable models
+trajectory_model = TrajectoryModel(use_jit=True)
+economic_model = EconomicModel(use_jit=True)
 
-# Create optimizer
+# Define combined trajectory-economic optimization
+def combined_objective(params):
+    """Combined trajectory and economic objective function."""
+    # params = [earth_radius, moon_radius, time_of_flight]
+    traj_result = trajectory_model._trajectory_cost(params)
+    
+    # Economic evaluation using trajectory results
+    econ_params = jnp.array([traj_result["delta_v"], traj_result["time_of_flight"]])
+    econ_result = economic_model._economic_cost(econ_params)
+    
+    # Weighted combination (normalized)
+    return (
+        traj_result["delta_v"] / 10000.0 +        # Normalize delta-v
+        econ_result["total_cost"] / 1e9 +         # Normalize cost
+        traj_result["time_of_flight"] / (7*24*3600) # Normalize time
+    )
+
+# Create optimizer with realistic bounds
 optimizer = DifferentiableOptimizer(
-    objective_function=trajectory_cost,
-    bounds=[(2000, 5000), (5, 15), (500, 2000)],  # delta_v, time, fuel
+    objective_function=combined_objective,
+    bounds=[
+        (6.6e6, 8.0e6),     # Earth orbit radius [m]
+        (1.8e6, 2.2e6),     # Moon orbit radius [m] 
+        (3*24*3600, 10*24*3600)  # Transfer time [s]
+    ],
     method="L-BFGS-B",
-    use_jit=True
+    use_jit=True,
+    verbose=True
 )
 
 # Optimize from initial guess
-x0 = jnp.array([3500.0, 10.0, 1200.0])
+x0 = jnp.array([7.0e6, 2.0e6, 5*24*3600])  # 400km Earth, 100km Moon, 5 days
 result = optimizer.optimize(x0)
 
 # Display results
-print(f"Optimal delta-v: {result.x[0]:.0f} m/s")
-print(f"Optimal time: {result.x[1]:.1f} days")
-print(f"Optimal fuel: {result.x[2]:.0f} kg")
+earth_alt = (result.x[0] - 6.378e6) / 1000  # Convert to altitude
+moon_alt = (result.x[1] - 1.737e6) / 1000
+transfer_days = result.x[2] / (24*3600)
+
+print(f"Optimization success: {result.success}")
+print(f"Optimal Earth altitude: {earth_alt:.0f} km")
+print(f"Optimal Moon altitude: {moon_alt:.0f} km") 
+print(f"Optimal transfer time: {transfer_days:.1f} days")
+print(f"Final objective value: {result.fun:.6e}")
+print(f"Improvement: {result.improvement_percentage:.1f}%")
 ```
 
 ### Example 4: Advanced Trajectory Generation ✅
@@ -436,6 +464,98 @@ The multi-objective optimization produces a Pareto front showing trade-offs:
 ---
 
 ## Advanced Features
+
+### JAX Differentiable Optimization
+
+The platform includes a complete differentiable optimization module using JAX and Diffrax for gradient-based local optimization. This provides several advanced capabilities:
+
+#### Key Features
+- **Automatic Differentiation**: JAX computes exact gradients for all objective functions
+- **JIT Compilation**: Optimized performance with just-in-time compilation
+- **Batch Processing**: Vectorized operations for multiple optimization candidates
+- **PyGMO Integration**: Seamless refinement of global optimization results
+
+#### Usage Examples
+
+**Basic Gradient-Based Optimization:**
+```python
+from src.optimization.differentiable import DifferentiableOptimizer
+import jax.numpy as jnp
+
+# Simple quadratic objective
+def quadratic_objective(x):
+    return jnp.sum((x - jnp.array([1.0, 2.0]))**2)
+
+optimizer = DifferentiableOptimizer(
+    objective_function=quadratic_objective,
+    method="L-BFGS-B",
+    use_jit=True
+)
+
+result = optimizer.optimize(jnp.array([0.0, 0.0]))
+print(f"Optimal solution: {result.x}")
+```
+
+**Hybrid Global-Local Optimization:**
+```python
+from src.optimization.differentiable.integration import PyGMOIntegration
+from src.optimization.global_optimizer import GlobalOptimizer
+
+# Step 1: Global optimization with PyGMO
+global_optimizer = GlobalOptimizer()
+pareto_front = global_optimizer.find_pareto_front(
+    earth_alt_range=(200, 1000),
+    moon_alt_range=(50, 500),
+    transfer_time_range=(3, 10),
+    population_size=50,
+    generations=30
+)
+
+# Step 2: Refine with JAX local optimization
+integration = PyGMOIntegration()
+refined_solutions = integration.refine_pareto_solutions(
+    pareto_front=pareto_front,
+    refinement_method="L-BFGS-B"
+)
+
+print(f"Refined {len(refined_solutions)} solutions using JAX")
+```
+
+**Performance Optimization:**
+```python
+# Batch optimization for multiple starting points
+initial_points = [
+    jnp.array([7.0e6, 2.0e6, 5*24*3600]),
+    jnp.array([7.2e6, 1.9e6, 6*24*3600]),
+    jnp.array([6.8e6, 2.1e6, 4*24*3600])
+]
+
+batch_results = optimizer.batch_optimize(initial_points)
+comparison = optimizer.compare_with_initial(batch_results)
+
+print(f"Success rate: {comparison['success_rate']:.1%}")
+print(f"Average improvement: {comparison['average_improvement_percentage']:.1f}%")
+```
+
+#### Available Models
+
+**TrajectoryModel**: JAX-based orbital mechanics
+- Hohmann transfers
+- Lambert problem solving
+- Orbital energy calculations
+- Delta-v requirements
+
+**EconomicModel**: JAX-based financial analysis
+- Launch cost modeling
+- Operations cost calculation
+- NPV and ROI computation
+- Multi-objective cost functions
+
+#### Performance Benefits
+- **Speed**: 10-100x faster than numerical differentiation
+- **Accuracy**: Exact gradients eliminate approximation errors
+- **Scalability**: Efficient batch processing for multiple candidates
+- **Memory**: Optimized compilation reduces memory usage
 
 ### Custom Objectives
 

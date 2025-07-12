@@ -117,6 +117,77 @@ class ParetoAnalyzer:
         """Initialize Pareto analyzer."""
         logger.info("Initialized ParetoAnalyzer")
 
+    def find_pareto_front(
+        self, solutions: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Find Pareto-optimal solutions from a set of candidate solutions.
+
+        Args:
+            solutions: List of solution dictionaries with 'objectives' containing
+                      'delta_v', 'time', and 'cost' values
+
+        Returns:
+            List of Pareto-optimal solutions
+        """
+        if not solutions:
+            return []
+
+        # Extract objective values for all solutions
+        objectives = []
+        for sol in solutions:
+            if "objectives" in sol:
+                obj = sol["objectives"]
+                objectives.append([obj["delta_v"], obj["time"], obj["cost"]])
+            else:
+                # Fallback for direct objective values
+                objectives.append([sol["delta_v"], sol["time_of_flight"], sol["cost"]])
+
+        objectives = np.array(objectives)
+
+        # Find Pareto front using dominance
+        pareto_indices = []
+        n_solutions = len(solutions)
+
+        for i in range(n_solutions):
+            is_dominated = False
+
+            for j in range(n_solutions):
+                if i != j:
+                    # Check if solution j dominates solution i
+                    # (j is better or equal in all objectives, and strictly better in at least one)
+                    if self._dominates(objectives[j], objectives[i]):
+                        is_dominated = True
+                        break
+
+            if not is_dominated:
+                pareto_indices.append(i)
+
+        pareto_solutions = [solutions[i] for i in pareto_indices]
+
+        logger.info(
+            f"Found {len(pareto_solutions)} Pareto-optimal solutions from {n_solutions} candidates"
+        )
+        return pareto_solutions
+
+    def _dominates(self, obj1: np.ndarray, obj2: np.ndarray) -> bool:
+        """Check if obj1 dominates obj2 (for minimization problems).
+
+        Args:
+            obj1: First objective vector
+            obj2: Second objective vector
+
+        Returns:
+            True if obj1 dominates obj2
+        """
+        # obj1 dominates obj2 if:
+        # 1. obj1 is better or equal in all objectives
+        # 2. obj1 is strictly better in at least one objective
+
+        better_or_equal = np.all(obj1 <= obj2)
+        strictly_better = np.any(obj1 < obj2)
+
+        return better_or_equal and strictly_better
+
     def analyze_pareto_front(
         self, optimization_result: dict[str, Any]
     ) -> OptimizationResult:

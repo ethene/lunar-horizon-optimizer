@@ -1,0 +1,14 @@
+# Ray dependencies for parallel optimization
+ray[default]>=2.8.0
+# Includes:
+# - ray[default]: Core Ray with dashboard and monitoring
+# - Supports distributed computing across multiple machines
+# - Built-in performance monitoring and profiling
+
+# Additional Ray ecosystem packages (optional)
+# ray[serve]>=2.8.0        # For model serving
+# ray[rllib]>=2.8.0        # For reinforcement learning
+# ray[tune]>=2.8.0         # For hyperparameter tuning
+
+# Performance monitoring (optional)
+psutil>=5.9.0             # System resource monitoring
