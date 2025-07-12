@@ -7,9 +7,14 @@ An integrated differentiable trajectory optimization and economic analysis platf
 **Documentation**: See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for comprehensive guide  
 **Version**: 1.0.0
 
-[![Coverage](https://img.shields.io/badge/coverage-18%25-red)](htmlcov/index.html)
-[![Tests](https://img.shields.io/badge/tests-61%20passed-green)](#testing)
+[![Coverage](https://img.shields.io/badge/coverage-50%25-yellow)](htmlcov/index.html)
+[![Tests](https://img.shields.io/badge/tests-458%20passed-green)](#testing)
+[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/)
+[![PyKEP](https://img.shields.io/badge/PyKEP-2.6-orange)](https://esa.github.io/pykep/)
+[![PyGMO](https://img.shields.io/badge/PyGMO-2.19.6-red)](https://esa.github.io/pygmo2/)
+[![JAX](https://img.shields.io/badge/JAX-0.5.3-purple)](https://jax.readthedocs.io/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000)](https://github.com/psf/black)
 
 ## 🚀 Quick Start
 
@@ -87,7 +92,7 @@ python examples/quick_start.py
 
 1. Clone the repository:
 ```bash
-   git clone https://github.com/yourusername/lunar-horizon-optimizer.git
+   git clone https://github.com/lunar-horizon/optimizer.git
    cd lunar-horizon-optimizer
    ```
 
@@ -218,8 +223,8 @@ make security              # Bandit security scanning
 - **[User Guide](docs/USER_GUIDE.md)** - Detailed usage instructions
 
 ### 📖 **User Documentation**
-- **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation
-- **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - Cross-module integration patterns
+- **[API Reference](docs/api_reference.md)** - Complete API documentation
+- **[Integration Guide](docs/integration_guide.md)** - Cross-module integration patterns
 - **[PRD Compliance](docs/PRD_COMPLIANCE.md)** - Product requirements fulfillment
 
 ### 🔧 **Developer Documentation**
@@ -229,8 +234,29 @@ make security              # Bandit security scanning
 
 ### 📋 **Reference Documentation**
 - **[Task Management](tasks/)** - Development task tracking
-- **[Scripts Documentation](scripts/README.md)** - Utility scripts and PRD
+- **[Sphinx Documentation](docs/_build/html/index.html)** - Full documentation site
 - **[Test Documentation](tests/README.md)** - Test suite organization
+
+### 📖 **Building Documentation**
+
+Generate the complete documentation site with Sphinx:
+
+```bash
+# Install documentation dependencies
+cd docs/
+pip install -r requirements.txt
+
+# Build documentation
+make docs
+
+# View documentation
+open _build/html/index.html
+```
+
+For live documentation development:
+```bash
+make livehtml  # Auto-rebuilds on changes
+```
 
 ## 🎯 Use Cases
 
