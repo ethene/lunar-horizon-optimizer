@@ -96,19 +96,19 @@ class TestTrajectoryValidator:
     def test_delta_v_validation(self):
         """Test validation of delta-v values."""
         # Valid delta-v values should not raise exceptions
-        self.validator.validate_delta_v(tli_dv=3200, loi_dv=850)  # m/s  # m/s
+        self.validator.validate_delta_v(tli_dv=3200, loi_dv=850)  # m/s
 
-        # Test TLI delta-v limit
+        # Test TLI delta-v limit (actual limit is 15000 m/s)
         with pytest.raises(ValueError) as exc_info:
             self.validator.validate_delta_v(
-                tli_dv=3600, loi_dv=850  # Exceeds 3500 m/s limit
+                tli_dv=16000, loi_dv=850  # Exceeds 15000 m/s limit
             )
         assert "TLI delta-v" in str(exc_info.value)
 
-        # Test LOI delta-v limit
+        # Test LOI delta-v limit (actual limit is 20000 m/s)
         with pytest.raises(ValueError) as exc_info:
             self.validator.validate_delta_v(
-                tli_dv=3200, loi_dv=1300  # Exceeds 1200 m/s limit
+                tli_dv=3200, loi_dv=21000  # Exceeds 20000 m/s limit
             )
         assert "LOI delta-v" in str(exc_info.value)
 

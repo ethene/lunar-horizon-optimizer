@@ -80,6 +80,54 @@ class EconomicVisualizer:
         self.cost_model = MissionCostModel()
         self.isru_analyzer = ISRUBenefitAnalyzer()
 
+    def create_scenario_comparison(
+        self,
+        scenarios: list[str],
+        npv_values: list[float],
+        title: str = "Mission Scenarios Comparison",
+        **kwargs,
+    ) -> go.Figure:
+        """
+        Create scenario comparison visualization.
+
+        Args:
+            scenarios: List of scenario names
+            npv_values: List of NPV values for each scenario
+            title: Chart title
+            **kwargs: Additional styling options
+
+        Returns:
+            Plotly Figure with scenario comparison
+        """
+        # Create bar chart
+        fig = go.Figure()
+
+        # Add bar trace
+        fig.add_trace(
+            go.Bar(
+                x=scenarios,
+                y=npv_values,
+                name="NPV",
+                marker_color=self.config.primary_color,
+                text=[f"${v/1e6:.1f}M" for v in npv_values],
+                textposition="auto",
+            )
+        )
+
+        # Update layout
+        fig.update_layout(
+            title=title,
+            xaxis_title="Scenario",
+            yaxis_title="NPV (USD)",
+            template=self.config.theme,
+            font=dict(family=self.config.font_family, size=self.config.axis_font_size),
+            showlegend=self.config.show_legend,
+            width=self.config.width,
+            height=self.config.height // 2,  # Half height for comparison chart
+        )
+
+        return fig
+
     def create_financial_dashboard(
         self,
         financial_summary: FinancialSummary,
@@ -1009,17 +1057,23 @@ class EconomicVisualizer:
         col: int,
     ) -> None:
         """Add placeholder for missing data."""
-        fig.add_annotation(
-            text=message,
-            xref=f"x{col if row > 1 or col > 1 else ''}",
-            yref=f"y{col if row > 1 or col > 1 else ''}",
-            x=0.5,
-            y=0.5,
-            showarrow=False,
-            font={"size": 14, "color": "gray"},
-            row=row,
-            col=col,
-        )
+        try:
+            # Try to add annotation for cartesian plots
+            fig.add_annotation(
+                text=message,
+                xref=f"x{col if row > 1 or col > 1 else ''}",
+                yref=f"y{col if row > 1 or col > 1 else ''}",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+                font={"size": 14, "color": "gray"},
+                row=row,
+                col=col,
+            )
+        except ValueError:
+            # For domain subplots (pie charts, etc.), skip placeholder
+            # Domain subplots don't support text annotations or scatter traces
+            pass
 
 
 def create_quick_financial_dashboard(

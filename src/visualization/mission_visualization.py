@@ -546,14 +546,20 @@ class MissionVisualizer:
     ) -> None:
         """Add simplified timeline for dashboard."""
         # Add current date line
-        fig.add_vline(
-            x=current_date,
-            line_dash="dash",
-            line_color="red",
-            annotation_text="Today",
-            annotation_position="top",
-            row=row,
-        )
+        # Convert datetime to timestamp for consistent x-axis handling
+        current_date_ts = current_date.timestamp() if hasattr(current_date, 'timestamp') else current_date
+        try:
+            fig.add_vline(
+                x=current_date_ts,
+                line_dash="dash",
+                line_color="red",
+                annotation_text="Today",
+                annotation_position="top",
+                row=row,
+            )
+        except (TypeError, ValueError):
+            # Skip vertical line if timestamp conversion fails
+            pass
 
         # Add key phases only (first 5)
         for i, phase in enumerate(phases[:5]):

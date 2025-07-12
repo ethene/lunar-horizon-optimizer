@@ -8,7 +8,7 @@ An integrated differentiable trajectory optimization and economic analysis platf
 **Version**: 1.0.0
 
 [![Coverage](https://img.shields.io/badge/coverage-50%25-yellow)](htmlcov/index.html)
-[![Tests](https://img.shields.io/badge/tests-458%20passed-green)](#testing)
+[![Tests](https://img.shields.io/badge/tests-652%20total-blue)](#testing)
 [![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/)
 [![PyKEP](https://img.shields.io/badge/PyKEP-2.6-orange)](https://esa.github.io/pykep/)
 [![PyGMO](https://img.shields.io/badge/PyGMO-2.19.6-red)](https://esa.github.io/pygmo2/)
@@ -160,7 +160,7 @@ Production-ready codebase with clean, modular architecture:
 │   ├── working_example.py       # Basic usage example
 │   ├── *_integration_test.py    # Integration validation
 │   └── configs/                 # Configuration examples
-├── tests/                       # Comprehensive test suite (415 tests)
+├── tests/                       # Comprehensive test suite (652 tests)
 ├── docs/                        # Complete documentation
 │   ├── USER_GUIDE.md           # User guide with examples
 │   ├── PROJECT_STATUS.md       # Implementation status
@@ -176,7 +176,7 @@ Production-ready codebase with clean, modular architecture:
 - **🎯 Production Ready**: All 10 tasks complete with advanced integration
 - **📦 Modular Design**: Clean separation of concerns across all modules
 - **🔗 Seamless Integration**: Cross-module workflows and data flow
-- **🧪 Comprehensive Testing**: 415 tests with 100% production core coverage
+- **🧪 Comprehensive Testing**: 652 tests with 100% production core coverage
 - **📚 Complete Documentation**: User guides, API docs, and examples
 - **🔧 Extension Framework**: Plugin system for custom functionality
 
@@ -203,7 +203,7 @@ make test-trajectory       # Trajectory generation tests
 make test-optimization     # Optimization algorithm tests
 
 # Comprehensive testing
-make test-all              # 415 tests, ~60s (some known failures)
+make test-all              # 652 tests, ~60s (some known failures)
 ```
 
 ### Quality Assurance
