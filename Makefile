@@ -16,7 +16,7 @@ BOLD := \033[1m
 NC := \033[0m # No Color
 
 # Pipeline targets
-.PHONY: help pipeline format lint complexity type-check refactor security test test-all test-quick test-real test-real-fast test-real-comprehensive test-trajectory test-economics test-config coverage clean install-dev
+.PHONY: help pipeline format lint complexity type-check refactor security test test-legacy test-all test-quick test-real test-real-fast test-real-comprehensive test-trajectory test-economics test-config coverage clean install-dev
 .DEFAULT_GOAL := help
 
 help: ## Display this help message
@@ -26,11 +26,12 @@ help: ## Display this help message
 	@echo "$(BOLD)Main Commands:$(NC)"
 	@echo "  $(GREEN)make pipeline$(NC)        - Run complete development pipeline (format, lint, type-check, etc.)"
 	@echo "  $(GREEN)make test-real-fast$(NC)  - Ultra-fast real tests - NO MOCKING (<10s - RECOMMENDED)"
-	@echo "  $(GREEN)make test$(NC)            - Core production tests (38 tests - recommended for CI/CD)"
+	@echo "  $(GREEN)make test$(NC)            - Comprehensive pipeline tests (150+ tests - NO MOCKING - CI/CD ready)"
 	@echo "  $(GREEN)make coverage$(NC)        - Run tests with coverage reporting (includes real tests)"
 	@echo ""
 	@echo "$(BOLD)Test Suite Options:$(NC)"
-	@echo "  $(GREEN)make test$(NC)                 - Core production tests (38 tests: functionality + economics)"
+	@echo "  $(GREEN)make test$(NC)                 - COMPREHENSIVE pipeline tests (150+ tests - NO MOCKING - RECOMMENDED)"
+	@echo "  $(GREEN)make test-legacy$(NC)          - Legacy core tests (38 tests: functionality + economics)"
 	@echo "  $(GREEN)make test-real$(NC)            - Fast real implementations - NO MOCKING (recommended)"
 	@echo "  $(GREEN)make test-real-fast$(NC)       - Ultra-fast real tests (<10s execution)"
 	@echo "  $(GREEN)make test-real-comprehensive$(NC) - Complete real implementation suite"
@@ -52,19 +53,20 @@ help: ## Display this help message
 	@echo "  $(YELLOW)make install-dev$(NC)  - Install development dependencies"
 	@echo "  $(YELLOW)make clean$(NC)        - Clean up temporary files"
 
-pipeline: ## Run complete development pipeline
+pipeline: ## Run complete development pipeline (includes comprehensive testing)
 	@echo "$(BOLD)$(BLUE)🚀 Starting Lunar Horizon Optimizer Development Pipeline$(NC)"
 	@echo "================================================================"
 	@echo ""
 	@$(MAKE) --no-print-directory format
 	@$(MAKE) --no-print-directory lint
+	@$(MAKE) --no-print-directory test
 	@$(MAKE) --no-print-directory complexity
 	@$(MAKE) --no-print-directory type-check
 	@$(MAKE) --no-print-directory refactor
 	@$(MAKE) --no-print-directory security
 	@echo ""
 	@echo "$(BOLD)$(GREEN)✅ Pipeline completed successfully!$(NC)"
-	@echo "$(GREEN)All code quality checks passed. Ready for commit.$(NC)"
+	@echo "$(GREEN)All code quality checks and comprehensive tests passed. Ready for commit.$(NC)"
 
 format: ## Format code with black
 	@echo "$(BOLD)$(BLUE)1. Code Formatting with Black$(NC)"
@@ -144,17 +146,45 @@ security: ## Security scan with bandit
 	@echo "$(GREEN)✅ Security scan completed$(NC)"
 	@echo ""
 
-test: ## Run core production tests (38 tests - recommended for CI/CD)
-	@echo "$(BOLD)$(BLUE)🧪 Running Core Production Test Suite$(NC)"
+test: ## Run comprehensive pipeline tests (150+ tests - NO MOCKING - recommended for CI/CD)
+	@echo "$(BOLD)$(BLUE)🧪 Running Comprehensive Pipeline Test Suite - NO MOCKING$(NC)"
+	@echo "================================================================"
+	@echo "$(YELLOW)Activating conda py312 environment and running comprehensive tests...$(NC)"
+	@echo "$(GREEN)✅ NO MOCKING RULE: All tests use real PyKEP, PyGMO, JAX implementations$(NC)"
+	@echo "$(BLUE)Coverage: All modules - Config, Economics, Optimization, Trajectory, Ray$(NC)"
+	@conda run -n py312 python -m pytest \
+		tests/test_final_functionality.py \
+		tests/test_economics_modules.py \
+		tests/test_real_working_demo.py \
+		tests/test_config_models.py \
+		tests/test_environment.py \
+		tests/test_prd_compliance.py \
+		tests/test_task_8_differentiable_optimization.py \
+		tests/test_task_9_enhanced_economics.py \
+		tests/test_task_10_extensibility.py \
+		tests/test_multi_mission_optimization.py \
+		tests/trajectory/test_unit_conversions.py \
+		tests/trajectory/test_celestial_bodies.py \
+		tests/trajectory/test_elements.py \
+		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
+		echo "$(RED)❌ Comprehensive pipeline test suite failed$(NC)"; \
+		exit 1; \
+	}
+	@echo "$(GREEN)✅ All comprehensive pipeline tests passed$(NC)"
+	@echo "$(BLUE)📊 Real implementations across all modules validated$(NC)"
+	@echo ""
+
+test-legacy: ## Run legacy core production tests (38 tests - backward compatibility)
+	@echo "$(BOLD)$(BLUE)🧪 Running Legacy Core Production Test Suite$(NC)"
 	@echo "============================================="
-	@echo "$(YELLOW)Activating conda py312 environment and running core tests...$(NC)"
+	@echo "$(YELLOW)Activating conda py312 environment and running legacy core tests...$(NC)"
 	@echo "$(BLUE)Tests: Core functionality (15) + Economics modules (23) = 38 tests$(NC)"
 	@conda run -n py312 python -m pytest tests/test_final_functionality.py tests/test_economics_modules.py \
 		-v --tb=short --disable-warnings --cov-fail-under=0 || { \
-		echo "$(RED)❌ Core test suite failed$(NC)"; \
+		echo "$(RED)❌ Legacy core test suite failed$(NC)"; \
 		exit 1; \
 	}
-	@echo "$(GREEN)✅ All core tests passed (38/38)$(NC)"
+	@echo "$(GREEN)✅ All legacy core tests passed (38/38)$(NC)"
 	@echo ""
 
 test-real: ## Fast real implementations - NO MOCKING (recommended for development)
