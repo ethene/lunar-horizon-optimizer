@@ -214,11 +214,26 @@ make test-trajectory        # varies, orbital mechanics + Lambert solvers
 make test-config           # varies, configuration loading + validation
 ```
 
-##### **Coverage Analysis**
-- **Command**: `make coverage`
+##### **Coverage Analysis - OFFICIAL METHODOLOGY**
+- **Command**: `make coverage` (SINGLE SOURCE OF TRUTH)
+- **Current Status**: **27% total coverage** (improved from 18%, 2025-07-12)
+- **Coverage Test Suite**: tests/test_final_functionality.py + tests/test_economics_modules.py + tests/test_real_fast_comprehensive.py + tests/test_simple_coverage.py + tests/test_config_models.py + tests/test_utils_simplified.py
+- **Improvement Plan**: See COVERAGE_IMPROVEMENT_PLAN.md for roadmap to 80%
 - **Output**: Terminal report + HTML in `htmlcov/`
-- **Threshold**: 80% minimum coverage required
+- **Target**: 80% minimum coverage required (USER REQUEST)
 - **Review**: Check `htmlcov/index.html` for detailed analysis
+- **CRITICAL**: Only measure coverage using `make coverage` - never individual test files
+
+##### **Coverage Improvement Strategy**
+- **Current Gap**: Need +54% coverage (26% → 80%)
+- **Largest 0% Modules**: 
+  - src/cli.py (121 lines, 0%)
+  - src/economics/advanced_isru_models.py (183 lines, 0%)
+  - src/economics/scenario_comparison.py (241 lines, 0%)
+  - src/extensibility/* modules (mostly 0%)
+  - src/trajectory/trajectory_optimization.py (154 lines, 0%)
+  - src/visualization/integrated_dashboard.py (53 lines, 0%)
+- **Focus Areas**: Import and basic functionality tests for 0% modules
 
 #### Performance and Monitoring
 
