@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Sustainable Lunar Operations - Carbon Impact Study",
+    "description": "Analysis of Wright's law learning curves and environmental cost integration, demonstrating carbon pricing impact on mission economics and cost reduction over time",
+    "transfer_time": 4.2
+  },
+  "spacecraft": {
+    "dry_mass": 9000.0,
+    "max_propellant_mass": 6500.0,
+    "payload_mass": 3500.0,
+    "specific_impulse": 470.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 6000.0,
+    "operations_cost_per_day": 180000.0,
+    "development_cost": 1500000000.0,
+    "contingency_percentage": 25.0,
+    "discount_rate": 0.08,
+    "learning_rate": 0.82,
+    "carbon_price_per_ton_co2": 120.0,
+    "co2_emissions_per_kg_payload": 4.2
+  },
+  "orbit": {
+    "semi_major_axis": 6728.0,
+    "inclination": 45.0,
+    "eccentricity": 0.005
+  },
+  "optimization": {
+    "population_size": 30,
+    "num_generations": 20,
+    "seed": 11111
+  }
+}

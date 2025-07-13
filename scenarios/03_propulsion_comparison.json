@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Chemical vs Electric Propulsion Trade Study",
+    "description": "Comparative analysis of chemical and electric propulsion systems for lunar cargo missions, demonstrating propulsion technology trade-offs",
+    "transfer_time": 7.0
+  },
+  "spacecraft": {
+    "dry_mass": 6000.0,
+    "max_propellant_mass": 4000.0,
+    "payload_mass": 3000.0,
+    "specific_impulse": 800.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 9000.0,
+    "operations_cost_per_day": 80000.0,
+    "development_cost": 800000000.0,
+    "contingency_percentage": 20.0,
+    "discount_rate": 0.08,
+    "learning_rate": 0.91,
+    "carbon_price_per_ton_co2": 40.0,
+    "co2_emissions_per_kg_payload": 2.0
+  },
+  "orbit": {
+    "semi_major_axis": 6578.0,
+    "inclination": 0.0,
+    "eccentricity": 0.0
+  },
+  "optimization": {
+    "population_size": 35,
+    "num_generations": 30,
+    "seed": 98765
+  }
+}

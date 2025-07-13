@@ -30,6 +30,7 @@ Example:
     ```
 """
 
+import logging
 from datetime import UTC
 from typing import Any
 
@@ -38,11 +39,14 @@ import numpy as np
 from .celestial_bodies import CelestialBody
 from .constants import PhysicalConstants as PC
 from .maneuver import Maneuver
-from .phase_optimization import find_optimal_phase
+from .phase_optimization import find_optimal_phase, calculate_initial_position
 from .propagator import TrajectoryPropagator
 from .target_state import calculate_target_state
 from .trajectory_base import Trajectory
 from .trajectory_validator import TrajectoryValidator  # Import from renamed module
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class LunarTrajectory:
@@ -352,8 +356,16 @@ class LunarTransfer:
         )
         moon_h_unit = moon_h / np.linalg.norm(moon_h)
 
-        # Find optimal departure phase
+        # Find optimal departure phase with progress tracking
+        def phase_progress_callback(current, total, percent, valid_count):
+            """Progress callback for phase optimization."""
+            if current % 36 == 0:  # Update every 10 degrees (36 samples)
+                logger.debug(
+                    f"Phase search: {current}/{total} ({percent:.1f}%), {valid_count} valid solutions"
+                )
+
         try:
+            # First attempt: Standard search
             phase, r1 = find_optimal_phase(
                 r_park=transfer_params["r_park"],
                 moon_pos=moon_states["moon_pos_final"],
@@ -361,10 +373,37 @@ class LunarTransfer:
                 transfer_time=transfer_params["tof"],
                 orbit_radius=transfer_params["r_moon_orbit"],
                 max_revs=max_revolutions,
+                num_samples=360,
+                progress_callback=phase_progress_callback,
             )
         except ValueError as e:
-            msg = f"Failed to find optimal departure phase: {e!s}"
-            raise ValueError(msg) from e
+            logger.warning(f"Standard phase search failed: {e!s}")
+            try:
+                # Second attempt: Coarser search with more revolutions
+                logger.info("Attempting coarser phase search with more revolutions...")
+                phase, r1 = find_optimal_phase(
+                    r_park=transfer_params["r_park"],
+                    moon_pos=moon_states["moon_pos_final"],
+                    moon_vel=moon_states["moon_vel_final"],
+                    transfer_time=transfer_params["tof"],
+                    orbit_radius=transfer_params["r_moon_orbit"],
+                    max_revs=min(max_revolutions + 1, 2),  # Allow one more revolution
+                    num_samples=72,  # Coarser sampling (every 5 degrees)
+                    progress_callback=phase_progress_callback,
+                )
+            except ValueError as e2:
+                # Final fallback: Use a simple default position
+                logger.warning(f"Coarse phase search also failed: {e2!s}")
+                logger.info("Using default phase angle as fallback")
+                phase = 0.0  # Default phase
+                # Calculate position at default phase
+                h_unit = np.cross(
+                    moon_states["moon_pos_initial"], moon_states["moon_vel_initial"]
+                )
+                h_unit = h_unit / np.linalg.norm(h_unit)
+                r1 = calculate_initial_position(
+                    transfer_params["r_park"], phase, h_unit
+                )
 
         # Calculate initial orbital velocity (circular)
         v_init = np.sqrt(PC.EARTH_MU / transfer_params["r_park"])

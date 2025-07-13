@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Artemis Crew Transport - Launch Window Study",
+    "description": "Analysis of optimal launch opportunities for crew transport missions, demonstrating launch window optimization with energy requirements and timing constraints",
+    "transfer_time": 3.5
+  },
+  "spacecraft": {
+    "dry_mass": 12000.0,
+    "max_propellant_mass": 8000.0,
+    "payload_mass": 4000.0,
+    "specific_impulse": 465.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 12000.0,
+    "operations_cost_per_day": 200000.0,
+    "development_cost": 2000000000.0,
+    "contingency_percentage": 30.0,
+    "discount_rate": 0.06,
+    "learning_rate": 0.88,
+    "carbon_price_per_ton_co2": 60.0,
+    "co2_emissions_per_kg_payload": 3.2
+  },
+  "orbit": {
+    "semi_major_axis": 6678.0,
+    "inclination": 51.6,
+    "eccentricity": 0.001
+  },
+  "optimization": {
+    "population_size": 30,
+    "num_generations": 20,
+    "seed": 54321
+  }
+}

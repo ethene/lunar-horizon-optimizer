@@ -16,6 +16,8 @@ import json
 import logging
 import sys
 import os
+import time
+import threading
 from datetime import UTC, datetime
 from typing import Any
 
@@ -28,18 +30,225 @@ from src.config.costs import CostFactors
 from src.config.models import MissionConfig
 from src.config.orbit import OrbitParameters
 from src.config.spacecraft import PayloadSpecification
-from src.simple_optimizer import SimpleLunarOptimizer, OptimizationConfig, create_sample_config
-import contextlib
+from src.lunar_horizon_optimizer import (
+    LunarHorizonOptimizer,
+    OptimizationConfig,
+)
+
+
+class ProgressTracker:
+    """Progress tracking for long-running analysis with phase-based tracking."""
+
+    def __init__(self, population_size: int, num_generations: int):
+        self.population_size = population_size
+        self.num_generations = num_generations
+        self.start_time = time.time()
+        self.current_phase = "Initializing"
+        self.phase_start_time = time.time()
+        self.progress_pct = 0
+        self.running = True
+        self.update_thread = None
+        self.original_stdout = None  # Store original stdout for progress updates
+
+        # Define analysis phases with expected completion percentages
+        self.phases = {
+            "Trajectory Analysis": {"start": 5, "end": 20, "weight": 15},
+            "Multi-objective Optimization": {"start": 20, "end": 65, "weight": 45},
+            "Economic Analysis": {"start": 65, "end": 85, "weight": 20},
+            "Visualization Generation": {"start": 85, "end": 95, "weight": 10},
+            "Results Compilation": {"start": 95, "end": 100, "weight": 5},
+        }
+
+        self.current_phase_info = None
+        self.subphase_progress = 0.0  # Progress within current phase (0-1)
+
+        # Estimate time based on population and generations
+        base_time_per_eval = 0.8  # seconds per individual per generation
+        estimated_evaluations = population_size * num_generations
+        self.estimated_total_time = max(30, estimated_evaluations * base_time_per_eval)
+
+    def set_original_stdout(self, stdout_fd):
+        """Store original stdout for progress updates during output suppression."""
+        self.original_stdout = stdout_fd
+
+    def start_continuous_updates(self):
+        """Start continuous progress updates in background thread."""
+
+        def update_loop():
+            while self.running:
+                time.sleep(2)  # Update every 2 seconds
+                if self.running:  # Check if still running
+                    # Only auto-advance if no explicit phase updates are happening
+                    if self.current_phase_info:
+                        # Within a known phase, slowly advance subphase progress if stalled
+                        phase_end = self.current_phase_info["end"]
+                        if (
+                            self.progress_pct < phase_end - 1
+                        ):  # Leave room for real updates
+                            self.subphase_progress = min(
+                                0.9, self.subphase_progress + 0.05
+                            )  # Slow advance
+                            self.update_phase(
+                                self.current_phase, self.subphase_progress
+                            )
+                    else:
+                        # Fallback behavior for unknown phases
+                        if self.progress_pct < 90:  # Conservative cap
+                            self.progress_pct += 1
+                            self._update_display()
+
+        self.update_thread = threading.Thread(target=update_loop, daemon=True)
+        self.update_thread.start()
+
+    def stop_continuous_updates(self):
+        """Stop continuous updates."""
+        self.running = False
+        if self.update_thread:
+            self.update_thread.join(timeout=1)
+
+    def update_phase(self, phase_name: str, subphase_progress: float = 0.0):
+        """Update current phase and subphase progress.
+
+        Args:
+            phase_name: Name of the current phase
+            subphase_progress: Progress within the phase (0.0 to 1.0)
+        """
+        # Check if phase changed
+        if self.current_phase != phase_name:
+            if self.current_phase != "Initializing":
+                print()  # New line for phase change
+            self.current_phase = phase_name
+            self.phase_start_time = time.time()
+            self.current_phase_info = self.phases.get(phase_name)
+
+        # Update subphase progress
+        self.subphase_progress = max(0.0, min(1.0, subphase_progress))
+
+        # Calculate overall progress
+        if self.current_phase_info:
+            phase_start = self.current_phase_info["start"]
+            phase_end = self.current_phase_info["end"]
+            phase_progress = (
+                phase_start + (phase_end - phase_start) * self.subphase_progress
+            )
+            self.progress_pct = phase_progress
+        else:
+            # Fallback for phases not in the defined list
+            self.progress_pct = min(95, self.progress_pct + 1)
+
+        self._update_display()
+
+    def set_phase_progress(self, phase_name: str, current: int, total: int):
+        """Set progress for a phase with current/total counts.
+
+        Args:
+            phase_name: Name of the current phase
+            current: Current item being processed
+            total: Total items to process
+        """
+        progress = current / total if total > 0 else 0.0
+        self.update_phase(phase_name, progress)
+
+    def _update_display(self):
+        """Internal method to update the display."""
+        elapsed = time.time() - self.start_time
+
+        # Estimate remaining time based on progress
+        if self.progress_pct > 5:
+            estimated_remaining = (elapsed / (self.progress_pct / 100)) - elapsed
+        else:
+            estimated_remaining = self.estimated_total_time - elapsed
+
+        estimated_remaining = max(0, estimated_remaining)
+
+        # Format time
+        def format_time(seconds):
+            if seconds < 60:
+                return f"{seconds:.0f}s"
+            elif seconds < 3600:
+                return f"{seconds/60:.1f}m"
+            else:
+                return f"{seconds/3600:.1f}h"
+
+        # Create progress message
+        progress_msg = f"\r🔄 {self.current_phase} | Elapsed: {format_time(elapsed)} | ETA: {format_time(estimated_remaining)} | {self.progress_pct:.1f}%"
+
+        # Write directly to original stdout if available (bypasses suppression)
+        if self.original_stdout is not None:
+            try:
+                import os
+
+                os.write(self.original_stdout, (progress_msg).encode())
+                os.fsync(self.original_stdout)
+            except:
+                # Fallback to regular print if direct write fails
+                print(progress_msg, end="", flush=True)
+        else:
+            # Normal print when no stdout suppression
+            print(progress_msg, end="", flush=True)
+
+    def finish(self):
+        """Mark analysis as complete."""
+        self.stop_continuous_updates()
+
+        # Show 100% completion
+        self.progress_pct = 100
+        self._update_display()
+
+        total_time = time.time() - self.start_time
+
+        if total_time < 60:
+            print(
+                f"\n✅ Analysis completed in {total_time:.1f} seconds (faster than progress tracking!)"
+            )
+        else:
+            print(f"\n✅ Analysis completed in {total_time/60:.1f} minutes")
+
+
+def estimate_analysis_time(population_size: int, num_generations: int) -> str:
+    """Estimate analysis time based on population and generations."""
+    # Base estimates in minutes
+    base_time = 0.5  # minutes per population per generation
+    estimated_minutes = (
+        population_size * num_generations * base_time
+    ) / 52  # Normalize to 52 pop
+
+    if estimated_minutes < 2:
+        return "1-2 minutes"
+    elif estimated_minutes < 5:
+        return "2-5 minutes"
+    elif estimated_minutes < 15:
+        return "5-15 minutes"
+    elif estimated_minutes < 30:
+        return "15-30 minutes"
+    elif estimated_minutes < 60:
+        return "30-60 minutes"
+    else:
+        return f"{estimated_minutes/60:.1f}+ hours"
 
 
 def setup_logging(verbose: bool = False) -> None:
     """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
+    if verbose:
+        level = logging.DEBUG
+        format_str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    else:
+        # Suppress most logging except critical errors
+        level = logging.ERROR
+        format_str = "%(levelname)s: %(message)s"
+
     logging.basicConfig(
         level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format=format_str,
         datefmt="%H:%M:%S",
+        force=True,  # Override any existing logging config
     )
+
+    # Specifically suppress debug logs from trajectory modules unless verbose
+    if not verbose:
+        logging.getLogger("src.trajectory").setLevel(logging.ERROR)
+        logging.getLogger("src.optimization").setLevel(logging.ERROR)
+        logging.getLogger("src.economics").setLevel(logging.ERROR)
 
 
 def load_config_from_file(config_path: str) -> dict[str, Any]:
@@ -148,8 +357,11 @@ def create_optimization_config_from_dict(
 
 def analyze_command(args):
     """Handle the analyze command."""
+    # Set up logging first
+    setup_logging(args.verbose)
+
     print("🚀 Starting Lunar Horizon Optimizer Analysis...")
-    
+
     try:
         # Load configuration if provided
         if args.config:
@@ -158,55 +370,159 @@ def analyze_command(args):
             mission_config = create_mission_config_from_dict(config_dict, args)
         else:
             print("📝 Using default configuration")
-            mission_config = create_sample_config()
-        
+            mission_config = LunarHorizonOptimizer._create_default_mission_config()
+
         # Override mission name if provided
         if args.mission_name:
             mission_config.name = args.mission_name
-            
+
         # Create optimization config
+        # Note: PyGMO NSGA-II requires population size to be multiple of 4 and at least 5
+        pop_size = args.population_size or 52  # Default to 52 (multiple of 4)
+        if pop_size % 4 != 0:
+            pop_size = ((pop_size // 4) + 1) * 4  # Round up to nearest multiple of 4
+        if pop_size < 8:
+            pop_size = 8  # Minimum viable size
+
         optimization_config = OptimizationConfig(
-            population_size=args.population_size or 50,
-            num_generations=args.generations or 30,
-            verbose=args.verbose
+            population_size=pop_size, num_generations=args.generations or 30, seed=42
         )
-        
+
         print(f"🎯 Mission: {mission_config.name}")
-        print(f"⚙️  Optimization: {optimization_config.population_size} pop, {optimization_config.num_generations} gen")
-        
-        # Initialize optimizer
-        optimizer = SimpleLunarOptimizer()
-        
-        # Run analysis
-        print("🔄 Running mission analysis...")
-        results = optimizer.analyze_mission(
-            mission_config=mission_config,
-            optimization_config=optimization_config,
-            include_sensitivity=not args.no_sensitivity,
-            include_isru=not args.no_isru,
-            verbose=args.verbose,
+        print(
+            f"⚙️  Optimization: {optimization_config.population_size} pop, {optimization_config.num_generations} gen"
         )
-        
+
+        # Estimate and display expected time
+        estimated_time = estimate_analysis_time(
+            optimization_config.population_size, optimization_config.num_generations
+        )
+        print(f"⏱️  Estimated time: {estimated_time}")
+        print("💡 Use --verbose for debug output, otherwise only progress is shown")
+        print()
+
+        # Initialize progress tracker
+        progress = ProgressTracker(
+            optimization_config.population_size, optimization_config.num_generations
+        )
+
+        # Initialize optimizer with real integration
+        progress.update_phase("Initializing", 0.0)
+        optimizer = LunarHorizonOptimizer(mission_config=mission_config)
+        progress.update_phase("Initializing", 1.0)
+
+        # For quick analyses, show different message
+        if (
+            optimization_config.population_size * optimization_config.num_generations
+            < 200
+        ):
+            print(
+                "⚡ Quick analysis mode - progress may complete before tracking updates"
+            )
+        else:
+            progress.start_continuous_updates()
+
+        # Temporarily suppress output for the analysis to avoid spam
+        original_stdout_fd = None
+        original_stderr_fd = None
+        if not args.verbose:
+            # Use comprehensive output suppression for PyGMO C++ output
+            import os
+
+            # Save original file descriptors for progress tracking
+            original_stdout_fd = os.dup(1)
+            original_stderr_fd = os.dup(2)
+
+            # Give progress tracker access to original stdout
+            progress.set_original_stdout(original_stdout_fd)
+
+            # Redirect both stdout and stderr to devnull
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, 1)
+            os.dup2(devnull, 2)
+            os.close(devnull)
+
+        try:
+            # Run analysis with proper phase-based progress tracking
+            results = optimizer.analyze_mission(
+                mission_name=mission_config.name,
+                optimization_config=optimization_config,
+                include_sensitivity=not args.no_sensitivity,
+                include_isru=not args.no_isru,
+                verbose=False,  # Always suppress internal verbose for clean output
+                progress_tracker=progress,
+            )
+        except KeyboardInterrupt:
+            print("\n⏹️  Analysis interrupted by user")
+            progress.stop_continuous_updates()
+            return None
+        finally:
+            if (
+                not args.verbose
+                and original_stdout_fd is not None
+                and original_stderr_fd is not None
+            ):
+                # Restore original stdout and stderr
+                os.dup2(original_stdout_fd, 1)
+                os.dup2(original_stderr_fd, 2)
+                os.close(original_stdout_fd)
+                os.close(original_stderr_fd)
+
+        progress.finish()
+
         # Export results
         output_dir = (
             args.output or f"analysis_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
         )
         print(f"💾 Exporting results to {output_dir}/")
         optimizer.export_results(results, output_dir)
-        
+
+        # Show results location and contents
+        print(f"\n📁 Results Location: {os.path.abspath(output_dir)}/")
+        print("📄 Generated Files:")
+        print("   • analysis_metadata.json - Configuration and performance metrics")
+        print("   • financial_summary.json - Economic analysis results")
+        print("   • *.html files - Interactive visualization dashboards")
+        if os.path.exists(output_dir):
+            html_files = [f for f in os.listdir(output_dir) if f.endswith(".html")]
+            if html_files:
+                print(
+                    f"   • Found {len(html_files)} visualization(s): {', '.join(html_files)}"
+                )
+        print(f"\n🌐 Open visualizations: open {output_dir}/*.html")
+
         # Print summary
         print("\n📊 Analysis Complete!")
-        print(f"   Total Cost: ${results.economic_analysis.get('total_cost', 0):,.0f}")
-        print(f"   Delta-V: {results.trajectory_results.get('delta_v_total', 0):.0f} m/s") 
-        print(f"   Transfer Time: {results.trajectory_results.get('transfer_time_days', 0):.1f} days")
-        print(f"   ROI: {results.economic_analysis.get('roi_percent', 0):.1f}%")
-        
+
+        # Extract economic data from solution analyses
+        econ_analyses = results.economic_analysis.get("solution_analyses", [])
+        if econ_analyses:
+            financial_summary = econ_analyses[0].get("financial_summary")
+            if financial_summary:
+                total_cost = financial_summary.total_investment
+                roi = (
+                    financial_summary.return_on_investment * 100
+                )  # Convert to percentage
+                npv = financial_summary.net_present_value
+                print(f"   Total Cost: ${total_cost:,.0f}")
+                print(f"   NPV: ${npv:,.0f}")
+                print(f"   ROI: {roi:.1f}%")
+
+        # Extract trajectory data from baseline
+        baseline = results.trajectory_results.get("baseline", {})
+        if baseline:
+            delta_v = baseline.get("total_dv", 0)
+            transfer_time = baseline.get("transfer_time", 0)
+            print(f"   Delta-V: {delta_v:.0f} m/s")
+            print(f"   Transfer Time: {transfer_time:.1f} days")
+
         return results
-        
+
     except Exception as e:
         print(f"❌ Analysis failed: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         return None
 
@@ -214,18 +530,18 @@ def analyze_command(args):
 def config_command(args) -> None:
     """Handle the config command to generate sample configuration."""
     print("📝 Generating sample configuration file...")
-    
+
     sample_config = {
         "mission": {
             "name": "Sample Lunar Mission",
             "description": "Basic lunar cargo delivery mission",
-            "transfer_time": 4.5
+            "transfer_time": 4.5,
         },
         "spacecraft": {
             "dry_mass": 5000.0,
             "max_propellant_mass": 3000.0,
             "payload_mass": 1000.0,
-            "specific_impulse": 450.0
+            "specific_impulse": 450.0,
         },
         "costs": {
             "launch_cost_per_kg": 10000.0,
@@ -235,27 +551,22 @@ def config_command(args) -> None:
             "discount_rate": 0.08,
             "learning_rate": 0.90,
             "carbon_price_per_ton_co2": 50.0,
-            "co2_emissions_per_kg_payload": 2.5
+            "co2_emissions_per_kg_payload": 2.5,
         },
-        "orbit": {
-            "semi_major_axis": 6778.0,
-            "inclination": 0.0,
-            "eccentricity": 0.0
-        },
-        "optimization": {
-            "population_size": 50,
-            "num_generations": 30,
-            "seed": 42
-        }
+        "orbit": {"semi_major_axis": 6778.0, "inclination": 0.0, "eccentricity": 0.0},
+        "optimization": {"population_size": 50, "num_generations": 30, "seed": 42},
     }
 
     output_file = args.output or "sample_mission_config.json"
 
     with open(output_file, "w") as f:
         json.dump(sample_config, f, indent=2)
-    
+
     print(f"✅ Sample configuration saved to {output_file}")
-    print("   Edit this file and use with: python src/cli.py analyze --config " + output_file)
+    print(
+        "   Edit this file and use with: python src/cli.py analyze --config "
+        + output_file
+    )
 
 
 def validate_command(args) -> None:
@@ -265,7 +576,9 @@ def validate_command(args) -> None:
 
     # Check Python version
     python_version = sys.version_info
-    print(f"🐍 Python: {python_version.major}.{python_version.minor}.{python_version.micro}")
+    print(
+        f"🐍 Python: {python_version.major}.{python_version.minor}.{python_version.micro}"
+    )
     if python_version.major != 3 or python_version.minor < 10:
         print("   ❌ Python 3.10+ required")
         validation_passed = False
@@ -287,7 +600,7 @@ def validate_command(args) -> None:
     for package, display_name in required_packages:
         try:
             module = __import__(package)
-            version = getattr(module, '__version__', 'unknown')
+            version = getattr(module, "__version__", "unknown")
             print(f"   ✅ {display_name}: {version}")
         except ImportError:
             print(f"   ❌ {display_name}: Not installed")
@@ -296,20 +609,42 @@ def validate_command(args) -> None:
     # Test optimizer initialization
     print("\n🚀 Testing Optimizer:")
     try:
-        optimizer = SimpleLunarOptimizer()
-        print("   ✅ SimpleLunarOptimizer: OK")
+        LunarHorizonOptimizer()
+        print("   ✅ LunarHorizonOptimizer: OK")
     except Exception as e:
-        print(f"   ❌ SimpleLunarOptimizer: {e}")
+        print(f"   ❌ LunarHorizonOptimizer: {e}")
         validation_passed = False
 
     # Test configuration loading
     print("\n⚙️  Testing Configuration:")
     try:
-        config = create_sample_config()
+        LunarHorizonOptimizer._create_default_mission_config()
         print("   ✅ Sample configuration: OK")
     except Exception as e:
         print(f"   ❌ Sample configuration: {e}")
         validation_passed = False
+
+    # Test performance optimizations
+    print("\n🚀 Testing Performance Optimizations:")
+    try:
+        from src.utils.performance import (
+            get_optimization_status,
+            enable_performance_optimizations,
+        )
+
+        enable_performance_optimizations()
+        opt_status = get_optimization_status()
+
+        for package, info in opt_status.items():
+            status_icon = "✅" if info["available"] else "⚠️"
+            version = info.get("version", "N/A")
+            print(f"   {status_icon} {package.capitalize()}: {version}")
+
+        if not any(info["available"] for info in opt_status.values()):
+            print("   💡 Install speed-up packages: python install_speedup_packages.py")
+
+    except Exception as e:
+        print(f"   ⚠️ Performance optimizations: {e}")
 
     # Summary
     print(f"\n{'='*50}")
@@ -328,43 +663,84 @@ def create_sample_command(args):
     """Handle the sample command to run a quick demo analysis."""
     print("🚀 Running Quick Sample Analysis...")
     print("   This demonstrates basic lunar mission optimization")
-    
+
     try:
         # Quick configuration for demo
-        mission_config = create_sample_config()
+        mission_config = LunarHorizonOptimizer._create_default_mission_config()
         mission_config.name = "Quick Demo Mission"
-        
+
         optimization_config = OptimizationConfig(
-            population_size=20,
-            num_generations=10,
-            seed=42,
-            verbose=True
+            population_size=20, num_generations=10, seed=42
         )
 
-        optimizer = SimpleLunarOptimizer()
-        
-        print("🔄 Running quick optimization (20 pop, 10 gen)...")
-        results = optimizer.analyze_mission(
-            mission_config=mission_config,
-            optimization_config=optimization_config,
-            include_sensitivity=False,
-            include_isru=True,
-            verbose=True,
-        )
-        
+        # Initialize progress tracker for sample
+        estimated_time = estimate_analysis_time(20, 10)
+        print(f"⏱️  Estimated time: {estimated_time}")
+        print()
+
+        progress = ProgressTracker(20, 10)
+
+        progress.update_phase("Initializing demo", 5)
+        optimizer = LunarHorizonOptimizer(mission_config=mission_config)
+
+        progress.update_phase("Running quick optimization", 10)
+        progress.start_continuous_updates()
+
+        # Suppress output for clean progress display
+        import sys
+        from io import StringIO
+
+        old_stdout = sys.stdout
+        sys.stdout = StringIO()
+
+        try:
+            results = optimizer.analyze_mission(
+                mission_name=mission_config.name,
+                optimization_config=optimization_config,
+                include_sensitivity=False,
+                include_isru=True,
+                verbose=False,
+            )
+        finally:
+            sys.stdout = old_stdout
+
+        progress.finish()
+
         # Export to quick_demo directory
         output_dir = "quick_demo_results"
         optimizer.export_results(results, output_dir)
-        
+
+        # Show results location and contents
+        print(f"\n📁 Results Location: {os.path.abspath(output_dir)}/")
+        print("📄 Generated Files:")
+        print("   • analysis_metadata.json - Configuration and performance metrics")
+        print("   • financial_summary.json - Economic analysis results")
+        print("   • *.html files - Interactive visualization dashboards")
+        print(f"🌐 Open visualizations: open {output_dir}/*.html")
+
         print("\n🎉 Quick Demo Complete!")
         print(f"   Mission: {results.mission_name}")
-        print(f"   Total Cost: ${results.economic_analysis.get('total_cost', 0):,.0f}")
-        print(f"   Delta-V: {results.trajectory_results.get('delta_v_total', 0):.0f} m/s")
-        print(f"   ROI: {results.economic_analysis.get('roi_percent', 0):.1f}%")
+
+        # Extract economic data properly
+        econ_analyses = results.economic_analysis.get("solution_analyses", [])
+        if econ_analyses:
+            financial_summary = econ_analyses[0].get("financial_summary")
+            if financial_summary:
+                total_cost = financial_summary.total_investment
+                roi = financial_summary.return_on_investment * 100
+                print(f"   Total Cost: ${total_cost:,.0f}")
+                print(f"   ROI: {roi:.1f}%")
+
+        # Extract trajectory data properly
+        baseline = results.trajectory_results.get("baseline", {})
+        if baseline:
+            delta_v = baseline.get("total_dv", 0)
+            print(f"   Delta-V: {delta_v:.0f} m/s")
+
         print(f"   Results saved to {output_dir}/")
-        
+
         return results
-        
+
     except Exception as e:
         print(f"❌ Sample analysis failed: {e}")
         return None

@@ -281,7 +281,7 @@ class GlobalOptimizer:
             f"pop_size={population_size}, generations={num_generations}"
         )
 
-    def optimize(self, verbose: bool = True) -> dict[str, Any]:
+    def optimize(self, verbose: bool = True, progress_callback=None) -> dict[str, Any]:
         """Run multi-objective optimization.
 
         Args:
@@ -308,6 +308,10 @@ class GlobalOptimizer:
         for generation in range(self.num_generations):
             # Evolve population for one generation
             self.population = self.algorithm.evolve(self.population)
+
+            # Update progress callback
+            if progress_callback:
+                progress_callback(generation + 1, self.num_generations)
 
             # Log progress
             if verbose and (generation + 1) % 10 == 0:

@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Multi-Mission Lunar Campaign",
+    "description": "Comprehensive lunar development campaign demonstrating shared infrastructure benefits, economy of scale, and progressive capability building with staged deployment",
+    "transfer_time": 5.2
+  },
+  "spacecraft": {
+    "dry_mass": 35000.0,
+    "max_propellant_mass": 28000.0,
+    "payload_mass": 22000.0,
+    "specific_impulse": 480.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 4000.0,
+    "operations_cost_per_day": 800000.0,
+    "development_cost": 12000000000.0,
+    "contingency_percentage": 30.0,
+    "discount_rate": 0.04,
+    "learning_rate": 0.75,
+    "carbon_price_per_ton_co2": 150.0,
+    "co2_emissions_per_kg_payload": 0.8
+  },
+  "orbit": {
+    "semi_major_axis": 6578.0,
+    "inclination": 51.6,
+    "eccentricity": 0.002
+  },
+  "optimization": {
+    "population_size": 80,
+    "num_generations": 50,
+    "seed": 54321
+  }
+}

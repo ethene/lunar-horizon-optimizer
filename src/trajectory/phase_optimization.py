@@ -166,8 +166,18 @@ def evaluate_transfer_solution(
             v1 = v1_km * 1000.0
             v2 = v2_km * 1000.0
 
-            logger.debug(f"v1 [m/s]: {v1}")
-            logger.debug(f"v2 [m/s]: {v2}")
+            # Check for problematic values early
+            if not (np.isfinite(v1).all() and np.isfinite(v2).all()):
+                logger.warning(f"Solution {i+1} has invalid velocities, skipping")
+                continue
+
+            # Safe logging with error handling
+            try:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(f"v1 [m/s]: {v1}")
+                    logger.debug(f"v2 [m/s]: {v2}")
+            except Exception:
+                logger.debug("v1/v2 logging skipped (formatting error)")
 
             # Calculate delta-v components
             dv1 = np.linalg.norm(v1 - v_park)  # Departure delta-v
@@ -219,6 +229,7 @@ def find_optimal_phase(
     orbit_radius: float,
     max_revs: int = 0,
     num_samples: int = 360,
+    progress_callback: callable = None,
 ) -> tuple[float, np.ndarray]:
     """Find the optimal phase angle for lunar transfer departure.
 
@@ -249,13 +260,24 @@ def find_optimal_phase(
     h_unit = np.cross(moon_pos, moon_vel)
     h_unit = h_unit / np.linalg.norm(h_unit)
 
+    import time
+
     # Sample phase angles uniformly
     phase_angles = np.linspace(0, 2 * np.pi, num_samples)
     best_dv = float("inf")
     best_phase = None
     best_r1 = None
 
-    for phase in phase_angles:
+    start_time = time.time()
+    valid_solutions = 0
+    total_evaluated = 0
+
+    for i, phase in enumerate(phase_angles):
+        # Update progress callback if provided
+        if progress_callback:
+            progress_pct = (i / num_samples) * 100
+            progress_callback(i, num_samples, progress_pct, valid_solutions)
+
         # Calculate initial position for this phase angle
         r1 = calculate_initial_position(r_park, phase, h_unit)
 
@@ -269,13 +291,36 @@ def find_optimal_phase(
             max_revs,
         )
 
+        total_evaluated += 1
+
+        if dv < float("inf"):
+            valid_solutions += 1
+
         if dv < best_dv:
             best_dv = dv
             best_phase = phase
             best_r1 = r1
 
+        # Early termination if we found a very good solution
+        if dv < 3500:  # Excellent solution, no need to search further
+            if progress_callback:
+                progress_callback(num_samples, num_samples, 100.0, valid_solutions)
+            logger.info(
+                f"Found excellent solution (ΔV={dv:.1f} m/s) at sample {i+1}/{num_samples}, terminating search early"
+            )
+            break
+
+    # Ensure final progress update
+    if progress_callback:
+        progress_callback(num_samples, num_samples, 100.0, valid_solutions)
+
+    elapsed_total = time.time() - start_time
+    logger.info(
+        f"Phase optimization completed: {valid_solutions}/{total_evaluated} valid solutions, best ΔV: {best_dv:.1f} m/s, elapsed: {elapsed_total:.1f}s"
+    )
+
     if best_phase is None:
-        msg = "No valid transfer trajectory found"
+        msg = f"No valid transfer trajectory found after searching {total_evaluated} phase angles in {elapsed_total:.1f}s"
         raise ValueError(msg)
 
     return best_phase, best_r1

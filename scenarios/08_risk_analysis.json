@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "High-Risk Lunar Mining Venture",
+    "description": "Monte Carlo risk analysis demonstrating financial uncertainty quantification, sensitivity analysis, and confidence intervals for high-stakes lunar operations",
+    "transfer_time": 6.0
+  },
+  "spacecraft": {
+    "dry_mass": 20000.0,
+    "max_propellant_mass": 15000.0,
+    "payload_mass": 12000.0,
+    "specific_impulse": 420.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 15000.0,
+    "operations_cost_per_day": 400000.0,
+    "development_cost": 5000000000.0,
+    "contingency_percentage": 50.0,
+    "discount_rate": 0.12,
+    "learning_rate": 0.93,
+    "carbon_price_per_ton_co2": 35.0,
+    "co2_emissions_per_kg_payload": 3.8
+  },
+  "orbit": {
+    "semi_major_axis": 7000.0,
+    "inclination": 15.0,
+    "eccentricity": 0.01
+  },
+  "optimization": {
+    "population_size": 50,
+    "num_generations": 40,
+    "seed": 77777
+  }
+}

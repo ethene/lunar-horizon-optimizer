@@ -1,7 +1,7 @@
 """
 Src module for Lunar Horizon Optimizer.
 
-This package contains the src components of the 
+This package contains the src components of the
 Lunar Horizon Optimizer platform.
 """
 

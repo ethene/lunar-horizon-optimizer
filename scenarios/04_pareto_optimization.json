@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Multi-Objective Lunar Gateway Resupply",
+    "description": "Pareto front analysis demonstrating trade-offs between mission cost, delta-v requirements, and transfer time for Gateway resupply missions",
+    "transfer_time": 5.2
+  },
+  "spacecraft": {
+    "dry_mass": 7500.0,
+    "max_propellant_mass": 5500.0,
+    "payload_mass": 2500.0,
+    "specific_impulse": 445.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 11000.0,
+    "operations_cost_per_day": 120000.0,
+    "development_cost": 1200000000.0,
+    "contingency_percentage": 22.0,
+    "discount_rate": 0.07,
+    "learning_rate": 0.89,
+    "carbon_price_per_ton_co2": 55.0,
+    "co2_emissions_per_kg_payload": 2.6
+  },
+  "orbit": {
+    "semi_major_axis": 6878.0,
+    "inclination": 28.5,
+    "eccentricity": 0.002
+  },
+  "optimization": {
+    "population_size": 100,
+    "num_generations": 50,
+    "seed": 13579
+  }
+}

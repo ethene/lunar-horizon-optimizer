@@ -5,6 +5,7 @@ lunar mission economics, including Monte Carlo simulation and tornado diagrams.
 """
 
 import logging
+import signal
 from collections.abc import Callable
 from typing import Any
 
@@ -318,34 +319,80 @@ class EconomicSensitivityAnalyzer:
             num_simulations,
         )
 
-        # Run simulations
+        # Run simulations with timeout protection
         results = []
         valid_results = 0
+        timeout_limit = 300  # 5 minutes total timeout
 
-        for i in range(num_simulations):
-            # Create parameter set for this simulation
-            sim_params = base_parameters.copy()
-            for param_name, sample_values in samples.items():
-                sim_params[param_name] = sample_values[i]
+        def timeout_handler(signum, frame):
+            raise TimeoutError("Monte Carlo simulation timed out")
 
-            try:
-                # Calculate result
-                result = self.base_model_function(sim_params)
-                npv = result.get("npv", 0) if isinstance(result, dict) else result
-                results.append(npv)
-                valid_results += 1
-            except Exception as e:
-                logger.warning(f"Simulation {i} failed: {e}")
-                results.append(np.nan)
+        # Set up signal handler for timeout
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout_limit)
+
+        try:
+            for i in range(num_simulations):
+                # Progress logging every 50 iterations for better visibility
+                if i % 50 == 0:
+                    progress_pct = i / num_simulations * 100
+                    logger.info(
+                        f"Monte Carlo simulation progress: {i}/{num_simulations} ({progress_pct:.1f}%)"
+                    )
+
+                # Enhanced logging for problematic range (90-100%)
+                if i >= num_simulations * 0.9:
+                    if i % 10 == 0:  # Log every 10 iterations in final 10%
+                        logger.info(f"Final phase simulation {i}/{num_simulations}")
+
+                # Create parameter set for this simulation
+                sim_params = base_parameters.copy()
+                for param_name, sample_values in samples.items():
+                    sim_params[param_name] = sample_values[i]
+
+                try:
+                    # Calculate result with individual timeout
+                    result = self.base_model_function(sim_params)
+                    npv = result.get("npv", 0) if isinstance(result, dict) else result
+                    results.append(npv)
+                    valid_results += 1
+                except Exception as e:
+                    logger.warning(f"Simulation {i} failed: {e}")
+                    results.append(np.nan)
+
+            # Final completion log
+            logger.info(
+                f"Monte Carlo simulation completed: {valid_results}/{num_simulations} valid results"
+            )
+
+        except TimeoutError:
+            logger.error(
+                f"Monte Carlo simulation timed out after {timeout_limit} seconds at iteration {i}"
+            )
+            # Truncate results to what we have so far
+            results = results[:i]
+            num_simulations = i
+
+        finally:
+            # Restore original signal handler
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
 
         # Remove invalid results
+        logger.info(f"Processing Monte Carlo results: {len(results)} total results")
         valid_results_array = np.array([r for r in results if not np.isnan(r)])
+        logger.info(
+            f"Valid results array created: {len(valid_results_array)} valid results"
+        )
 
         # Calculate statistics
+        logger.info("Calculating percentiles...")
         percentiles = np.percentile(
             valid_results_array, [p * 100 for p in confidence_levels]
         )
+        logger.info("Percentiles calculation completed")
 
+        logger.info("Building Monte Carlo results dictionary...")
         mc_results = {
             "num_simulations": num_simulations,
             "valid_simulations": valid_results,
@@ -376,13 +423,16 @@ class EconomicSensitivityAnalyzer:
                 ),
             },
         }
+        logger.info("Monte Carlo results dictionary created")
 
         # Correlation analysis
         if len(variable_distributions) > 1:
+            logger.info("Starting correlation analysis...")
             mc_results["correlation_analysis"] = self._analyze_parameter_correlations(
                 samples,
                 valid_results_array,
             )
+            logger.info("Correlation analysis completed")
 
         logger.info(
             f"Monte Carlo simulation complete. Mean NPV: ${mc_results['statistics']['mean']/1e6:.1f}M, "

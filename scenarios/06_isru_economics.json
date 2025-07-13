@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Lunar Water Mining Business Case",
+    "description": "Economic analysis of In-Situ Resource Utilization demonstrating ROI, NPV, and payback period for lunar water extraction and processing facility",
+    "transfer_time": 4.0
+  },
+  "spacecraft": {
+    "dry_mass": 15000.0,
+    "max_propellant_mass": 10000.0,
+    "payload_mass": 8000.0,
+    "specific_impulse": 455.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 7500.0,
+    "operations_cost_per_day": 250000.0,
+    "development_cost": 3000000000.0,
+    "contingency_percentage": 35.0,
+    "discount_rate": 0.09,
+    "learning_rate": 0.85,
+    "carbon_price_per_ton_co2": 70.0,
+    "co2_emissions_per_kg_payload": 1.8
+  },
+  "orbit": {
+    "semi_major_axis": 6778.0,
+    "inclination": 90.0,
+    "eccentricity": 0.0
+  },
+  "optimization": {
+    "population_size": 25,
+    "num_generations": 15,
+    "seed": 24680
+  }
+}

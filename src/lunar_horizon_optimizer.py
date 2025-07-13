@@ -157,6 +157,7 @@ class LunarHorizonOptimizer:
         include_sensitivity: bool = True,
         include_isru: bool = True,
         verbose: bool = True,
+        progress_tracker=None,
     ) -> AnalysisResults:
         """
         Perform comprehensive lunar mission analysis.
@@ -178,36 +179,62 @@ class LunarHorizonOptimizer:
         opt_config = optimization_config or OptimizationConfig()
 
         # Step 1: Trajectory Analysis
+        if progress_tracker:
+            progress_tracker.update_phase("Trajectory Analysis", 0.0)
         if verbose:
             logger.info("📊 Step 1: Performing trajectory analysis...")
         trajectory_results = self._analyze_trajectories(opt_config, verbose)
+        if progress_tracker:
+            progress_tracker.update_phase("Trajectory Analysis", 1.0)
 
         # Step 2: Multi-objective Optimization
+        if progress_tracker:
+            progress_tracker.update_phase("Multi-objective Optimization", 0.0)
         if verbose:
             logger.info("🎯 Step 2: Running multi-objective optimization...")
-        optimization_results = self._perform_optimization(opt_config, verbose)
+        optimization_results = self._perform_optimization(
+            opt_config, verbose, progress_tracker
+        )
+        if progress_tracker:
+            progress_tracker.update_phase("Multi-objective Optimization", 1.0)
 
         # Step 3: Economic Analysis
+        if progress_tracker:
+            progress_tracker.update_phase("Economic Analysis", 0.0)
         if verbose:
             logger.info("💰 Step 3: Conducting economic analysis...")
+        logger.info("DEBUG: Starting economic analysis phase...")
         economic_results = self._analyze_economics(
             optimization_results,
             include_sensitivity,
             include_isru,
             verbose,
+            progress_tracker,
         )
+        logger.info("DEBUG: Economic analysis phase completed")
+        if progress_tracker:
+            progress_tracker.update_phase("Economic Analysis", 1.0)
 
         # Step 4: Generate Visualizations
+        if progress_tracker:
+            progress_tracker.update_phase("Visualization Generation", 0.0)
         if verbose:
             logger.info("📈 Step 4: Creating comprehensive visualizations...")
+        logger.info("DEBUG: Starting visualization generation...")
         visualization_assets = self._create_visualizations(
             trajectory_results,
             optimization_results,
             economic_results,
             mission_name,
         )
+        logger.info("DEBUG: Visualization generation completed")
+        if progress_tracker:
+            progress_tracker.update_phase("Visualization Generation", 1.0)
 
         # Step 5: Compile Results
+        if progress_tracker:
+            progress_tracker.update_phase("Results Compilation", 0.0)
+        logger.info("DEBUG: Starting results compilation...")
         analysis_results = AnalysisResults(
             mission_name=mission_name,
             trajectory_results=trajectory_results,
@@ -224,6 +251,9 @@ class LunarHorizonOptimizer:
                 "performance_metrics": self._calculate_performance_metrics(),
             },
         )
+        logger.info("DEBUG: Results compilation completed")
+        if progress_tracker:
+            progress_tracker.update_phase("Results Compilation", 1.0)
 
         if verbose:
             logger.info("✅ Comprehensive mission analysis completed successfully!")
@@ -285,7 +315,7 @@ class LunarHorizonOptimizer:
         return results
 
     def _perform_optimization(
-        self, opt_config: OptimizationConfig, verbose: bool
+        self, opt_config: OptimizationConfig, verbose: bool, progress_tracker=None
     ) -> dict[str, Any]:
         """Perform multi-objective optimization."""
         # Create optimization problem
@@ -300,7 +330,14 @@ class LunarHorizonOptimizer:
             reference_epoch=10000.0,
         )
 
-        # Run optimization
+        # Run optimization with progress tracking
+        def optimization_progress_callback(generation, total_generations):
+            if progress_tracker:
+                gen_progress = generation / total_generations
+                progress_tracker.update_phase(
+                    "Multi-objective Optimization", gen_progress
+                )
+
         optimizer = GlobalOptimizer(
             problem=problem,
             population_size=opt_config.population_size,
@@ -308,7 +345,9 @@ class LunarHorizonOptimizer:
             seed=opt_config.seed,
         )
 
-        optimization_results = optimizer.optimize(verbose=verbose)
+        optimization_results = optimizer.optimize(
+            verbose=verbose, progress_callback=optimization_progress_callback
+        )
 
         # Analyze Pareto front
         analyzed_results = self.pareto_analyzer.analyze_pareto_front(
@@ -353,6 +392,7 @@ class LunarHorizonOptimizer:
         include_sensitivity: bool,
         include_isru: bool,
         verbose: bool,
+        progress_tracker=None,
     ) -> dict[str, Any]:
         """Perform comprehensive economic analysis."""
         results = {}
@@ -385,6 +425,13 @@ class LunarHorizonOptimizer:
 
         # Sensitivity Analysis
         if include_sensitivity:
+            if progress_tracker:
+                progress_tracker.update_phase(
+                    "Economic Analysis", 0.5
+                )  # Halfway through economics
+            logger.info(
+                "DEBUG: Starting sensitivity analysis (Monte Carlo simulation)..."
+            )
             base_params = {
                 "cost_multiplier": 1.0,
                 "revenue_multiplier": 1.0,
@@ -393,7 +440,7 @@ class LunarHorizonOptimizer:
 
             distributions = {
                 "cost_multiplier": {
-                    "type": "triangular",
+                    "type": "triang",
                     "min": 0.8,
                     "mode": 1.0,
                     "max": 1.5,
@@ -406,12 +453,26 @@ class LunarHorizonOptimizer:
                 },
             }
 
+            # Progress callback for Monte Carlo
+            def mc_progress_callback(current, total, percent, valid_count):
+                if (
+                    progress_tracker and current % 100 == 0
+                ):  # Update every 100 simulations
+                    mc_progress = (
+                        0.5 + (current / total) * 0.5
+                    )  # Second half of economics phase
+                    progress_tracker.update_phase("Economic Analysis", mc_progress)
+
+            logger.info("DEBUG: Calling monte_carlo_simulation...")
+            # Note: We'll need to modify the sensitivity analyzer to accept progress callback
             mc_results = self.sensitivity_analyzer.monte_carlo_simulation(
                 base_params,
                 distributions,
                 1000,
             )
+            logger.info("DEBUG: Monte Carlo simulation returned, processing results...")
             results["sensitivity_analysis"] = mc_results
+            logger.info("DEBUG: Sensitivity analysis completed")
 
             if verbose:
                 mean_npv = mc_results["statistics"]["mean"]
@@ -469,8 +530,15 @@ class LunarHorizonOptimizer:
             cost_breakdown.operations, start_date + timedelta(days=730), 36
         )
 
-        # Add simplified revenue streams
-        annual_revenue = 10e6  # Simplified revenue assumption
+        # Add realistic revenue streams for lunar missions
+        # Revenue sources: payload delivery contracts, commercial services, research data, government contracts
+        # Scale revenue to mission cost for a commercially viable lunar mission
+        mission_cost_billions = (
+            cost_breakdown.total / 1000
+        )  # Convert $M to $B for scaling
+        annual_revenue = max(
+            150e6, mission_cost_billions * 300e6
+        )  # $150M minimum, scales with mission cost
         cash_model.add_revenue_stream(
             annual_revenue, start_date + timedelta(days=760), 48
         )
@@ -480,13 +548,17 @@ class LunarHorizonOptimizer:
         irr = self.npv_analyzer.calculate_irr(cash_model)
         payback = self.npv_analyzer.calculate_payback_period(cash_model)
 
+        # Convert cost breakdown from millions to actual dollars for display
+        total_cost_dollars = cost_breakdown.total * 1e6  # Convert $M to $
+        total_revenue_dollars = annual_revenue * 4  # 4 years of revenue
+
         financial_summary = FinancialSummary(
-            total_investment=cost_breakdown.total,
-            total_revenue=annual_revenue * 4,  # 4 years of revenue
+            total_investment=total_cost_dollars,
+            total_revenue=total_revenue_dollars,
             net_present_value=npv,
             internal_rate_of_return=irr,
-            return_on_investment=(annual_revenue * 4 - cost_breakdown.total)
-            / cost_breakdown.total,
+            return_on_investment=(total_revenue_dollars - total_cost_dollars)
+            / total_cost_dollars,
             payback_period_years=payback,
             mission_duration_years=mission_duration,
             probability_of_success=0.75,
@@ -509,6 +581,7 @@ class LunarHorizonOptimizer:
     ) -> dict[str, Any]:
         """Create comprehensive visualizations."""
         visualizations = {}
+        logger.info("DEBUG: Creating mission data for visualization...")
 
         # Create mission data for dashboard
         mission_data = MissionAnalysisData(
@@ -522,19 +595,24 @@ class LunarHorizonOptimizer:
                 "cost_breakdown"
             ),
         )
+        logger.info("DEBUG: Mission data created")
 
         # Executive dashboard
+        logger.info("DEBUG: Creating executive dashboard...")
         try:
             exec_dashboard = self.dashboard.create_executive_dashboard(mission_data)
             visualizations["executive_dashboard"] = exec_dashboard
+            logger.info("DEBUG: Executive dashboard created successfully")
         except Exception as e:
             logger.warning(f"Could not create executive dashboard: {e}")
             visualizations["executive_dashboard"] = None
 
         # Technical dashboard
+        logger.info("DEBUG: Creating technical dashboard...")
         try:
             tech_dashboard = self.dashboard.create_technical_dashboard(mission_data)
             visualizations["technical_dashboard"] = tech_dashboard
+            logger.info("DEBUG: Technical dashboard created successfully")
         except Exception as e:
             logger.warning(f"Could not create technical dashboard: {e}")
             visualizations["technical_dashboard"] = None

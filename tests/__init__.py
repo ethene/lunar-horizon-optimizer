@@ -1,7 +1,7 @@
 """
 Tests module for Lunar Horizon Optimizer.
 
-This package contains the tests components of the 
+This package contains the tests components of the
 Lunar Horizon Optimizer platform.
 """
 
