@@ -49,7 +49,11 @@ class LunarMissionProblem:
             max_transfer_time: Maximum transfer time [days]
             reference_epoch: Reference epoch for calculations [days since J2000]
         """
-        self.cost_factors = cost_factors or CostFactors()
+        self.cost_factors = cost_factors or CostFactors(
+            launch_cost_per_kg=10000.0,
+            operations_cost_per_day=100000.0,
+            development_cost=1e9
+        )
         self.min_earth_alt = min_earth_alt
         self.max_earth_alt = max_earth_alt
         self.min_moon_alt = min_moon_alt
