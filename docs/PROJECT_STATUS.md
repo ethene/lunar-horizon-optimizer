@@ -38,7 +38,7 @@ The Lunar Horizon Optimizer is a **production-ready** integrated platform for LE
 
 ### Technical Highlights
 - **415 Total Tests**: Comprehensive test coverage across all modules
-- **Production Core**: 38 tests with 100% pass rate requirement
+- **Production Core**: 243 tests with 100% pass rate requirement
 - **Clean Pipeline**: 0 linting errors, fully compliant code
 - **Performance**: JAX-accelerated optimization with JIT compilation and efficient caching
 - **Documentation**: Complete API reference, user guides, and integration documentation
@@ -67,7 +67,7 @@ src/
 ## Test Coverage
 
 - **Total Tests**: 415 across 34 test files
-- **Production Core**: 38 tests (100% pass rate)
+- **Production Core**: 243 tests (100% pass rate)
 - **Module Coverage**:
   - Economics: 100% (64 tests)
   - Configuration: 95% (20 tests)

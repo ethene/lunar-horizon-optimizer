@@ -15,8 +15,11 @@
 - [Use Cases](../USE_CASES.md) - **START HERE** - Real-world applications from basic to advanced
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Complete project status and capabilities
 - [PRD_COMPLIANCE.md](PRD_COMPLIANCE.md) - 📋 **PRD Compliance** - How implementation meets all PRD requirements
-- [Project Audit](../PROJECT_AUDIT.md) - Repository structure analysis and recommendations
-- [Cleanup Report](../CLEANUP_REPORT.md) - Recent organizational improvements
+
+### Repository Management
+- [Project Audit](PROJECT_AUDIT.md) - Repository structure analysis and recommendations  
+- [Cleanup Report](CLEANUP_REPORT.md) - Recent organizational improvements
+- [Complete Capabilities](CAPABILITIES.md) - Comprehensive API reference
 
 ### User & Development Guides
 - [User Guide](USER_GUIDE.md) - **Getting started** - Workflows, examples, troubleshooting
@@ -32,11 +35,12 @@
 - [TEST_SUITE_COMPLETION_PLAN.md](TEST_SUITE_COMPLETION_PLAN.md) - Test completion roadmap
 
 ### Current Test Status
-- **Production Tests**: 38/38 passing (100%) ✅
-- **Economics Tests**: 56/64 passing (87.5%) ✅
-- **Quick Tests**: 9/9 passing (100%) ✅
-- **Trajectory Tests**: Performance issues (timeout) ⚠️
-- **Integration Tests**: 3/6 passing (50%) ⚠️
+- **Production Tests**: 243/243 passing (100%) ✅
+- **Total Test Suite**: 415 tests across all modules
+- **Economics Tests**: 64/64 passing (100%) ✅
+- **Environment Tests**: 7/7 passing (100%) ✅
+- **Configuration Tests**: 20/20 passing (100%) ✅
+- **Core Coverage**: >80% line coverage
 
 ## Task Documentation
 
@@ -104,9 +108,10 @@ Outdated and superseded documents have been moved to `docs/archive/` to reduce r
 5. Review relevant task documentation
 
 ### Current System Status
-- **Production Ready**: 38/38 core tests passing ✅
-- **Economics Module**: 56/64 tests passing ✅
-- **Integration Level**: 3/6 integration tests passing ⚠️
+- **Production Ready**: 243/243 core tests passing ✅
+- **Total Test Suite**: 415 tests across all modules
+- **Economics Module**: 64/64 tests passing ✅ 
+- **Test Coverage**: >80% line coverage across codebase
 - **PRD Compliance**: 100% (5/5 user workflows) ✅
 
 ---

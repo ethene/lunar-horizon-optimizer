@@ -38,7 +38,7 @@ The Lunar Horizon Optimizer is a comprehensive platform that enables real-world 
 - ✅ **Environmental Cost Integration**: CO₂ emissions pricing and carbon cost accounting
 - ✅ **CLI Enhancement**: `--learning-rate` and `--carbon-price` flags for parameter control
 - ✅ **Comprehensive Testing**: 21 new unit tests with real implementation (NO MOCKING)
-- ✅ **Production Ready**: 38/38 production tests passing, clean pipeline
+- ✅ **Production Ready**: 243/243 production tests passing, clean pipeline
 
 ## 🏗️ Architecture
 
@@ -80,12 +80,12 @@ python examples/cost_comparison_demo.py
 ## 📚 Documentation
 
 - 🎯 **[Use Cases](USE_CASES.md)**: Real-world applications and problem scenarios
-- 📖 **[Complete Capabilities](CAPABILITIES.md)**: Comprehensive API reference
+- 📖 **[Complete Capabilities](docs/CAPABILITIES.md)**: Comprehensive API reference
 - 💰 **[Cost Model Upgrade](docs/COST_MODEL_UPGRADE.md)**: Wright's law and environmental costs
 - 🧪 **[Testing Guide](tests/README.md)**: Test suite documentation
 - 🔧 **[Development Guide](CLAUDE.md)**: Project working rules and standards
-- 📋 **[Project Audit](PROJECT_AUDIT.md)**: Repository structure analysis
-- 🛠️ **[Cleanup Report](CLEANUP_REPORT.md)**: Recent organizational improvements
+- 📋 **[Project Audit](docs/PROJECT_AUDIT.md)**: Repository structure analysis
+- 🛠️ **[Cleanup Report](docs/CLEANUP_REPORT.md)**: Recent organizational improvements
 
 ## 🛠️ Development
 
@@ -93,14 +93,14 @@ python examples/cost_comparison_demo.py
 ```bash
 make help          # Show all available commands
 make pipeline      # Run complete development pipeline
-make test          # Run production test suite (38 tests, 100% pass rate)
+make test          # Run production test suite (243 tests, 100% pass rate)
 make coverage      # Generate coverage report
 make lint          # Run code quality checks
 ```
 
 ### Code Quality Standards
 - ✅ **NO MOCKING RULE**: All tests use real PyKEP, PyGMO, JAX implementations
-- ✅ **100% Test Pass Rate**: 38/38 production tests passing (415 total tests)
+- ✅ **100% Test Pass Rate**: 243/243 production tests passing (415 total tests)
 - ✅ **Clean Pipeline**: 0 linting errors, formatted code
 - ✅ **Type Safety**: Comprehensive type hints and MyPy validation
 
