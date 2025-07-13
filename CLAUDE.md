@@ -6,23 +6,101 @@ The **Lunar Horizon Optimizer** is an integrated differentiable trajectory optim
 
 ## Project Structure & Architecture
 
-### Core Components
+### Complete Project Structure
 ```
-src/
-├── config/          # Mission configuration and parameter management ✅
-├── trajectory/      # Orbital mechanics and trajectory calculations ✅
-├── optimization/    # Global optimization with PyGMO and JAX differentiable ✅
-├── economics/       # Economic analysis and financial modeling with ISRU ✅
-├── visualization/   # Interactive dashboards and plotting ✅
-├── extensibility/   # Plugin system and extension framework ✅
-├── utils/           # Utility functions and unit conversions
-└── constants/       # Physical constants and parameters
+📁 Lunar Horizon Optimizer/
+├── 📁 src/                    # Source code (main implementation)
+│   ├── config/                # Mission configuration and parameter management ✅
+│   ├── trajectory/            # Orbital mechanics and trajectory calculations ✅
+│   ├── optimization/          # Global optimization with PyGMO and JAX differentiable ✅
+│   ├── economics/             # Economic analysis and financial modeling with ISRU ✅
+│   ├── visualization/         # Interactive dashboards and plotting ✅
+│   ├── extensibility/         # Plugin system and extension framework ✅
+│   ├── utils/                 # Utility functions and unit conversions
+│   └── constants/             # Physical constants and parameters
+├── 📁 docs/                   # ORGANIZED documentation - See Documentation Guidelines below
+│   ├── guides/                # User guides, CLI guides, how-to documents
+│   ├── technical/             # Technical docs (architecture, advanced features)
+│   ├── tasks/                 # Task-specific implementation documentation
+│   ├── testing/               # Testing documentation and reports
+│   └── archive/               # Historical/superseded documentation
+├── 📁 tests/                  # Comprehensive test suite (415 tests)
+│   └── trajectory/            # Specialized trajectory tests
+├── 📁 scenarios/              # Mission configuration examples
+├── 📁 examples/               # Usage examples and demos
+├── 📁 scripts/                # Development and utility scripts
+│   └── utilities/             # Maintenance and analysis scripts
+├── 📁 tasks/                  # Task management (tasks.json and task files)
+├── 📁 results/                # Analysis outputs (gitignored)
+└── 📁 archive/                # Historical project files
+```
 
-tests/               # Comprehensive test suite (415 total tests, production core: 100% pass rate)
-docs/                # Project documentation (comprehensive)
-tasks/               # Development task management (10/10 tasks complete)
-scripts/             # Utility scripts and PRD
-```
+### Documentation Guidelines
+
+#### Where to Put Documentation
+
+**CRITICAL**: Follow this structure when creating or updating documentation:
+
+1. **User-Facing Guides** → `docs/guides/`
+   - CLI usage guides
+   - Progress tracking documentation
+   - How-to guides and tutorials
+   - Scenario documentation
+   - Example: `CLI_USER_GUIDE.md`, `PROGRESS_TRACKING_GUIDE.md`
+
+2. **Technical Documentation** → `docs/technical/`
+   - Architecture documents
+   - Advanced feature documentation
+   - Implementation details
+   - Performance optimization guides
+   - Example: `MULTI_MISSION_ARCHITECTURE.md`, `DIFFERENTIABLE_OPTIMIZATION.md`
+
+3. **Task Documentation** → `docs/tasks/`
+   - Task-specific implementation details
+   - Task completion reports
+   - Example: `task_3_documentation.md`, `task_10_extensibility_documentation.md`
+
+4. **Testing Documentation** → `docs/testing/`
+   - Test suite documentation
+   - Testing reports and analysis
+   - Coverage reports
+   - Example: `testing_COMPREHENSIVE_TEST_SUITE_ANALYSIS.md`
+
+5. **Core Documentation** (root of docs/)
+   - INDEX.md - Main documentation navigation
+   - USER_GUIDE.md - Primary user guide
+   - PROJECT_STATUS.md - Current status
+   - PRD_COMPLIANCE.md - Requirements compliance
+   - Other essential project-wide docs
+
+6. **Module Documentation** (inline with code)
+   - Docstrings in Python files
+   - README.md in module directories
+   - Type hints and comments
+
+#### Documentation Standards
+
+1. **File Naming**:
+   - Use descriptive names with underscores
+   - Prefix testing docs with `testing_`
+   - Prefix task docs with `task_`
+   - Use ALL_CAPS for important guides
+
+2. **Cross-References**:
+   - Always use relative paths from current location
+   - Update INDEX.md when adding new docs
+   - Verify all links work before committing
+
+3. **Content Structure**:
+   - Start with clear purpose statement
+   - Include navigation breadcrumbs
+   - Add "Last Updated" timestamp
+   - Use consistent markdown formatting
+
+4. **Maintenance**:
+   - Move outdated docs to `docs/archive/`
+   - Update cross-references when moving files
+   - Keep INDEX.md as single source of truth
 
 ### Key Technologies
 - **PyKEP 2.6** - High-fidelity orbital mechanics
@@ -130,6 +208,31 @@ git commit -m "descriptive message"  # Commit with clear message
 - **Test Before Commit**: Run `make test` and ensure 100% pass rate before committing
 - **Quality Checks**: Run `make pipeline` to verify code quality standards
 - **Descriptive Messages**: Use clear, descriptive commit messages following conventional commit format
+
+##### **Commit Message Format**
+```
+type(scope): Brief description (50 chars max)
+
+Detailed explanation of what changed and why. Include:
+- Key changes made
+- Documentation updates
+- Test coverage changes
+- Breaking changes (if any)
+
+Refs: #task-id (if applicable)
+```
+
+**Types**: feat, fix, docs, style, refactor, test, chore
+**Scope**: module name (e.g., trajectory, economics, docs)
+
+**Examples**:
+```
+docs: Organize documentation structure and fix broken links
+
+feat(economics): Add advanced ISRU production models
+
+fix(trajectory): Resolve Lambert solver NaN velocity issue
+```
 
 ##### **Rollback and State Management**
 - **Frequent Commits**: Enable easy rollback to previous working states
@@ -422,7 +525,7 @@ The project uses a structured task tracking system with multiple components:
 - **Primary Source**: `/tasks/tasks.json` - Central JSON file containing all task definitions and status
 - **CLI Tool**: `node scripts/dev.js` - Comprehensive task management command-line interface
 - **Task Files**: `/tasks/task_XXX.txt` - Detailed individual task descriptions
-- **Documentation**: `/docs/task_X_documentation.md` - Extended documentation for specific tasks
+- **Documentation**: `/docs/tasks/task_X_documentation.md` - Extended documentation for specific tasks
 
 ### Current Development Status
 
@@ -537,3 +640,69 @@ With all core tasks complete, potential enhancements include:
 2. **Additional Visualizations** - Expand dashboard capabilities
 3. **Extended ISRU Models** - Add more resource types and production profiles
 4. **Multi-Mission Support** - Extend beyond LEO-Moon to other destinations
+
+## Module Development Guidelines
+
+### Creating New Modules
+
+When adding new functionality:
+
+1. **Module Structure**:
+   ```python
+   src/new_module/
+   ├── __init__.py          # Module exports
+   ├── core.py              # Core functionality
+   ├── models.py            # Data models (if needed)
+   ├── utils.py             # Module-specific utilities
+   └── README.md            # Module documentation
+   ```
+
+2. **Documentation Requirements**:
+   - Add module overview to `docs/technical/`
+   - Update `docs/INDEX.md` with new module
+   - Include comprehensive docstrings
+   - Add usage examples to `examples/`
+
+3. **Testing Requirements**:
+   - Create `tests/test_new_module.py`
+   - Aim for >80% code coverage
+   - Follow NO MOCKING rule
+   - Add to appropriate test suite in Makefile
+
+4. **Integration Steps**:
+   - Update relevant `__init__.py` files
+   - Add to `src/lunar_horizon_optimizer.py` if needed
+   - Document integration points
+   - Update API reference documentation
+
+### Updating Existing Modules
+
+1. **Before Making Changes**:
+   - Review existing tests
+   - Check documentation references
+   - Understand module dependencies
+   - Review related task documentation
+
+2. **During Development**:
+   - Maintain backward compatibility
+   - Update tests for new functionality
+   - Keep PyKEP unit consistency
+   - Add logging for debugging
+
+3. **After Changes**:
+   - Run full test suite
+   - Update documentation
+   - Check cross-module impacts
+   - Commit with descriptive message
+
+### Documentation Update Checklist
+
+When modifying code, update:
+- [ ] Inline docstrings and comments
+- [ ] Module README.md (if exists)
+- [ ] Relevant docs in `docs/technical/`
+- [ ] API reference in `docs/api_reference.md`
+- [ ] Examples in `examples/`
+- [ ] Test documentation if test structure changes
+- [ ] `docs/INDEX.md` if adding new files
+- [ ] Cross-references in other docs
