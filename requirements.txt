@@ -14,6 +14,11 @@ fastparquet>=2023.8.0  # Fast parquet I/O for large datasets
 dask>=2023.8.1       # Parallel computing library
 joblib>=1.3.2        # Efficient parallel loops
 
+# CLI dependencies
+click>=8.1.0          # Modern CLI framework
+rich>=13.7.0          # Rich terminal output and progress bars
+pydantic>=2.0.0       # Data validation and settings
+
 # Development dependencies
 pytest>=7.4.0
 black>=23.7.0
