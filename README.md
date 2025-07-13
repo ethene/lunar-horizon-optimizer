@@ -36,6 +36,7 @@ python examples/quick_start.py
 ### 🛰️ **Advanced Trajectory Generation**
 - **Lambert Solver Integration**: High-precision orbital mechanics with PyKEP
 - **Multi-Body Dynamics**: N-body propagation with gravitational perturbations
+- **Continuous-Thrust Propagator**: JAX/Diffrax Edelbaum planar model for electric propulsion
 - **Patched Conics**: Fast approximation methods for preliminary design
 - **Optimal Timing**: Launch window analysis and trajectory optimization
 
@@ -134,6 +135,7 @@ Production-ready codebase with clean, modular architecture:
 │   ├── trajectory/               # Orbital mechanics & trajectory generation
 │   │   ├── earth_moon_trajectories.py   # Lambert solver integration
 │   │   ├── lunar_transfer.py            # Advanced trajectory generation
+│   │   ├── continuous_thrust.py         # Electric propulsion propagator
 │   │   ├── celestial_bodies.py         # Celestial body calculations
 │   │   ├── validation/                  # Physics validation modules
 │   │   └── nbody_integration.py         # N-body dynamics
@@ -143,6 +145,7 @@ Production-ready codebase with clean, modular architecture:
 │   │   └── differentiable/             # JAX/Diffrax optimization (Production Ready)
 │   │       ├── jax_optimizer.py        # Main differentiable optimizer
 │   │       ├── differentiable_models.py # JAX trajectory & economic models
+│   │       ├── continuous_thrust_integration.py # Continuous-thrust optimization
 │   │       └── integration.py          # PyGMO-JAX bridge
 │   ├── economics/                # Economic analysis system
 │   │   ├── financial_models.py         # NPV, IRR, ROI calculations
@@ -163,6 +166,7 @@ Production-ready codebase with clean, modular architecture:
 │   ├── README.md                # Example documentation
 │   ├── quick_start.py           # Complete system demo
 │   ├── working_example.py       # Basic usage example
+│   ├── continuous_thrust_demo.py # Electric propulsion examples
 │   ├── *_integration_test.py    # Integration validation
 │   └── configs/                 # Configuration examples
 ├── tests/                       # Comprehensive test suite (652 tests)
@@ -231,6 +235,7 @@ make security              # Bandit security scanning
 - **[API Reference](docs/api_reference.md)** - Complete API documentation
 - **[Integration Guide](docs/integration_guide.md)** - Cross-module integration patterns
 - **[Differentiable Optimization](docs/DIFFERENTIABLE_OPTIMIZATION.md)** - JAX/Diffrax usage guide
+- **[Continuous-Thrust Guide](docs/CONTINUOUS_THRUST_GUIDE.md)** - Electric propulsion optimization
 - **[Ray Parallelization](docs/RAY_PARALLELIZATION.md)** - Multi-core optimization guide
 - **[PRD Compliance](docs/PRD_COMPLIANCE.md)** - Product requirements fulfillment
 

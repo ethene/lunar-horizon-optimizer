@@ -82,8 +82,8 @@ class TestPRDWorkflow1MissionConfiguration:
             mission_duration_days=10,
             target_orbit=OrbitParameters(
                 semi_major_axis=100000 + 1737.4,  # altitude + moon radius
-                inclination=90.0, 
-                eccentricity=0.0
+                inclination=90.0,
+                eccentricity=0.0,
             ),
         )
 
@@ -169,6 +169,7 @@ class TestPRDWorkflow2GlobalOptimization:
 
         # Create simple problem for testing
         from src.config.costs import CostFactors
+
         cost_factors = CostFactors(
             launch_cost_per_kg=50000,
             spacecraft_cost_per_kg=30000,
@@ -345,7 +346,9 @@ class TestPRDWorkflow5Visualization:
 
         # Create scenario comparison instead of ROI comparison
         fig = visualizer.create_scenario_comparison(
-            scenarios=missions, npv_values=[roi * 100e6 for roi in roi_values], title="ROI Comparison"
+            scenarios=missions,
+            npv_values=[roi * 100e6 for roi in roi_values],
+            title="ROI Comparison",
         )
 
         # Verify chart creation
@@ -395,8 +398,8 @@ class TestPRDIntegrationWorkflow:
             mission_duration_days=10,
             target_orbit=OrbitParameters(
                 semi_major_axis=100000 + 1737.4,  # altitude + moon radius
-                inclination=90.0, 
-                eccentricity=0.0
+                inclination=90.0,
+                eccentricity=0.0,
             ),
         )
 
@@ -437,8 +440,8 @@ class TestPRDIntegrationWorkflow:
         isru = ISRUBenefitAnalyzer()
         isru_analysis = isru.analyze_isru_economics(
             resource_name="water_ice",
-            facility_scale="pilot", 
-            operation_duration_months=12
+            facility_scale="pilot",
+            operation_duration_months=12,
         )
         isru_savings = max(0, isru_analysis.get("financial_metrics", {}).get("npv", 0))
 

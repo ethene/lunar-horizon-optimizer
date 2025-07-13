@@ -547,7 +547,11 @@ class MissionVisualizer:
         """Add simplified timeline for dashboard."""
         # Add current date line
         # Convert datetime to timestamp for consistent x-axis handling
-        current_date_ts = current_date.timestamp() if hasattr(current_date, 'timestamp') else current_date
+        current_date_ts = (
+            current_date.timestamp()
+            if hasattr(current_date, "timestamp")
+            else current_date
+        )
         try:
             fig.add_vline(
                 x=current_date_ts,

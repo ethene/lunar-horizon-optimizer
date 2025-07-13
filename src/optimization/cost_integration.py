@@ -1,10 +1,12 @@
 """Cost integration module for economic objectives in global optimization.
 
 This module provides cost calculation capabilities for the multi-objective
-optimization, integrating mission cost factors with trajectory parameters.
+optimization, integrating mission cost factors with trajectory parameters,
+including Wright's law learning curves and environmental costs.
 """
 
 import logging
+import math
 
 import numpy as np
 
@@ -12,6 +14,84 @@ from src.config.costs import CostFactors
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+def launch_price(
+    year: int,
+    base_price: float,
+    learning_rate: float = 0.90,
+    base_year: int = 2024,
+    cumulative_units_base: int = 10,
+) -> float:
+    """Calculate launch price using Wright's law learning curve.
+
+    Wright's law states that for every doubling of cumulative production,
+    costs decrease by a constant percentage (learning rate).
+
+    Formula: Unit_Cost = First_Unit_Cost × (Cumulative_Units^-b)
+    Where: b = ln(Learning_Rate) / ln(2)
+
+    Args:
+        year: Target year for price calculation
+        base_price: Launch price at base year [USD/kg]
+        learning_rate: Wright's law learning rate (0.90 = 10% reduction per doubling)
+        base_year: Reference year for base production level
+        cumulative_units_base: Cumulative production units at base year
+
+    Returns:
+        Adjusted launch price accounting for learning curve [USD/kg]
+    """
+    if year <= base_year:
+        return base_price
+
+    # Estimate production growth (conservative aerospace estimate: ~20% annual growth)
+    years_elapsed = year - base_year
+    annual_growth_rate = 0.20
+    cumulative_units_current = cumulative_units_base * (
+        (1 + annual_growth_rate) ** years_elapsed
+    )
+
+    # Calculate Wright's law learning exponent
+    # b = ln(learning_rate) / ln(2)
+    learning_exponent = math.log(learning_rate) / math.log(2)
+
+    # Apply Wright's law
+    # Cost_ratio = (Current_Units / Base_Units)^learning_exponent
+    cost_ratio = (cumulative_units_current / cumulative_units_base) ** learning_exponent
+
+    adjusted_price = base_price * cost_ratio
+
+    logger.debug(
+        f"Learning curve calculation - Year: {year}, "
+        f"Cumulative units: {cumulative_units_current:.1f}, "
+        f"Cost ratio: {cost_ratio:.3f}, "
+        f"Adjusted price: ${adjusted_price:.0f}/kg"
+    )
+
+    return adjusted_price
+
+
+def co2_cost(payload_mass_kg: float, co2_per_kg: float, price_per_ton: float) -> float:
+    """Calculate CO₂ environmental cost.
+
+    Args:
+        payload_mass_kg: Payload mass delivered [kg]
+        co2_per_kg: CO₂ emissions per kg payload [tCO₂/kg]
+        price_per_ton: Carbon price [USD/tCO₂]
+
+    Returns:
+        Total CO₂ cost [USD]
+    """
+    total_co2_tons = payload_mass_kg * co2_per_kg
+    co2_cost_usd = total_co2_tons * price_per_ton
+
+    logger.debug(
+        f"CO₂ cost calculation - Payload: {payload_mass_kg}kg, "
+        f"Emissions: {total_co2_tons:.2f}tCO₂, "
+        f"Cost: ${co2_cost_usd:.0f}"
+    )
+
+    return co2_cost_usd
 
 
 class CostCalculator:
@@ -22,17 +102,21 @@ class CostCalculator:
     objective in multi-objective optimization.
     """
 
-    def __init__(self, cost_factors: CostFactors | None = None) -> None:
-        """Initialize cost calculator.
+    def __init__(
+        self, cost_factors: CostFactors | None = None, mission_year: int = 2025
+    ) -> None:
+        """Initialize cost calculator with learning curves and environmental costs.
 
         Args:
             cost_factors: Economic cost parameters
+            mission_year: Target mission year for learning curve calculations
         """
         self.cost_factors = cost_factors or CostFactors(
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=50000.0,
             development_cost=500000000.0,
         )
+        self.mission_year = mission_year
 
         # Mission parameters for cost calculations
         self.spacecraft_mass = 5000.0  # kg (typical lunar mission)
@@ -41,7 +125,9 @@ class CostCalculator:
 
         logger.info(
             f"Initialized CostCalculator with launch cost: "
-            f"${self.cost_factors.launch_cost_per_kg}/kg"
+            f"${self.cost_factors.launch_cost_per_kg}/kg, "
+            f"learning rate: {self.cost_factors.learning_rate:.2f}, "
+            f"carbon price: ${self.cost_factors.carbon_price_per_ton_co2}/tCO₂"
         )
 
     def calculate_mission_cost(
@@ -149,22 +235,52 @@ class CostCalculator:
         return propellant_mass * propellant_cost_per_kg
 
     def _calculate_launch_cost(self, earth_orbit_alt: float) -> float:
-        """Calculate launch costs based on Earth orbit altitude.
+        """Calculate launch costs with learning curve adjustments.
 
         Args:
             earth_orbit_alt: Earth orbit altitude [km]
 
         Returns
         -------
-            Launch cost component
+            Launch cost component with learning curve and environmental costs
         """
+        # Apply learning curve to base launch cost
+        adjusted_launch_cost_per_kg = launch_price(
+            year=self.mission_year,
+            base_price=self.cost_factors.launch_cost_per_kg,
+            learning_rate=self.cost_factors.learning_rate,
+            base_year=self.cost_factors.base_production_year,
+            cumulative_units_base=self.cost_factors.cumulative_production_units,
+        )
+
         # Higher orbits require more energy, thus higher cost
         altitude_factor = 1 + (earth_orbit_alt - 200) / 1000  # Scale factor
 
         launch_mass = self.spacecraft_mass + 2000  # Include service module
-        base_launch_cost = launch_mass * self.cost_factors.launch_cost_per_kg
+        base_launch_cost = launch_mass * adjusted_launch_cost_per_kg
 
-        return base_launch_cost * altitude_factor
+        # Calculate environmental cost
+        payload_mass = 1000.0  # Typical payload mass [kg]
+        environmental_cost = co2_cost(
+            payload_mass_kg=payload_mass,
+            co2_per_kg=self.cost_factors.co2_emissions_per_kg_payload,
+            price_per_ton=self.cost_factors.carbon_price_per_ton_co2,
+        )
+
+        # Apply environmental compliance factor
+        total_environmental_cost = (
+            environmental_cost * self.cost_factors.environmental_compliance_factor
+        )
+
+        total_cost = (base_launch_cost * altitude_factor) + total_environmental_cost
+
+        logger.debug(
+            f"Launch cost breakdown - Base: ${base_launch_cost * altitude_factor:.0f}, "
+            f"Environmental: ${total_environmental_cost:.0f}, "
+            f"Learning curve adjustment: {adjusted_launch_cost_per_kg/self.cost_factors.launch_cost_per_kg:.3f}"
+        )
+
+        return total_cost
 
     def _calculate_operations_cost(self, transfer_time: float) -> float:
         """Calculate operational costs based on mission duration.
@@ -220,7 +336,7 @@ class CostCalculator:
         earth_orbit_alt: float,
         moon_orbit_alt: float,
     ) -> dict[str, float]:
-        """Calculate detailed cost breakdown.
+        """Calculate detailed cost breakdown with learning curves and environmental costs.
 
         Args:
             total_dv: Total delta-v requirement [m/s]
@@ -230,13 +346,37 @@ class CostCalculator:
 
         Returns
         -------
-            Dictionary with detailed cost breakdown
+            Dictionary with detailed cost breakdown including environmental costs
         """
         propellant_cost = self._calculate_propellant_cost(total_dv)
         launch_cost = self._calculate_launch_cost(earth_orbit_alt)
         operations_cost = self._calculate_operations_cost(transfer_time)
         development_cost = self._calculate_development_cost()
         altitude_cost = self._calculate_altitude_cost(earth_orbit_alt, moon_orbit_alt)
+
+        # Calculate learning curve impact
+        base_launch_price = self.cost_factors.launch_cost_per_kg
+        adjusted_launch_price = launch_price(
+            year=self.mission_year,
+            base_price=base_launch_price,
+            learning_rate=self.cost_factors.learning_rate,
+            base_year=self.cost_factors.base_production_year,
+            cumulative_units_base=self.cost_factors.cumulative_production_units,
+        )
+        learning_curve_savings = (base_launch_price - adjusted_launch_price) * (
+            self.spacecraft_mass + 2000
+        )
+
+        # Calculate environmental costs separately
+        payload_mass = 1000.0  # Typical payload mass [kg]
+        environmental_cost = (
+            co2_cost(
+                payload_mass_kg=payload_mass,
+                co2_per_kg=self.cost_factors.co2_emissions_per_kg_payload,
+                price_per_ton=self.cost_factors.carbon_price_per_ton_co2,
+            )
+            * self.cost_factors.environmental_compliance_factor
+        )
 
         base_cost = (
             propellant_cost
@@ -255,11 +395,15 @@ class CostCalculator:
             "operations_cost": operations_cost,
             "development_cost": development_cost,
             "altitude_cost": altitude_cost,
+            "environmental_cost": environmental_cost,
+            "learning_curve_savings": learning_curve_savings,
             "contingency_cost": contingency_cost,
             "total_cost": total_cost,
             "propellant_fraction": propellant_cost / total_cost,
             "launch_fraction": launch_cost / total_cost,
             "operations_fraction": operations_cost / total_cost,
+            "environmental_fraction": environmental_cost / total_cost,
+            "learning_curve_adjustment": adjusted_launch_price / base_launch_price,
         }
 
 

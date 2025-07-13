@@ -50,15 +50,17 @@ def load_config_from_file(config_path: str) -> dict[str, Any]:
         sys.exit(1)
 
 
-def create_mission_config_from_dict(config_dict: dict[str, Any]) -> MissionConfig:
-    """Create MissionConfig from dictionary."""
+def create_mission_config_from_dict(
+    config_dict: dict[str, Any], cli_args=None
+) -> MissionConfig:
+    """Create MissionConfig from dictionary with CLI overrides."""
     mission_params = config_dict.get("mission", {})
 
     # Create payload specification
     payload = create_spacecraft_config_from_dict(config_dict)
 
-    # Create cost factors
-    cost_factors = create_cost_factors_from_dict(config_dict)
+    # Create cost factors with CLI overrides
+    cost_factors = create_cost_factors_from_dict(config_dict, cli_args)
 
     # Create orbit parameters
     target_orbit = OrbitParameters(
@@ -77,14 +79,35 @@ def create_mission_config_from_dict(config_dict: dict[str, Any]) -> MissionConfi
     )
 
 
-def create_cost_factors_from_dict(config_dict: dict[str, Any]) -> CostFactors:
-    """Create CostFactors from dictionary."""
+def create_cost_factors_from_dict(
+    config_dict: dict[str, Any], cli_args=None
+) -> CostFactors:
+    """Create CostFactors from dictionary with CLI overrides."""
     cost_params = config_dict.get("costs", {})
+
+    # Use CLI arguments as overrides if provided
+    learning_rate = getattr(cli_args, "learning_rate", None) or cost_params.get(
+        "learning_rate", 0.90
+    )
+    carbon_price = getattr(cli_args, "carbon_price", None) or cost_params.get(
+        "carbon_price_per_ton_co2", 50.0
+    )
+
     return CostFactors(
         launch_cost_per_kg=cost_params.get("launch_cost_per_kg", 10000.0),
         operations_cost_per_day=cost_params.get("operations_cost_per_day", 100000.0),
         development_cost=cost_params.get("development_cost", 1e9),
         contingency_percentage=cost_params.get("contingency_percentage", 20.0),
+        learning_rate=learning_rate,
+        carbon_price_per_ton_co2=carbon_price,
+        base_production_year=cost_params.get("base_production_year", 2024),
+        cumulative_production_units=cost_params.get("cumulative_production_units", 10),
+        co2_emissions_per_kg_payload=cost_params.get(
+            "co2_emissions_per_kg_payload", 2.5
+        ),
+        environmental_compliance_factor=cost_params.get(
+            "environmental_compliance_factor", 1.1
+        ),
     )
 
 
@@ -128,9 +151,9 @@ def analyze_command(args):
     if args.config:
         config_dict = load_config_from_file(args.config)
 
-    # Create configuration objects
-    mission_config = create_mission_config_from_dict(config_dict)
-    cost_factors = create_cost_factors_from_dict(config_dict)
+    # Create configuration objects with CLI overrides
+    mission_config = create_mission_config_from_dict(config_dict, args)
+    cost_factors = create_cost_factors_from_dict(config_dict, args)
     spacecraft_config = create_spacecraft_config_from_dict(config_dict)
     optimization_config = create_optimization_config_from_dict(config_dict)
 
@@ -313,6 +336,18 @@ def main():
     )
     analyze_parser.add_argument(
         "--show-plots", action="store_true", help="Show plots after analysis"
+    )
+    analyze_parser.add_argument(
+        "--learning-rate",
+        type=float,
+        default=0.90,
+        help="Wright's law learning rate for launch cost reduction (default: 0.90)",
+    )
+    analyze_parser.add_argument(
+        "--carbon-price",
+        type=float,
+        default=50.0,
+        help="Carbon price per ton CO₂ for environmental cost calculation (default: $50/tCO₂)",
     )
 
     # Config command

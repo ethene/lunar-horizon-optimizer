@@ -33,13 +33,21 @@ class CashFlow:
 
 @dataclass
 class FinancialParameters:
-    """Financial parameters for economic analysis."""
+    """Financial parameters for economic analysis with environmental costs."""
 
     discount_rate: float = 0.08  # Annual discount rate (8%)
     inflation_rate: float = 0.03  # Annual inflation rate (3%)
     tax_rate: float = 0.25  # Corporate tax rate (25%)
     risk_premium: float = 0.02  # Risk premium for space projects (2%)
     project_duration_years: int = 10  # Project duration
+
+    # Environmental cost parameters
+    carbon_price_per_ton_co2: float = 50.0  # Carbon price [USD/tCO₂]
+    environmental_compliance_factor: float = 1.1  # Environmental compliance overhead
+
+    # Learning curve parameters
+    learning_rate: float = 0.90  # Wright's law learning rate
+    mission_year: int = 2025  # Target mission year for cost calculations
 
     def __post_init__(self):
         """Validate financial parameters."""
@@ -49,6 +57,46 @@ class FinancialParameters:
         if not 0 <= self.tax_rate <= 1:
             msg = "Tax rate must be between 0 and 1"
             raise ValueError(msg)
+        if self.carbon_price_per_ton_co2 < 0:
+            msg = "Carbon price must be non-negative"
+            raise ValueError(msg)
+        if not 0.5 <= self.learning_rate <= 1.0:
+            msg = "Learning rate must be between 0.5 and 1.0"
+            raise ValueError(msg)
+
+    def total_cost(
+        self,
+        base_cost: float,
+        payload_mass_kg: float,
+        co2_emissions_per_kg: float = 2.5,
+    ) -> float:
+        """Calculate total cost including environmental costs.
+
+        Args:
+            base_cost: Base mission cost [USD]
+            payload_mass_kg: Payload mass [kg]
+            co2_emissions_per_kg: CO₂ emissions factor [tCO₂/kg]
+
+        Returns:
+            Total cost including environmental costs [USD]
+        """
+        # Calculate environmental cost
+        co2_cost_component = (
+            payload_mass_kg * co2_emissions_per_kg * self.carbon_price_per_ton_co2
+        )
+
+        # Apply environmental compliance factor
+        environmental_cost = co2_cost_component * self.environmental_compliance_factor
+
+        total = base_cost + environmental_cost
+
+        logger.debug(
+            f"Total cost calculation - Base: ${base_cost:.0f}, "
+            f"Environmental: ${environmental_cost:.0f}, "
+            f"Total: ${total:.0f}"
+        )
+
+        return total
 
 
 class CashFlowModel:

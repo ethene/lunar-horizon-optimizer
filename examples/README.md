@@ -14,6 +14,7 @@ This directory contains comprehensive examples demonstrating the Lunar Horizon O
 |------|---------|------------|---------|
 | [`quick_start.py`](#quick_startpy) | Complete system demonstration | ⭐⭐⭐ | ~30s |
 | [`working_example.py`](#working_examplepy) | Basic working example | ⭐⭐ | ~15s |
+| [`continuous_thrust_demo.py`](#continuous_thrust_demopy) | Electric propulsion examples | ⭐⭐⭐ | ~20s |
 | [`integration_test.py`](#integration_testpy) | PRD compliance validation | ⭐⭐⭐⭐ | ~60s |
 
 ### Advanced Integration Tests
