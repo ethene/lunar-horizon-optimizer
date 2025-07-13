@@ -23,19 +23,25 @@ conda activate py312
 pip install click rich pydantic
 ```
 
-### 2. Verify Installation
+### 2. Make Executable (Optional)
 ```bash
-python lunar_opt.py validate
+chmod +x lunar_opt.py
 ```
 
-### 3. List Available Scenarios
+### 3. Verify Installation
 ```bash
-python lunar_opt.py run list
+./lunar_opt.py validate
+# Or: python lunar_opt.py validate
 ```
 
-### 4. Run Your First Analysis
+### 4. List Available Scenarios
 ```bash
-python lunar_opt.py run scenario 01_basic_transfer
+./lunar_opt.py run list
+```
+
+### 5. Run Your First Analysis
+```bash
+./lunar_opt.py run scenario 01_basic_transfer
 ```
 
 ## 📋 Command Structure
