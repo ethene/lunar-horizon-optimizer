@@ -106,3 +106,17 @@ data/spice/*.bsp
 # Environment files
 .env
 .env.local 
+
+# Added by cleanup script
+# Coverage reports
+# Node modules (if using npm tools)
+# IDE files
+# OS files
+Thumbs.db
+# Temporary files
+*.temp
+# Build artifacts
+# Archive directories
+archive/
+old/
+backup/

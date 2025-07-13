@@ -1,0 +1,16 @@
+name: py312
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pykep
+  - pygmo
+  - astropy
+  - spiceypy
+  - pip
+  - pip:
+    - -r requirements.txt
+
+# This environment file was auto-generated from requirements.txt
+# Generated on 2025-07-13
