@@ -357,17 +357,14 @@ class CostCalculator:
         
         Args:
             descent_params: Optional dict with keys: thrust [N], isp [s], burn_time [s]
+                          If None, returns zero costs (no powered descent)
             
         Returns:
             Tuple of (descent_propellant_cost, lander_hardware_cost) [USD]
         """
         if descent_params is None:
-            # Default descent parameters if not provided
-            descent_params = {
-                'thrust': 15000.0,  # N (15 kN default)
-                'isp': 300.0,       # s (chemical propulsion)
-                'burn_time': 300.0, # s (5 minutes)
-            }
+            # No powered descent - return zero costs
+            return 0.0, 0.0
         
         # Extract descent parameters
         thrust = descent_params.get('thrust', 15000.0)  # N

@@ -1,0 +1,97 @@
+{
+  "scenario_type": "powered_descent_mission",
+  "version": "1.0",
+  "metadata": {
+    "created_by": "Lunar Horizon Optimizer",
+    "description": "Commercial cargo delivery to lunar surface with powered descent cost analysis",
+    "created_date": "2025-07-14",
+    "tags": ["powered_descent", "commercial", "cargo", "cost_optimization"]
+  },
+  "mission": {
+    "name": "Artemis Commercial Cargo Lander",
+    "description": "Optimized commercial cargo delivery mission to lunar south pole with detailed powered descent cost modeling",
+    "transfer_time": 5.2,
+    "launch_date": "2026-03-15",
+    "mission_duration_days": 180
+  },
+  "spacecraft": {
+    "dry_mass": 7500.0,
+    "payload_mass": 2500.0,
+    "max_propellant_mass": 5000.0,
+    "specific_impulse": 325.0,
+    "propulsion_type": "chemical_bipropellant"
+  },
+  "costs": {
+    "launch_cost_per_kg": 6500.0,
+    "operations_cost_per_day": 65000.0,
+    "development_cost": 750000000.0,
+    "contingency_percentage": 25.0,
+    "propellant_unit_cost": 18.0,
+    "lander_fixed_cost": 10000000.0,
+    "learning_rate": 0.85,
+    "carbon_price_per_ton_co2": 75.0,
+    "co2_emissions_per_kg_payload": 1.8,
+    "environmental_compliance_factor": 1.15
+  },
+  "descent_parameters": {
+    "thrust": 16000.0,
+    "isp": 315.0,
+    "burn_time": 380.0,
+    "landing_site": "Shackleton Crater Rim",
+    "guidance_mode": "terrain_relative_navigation",
+    "throttle_capability": {
+      "min": 0.1,
+      "max": 1.0
+    }
+  },
+  "orbit": {
+    "type": "lunar_polar",
+    "semi_major_axis": 1837.4,
+    "eccentricity": 0.0,
+    "inclination": 90.0,
+    "raan": 0.0,
+    "argument_of_periapsis": 0.0,
+    "true_anomaly": 0.0
+  },
+  "optimization": {
+    "objectives": ["minimize_cost", "maximize_payload_fraction", "minimize_risk"],
+    "algorithm": "NSGA-II",
+    "population_size": 80,
+    "num_generations": 40,
+    "seed": 12345,
+    "constraints": {
+      "max_g_load": 4.0,
+      "min_landing_accuracy": 100.0,
+      "max_slope_angle": 15.0,
+      "min_fuel_reserve": 0.08
+    }
+  },
+  "economics": {
+    "discount_rate": 0.07,
+    "inflation_rate": 0.025,
+    "tax_rate": 0.21,
+    "project_duration_years": 10,
+    "revenue": {
+      "cargo_delivery_rate_per_kg": 2500.0,
+      "annual_missions": 3,
+      "contracts": [
+        {
+          "customer": "NASA",
+          "value": 450000000.0,
+          "duration_years": 5
+        },
+        {
+          "customer": "ESA",
+          "value": 250000000.0,
+          "duration_years": 3
+        }
+      ]
+    }
+  },
+  "risk_factors": {
+    "technical_risk": 0.15,
+    "schedule_risk": 0.20,
+    "cost_risk": 0.25,
+    "market_risk": 0.10
+  }
+}
