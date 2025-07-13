@@ -47,15 +47,32 @@ The Lunar Horizon Optimizer is a comprehensive platform that enables real-world 
 - ✅ **Comprehensive Testing**: 21 new unit tests with real implementation (NO MOCKING)
 - ✅ **Production Ready**: 243/243 production tests passing, clean pipeline
 
-## 🏗️ Architecture
+## 🏗️ Project Structure
 
 **Codebase Scale**: 150 Python files, 326 classes, 340 functions
 
 ```
-src/
-tests/           # Comprehensive test suite
-docs/            # Documentation
-examples/        # Usage examples
+📁 Lunar Horizon Optimizer/
+├── 📁 src/                    # Source code (main implementation)
+│   ├── config/                # Mission configuration management
+│   ├── trajectory/            # Orbital mechanics & PyKEP integration
+│   ├── optimization/          # PyGMO global optimization & JAX differentiable
+│   ├── economics/             # Economic analysis & ISRU modeling
+│   ├── visualization/         # Interactive dashboards & plotting
+│   ├── extensibility/         # Plugin system & extension framework
+│   └── utils/                 # Utility functions & performance optimizations
+├── 📁 docs/                   # Complete documentation suite
+│   ├── USER_GUIDE.md         # Getting started guide
+│   ├── INDEX.md              # Documentation index
+│   ├── PROJECT_STATUS.md     # Implementation status
+│   └── archive/              # Historical documentation
+├── 📁 tests/                  # Comprehensive test suite (415 tests)
+├── 📁 scenarios/              # Mission configuration examples
+├── 📁 examples/               # Usage examples and demos
+├── 📁 scripts/                # Development and utility scripts
+│   └── utilities/            # Maintenance scripts
+├── 📁 results/                # Analysis outputs (gitignored)
+└── 📁 archive/                # Historical project files
 ```
 
 ## 🚀 Quick Start
@@ -117,9 +134,9 @@ python src/cli.py analyze --config scenarios/01_basic_transfer.json \
 ## 📚 Documentation
 
 ### 🚀 Getting Started
-- ⏱️ **[Progress Tracking Guide](PROGRESS_TRACKING_GUIDE.md)**: How to run analyses and track progress
-- 🎯 **[Use Cases](USE_CASES.md)**: Real-world applications and problem scenarios
-- 📊 **[Analysis Examples](run_analysis_examples.py)**: Executable script for testing different analysis types
+- ⏱️ **[Progress Tracking Guide](docs/PROGRESS_TRACKING_GUIDE.md)**: How to run analyses and track progress
+- 🎯 **[Use Cases](docs/USE_CASES.md)**: Real-world applications and problem scenarios
+- 📊 **[Analysis Examples](scripts/utilities/run_analysis_examples.py)**: Executable script for testing different analysis types
 
 ### 📖 Technical Reference  
 - 📖 **[Complete Capabilities](docs/CAPABILITIES.md)**: Comprehensive API reference
@@ -128,8 +145,8 @@ python src/cli.py analyze --config scenarios/01_basic_transfer.json \
 - 🔧 **[Development Guide](CLAUDE.md)**: Project working rules and standards
 
 ### 📋 Implementation Status
-- 🏆 **[Final Implementation Status](FINAL_IMPLEMENTATION_STATUS.md)**: Production-ready real optimizer
-- 🚫 **[Real Optimizer Only](REAL_OPTIMIZER_ONLY.md)**: No mocks policy documentation
+- 🏆 **[Final Implementation Status](docs/FINAL_IMPLEMENTATION_STATUS.md)**: Production-ready real optimizer
+- 🚫 **[Real Optimizer Only](docs/REAL_OPTIMIZER_ONLY.md)**: No mocks policy documentation
 - 📋 **[Project Audit](docs/PROJECT_AUDIT.md)**: Repository structure analysis
 - 🛠️ **[Cleanup Report](docs/CLEANUP_REPORT.md)**: Recent organizational improvements
 
@@ -153,9 +170,18 @@ make lint          # Run code quality checks
 ## 🤝 Contributing
 
 1. Follow the [development guide](CLAUDE.md)
-2. Ensure all tests pass with `make test`
-3. Run quality checks with `make pipeline`
-4. Commit with descriptive messages
+2. Review [documentation index](docs/INDEX.md) for project overview
+3. Ensure all tests pass with `make test`
+4. Run quality checks with `make pipeline`
+5. Commit with descriptive messages
+
+## 📁 Documentation Index
+
+See **[docs/INDEX.md](docs/INDEX.md)** for complete documentation navigation including:
+- User guides and getting started
+- API reference and technical documentation
+- Task implementation details
+- Testing guidelines and status
 
 ## 📄 License
 

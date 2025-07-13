@@ -241,7 +241,7 @@ All scenarios produce **validated, realistic results** comparable to actual spac
 - Economic models calibrated against NASA/commercial space data
 - Risk assessments incorporating actual space industry experience
 
-📊 **[Complete Mission Context & Business Analysis → SCENARIO_GUIDE.md](../SCENARIO_GUIDE.md)**
+📊 **[Complete Mission Context & Business Analysis → SCENARIO_GUIDE.md](../docs/guides/SCENARIO_GUIDE.md)**
 
 ---
 
