@@ -2,6 +2,7 @@
 
 ## Quick Links
 
+- 🎯 [Use Cases](../USE_CASES.md) - Real-world applications and problem scenarios
 - 🚀 [Project Status](PROJECT_STATUS.md) - Current implementation status (Production Ready)
 - 📚 [User Guide](USER_GUIDE.md) - Complete getting started guide with examples
 - 📖 [API Reference](api_reference.md) - Complete API documentation
@@ -11,9 +12,11 @@
 ## Project Documentation
 
 ### Overview & Status
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) - **START HERE** - Complete project status and capabilities
+- [Use Cases](../USE_CASES.md) - **START HERE** - Real-world applications from basic to advanced
+- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Complete project status and capabilities
 - [PRD_COMPLIANCE.md](PRD_COMPLIANCE.md) - 📋 **PRD Compliance** - How implementation meets all PRD requirements
-- [README.md](README.md) - Documentation structure guide
+- [Project Audit](../PROJECT_AUDIT.md) - Repository structure analysis and recommendations
+- [Cleanup Report](../CLEANUP_REPORT.md) - Recent organizational improvements
 
 ### User & Development Guides
 - [User Guide](USER_GUIDE.md) - **Getting started** - Workflows, examples, troubleshooting
@@ -87,10 +90,11 @@ Outdated and superseded documents have been moved to `docs/archive/` to reduce r
 4. **[Integration Guide](integration_guide.md)** - Module integration patterns
 
 ### For End Users
-1. **Start here**: [User Guide](USER_GUIDE.md) - Complete getting started guide
-2. Try examples: `conda activate py312 && python examples/quick_start.py`
-3. Review [PROJECT_STATUS.md](PROJECT_STATUS.md) - understand capabilities
-4. Check [PRD_COMPLIANCE.md](PRD_COMPLIANCE.md) - see what's implemented
+1. **Start here**: [Use Cases](../USE_CASES.md) - See what problems this tool solves
+2. **Get started**: [User Guide](USER_GUIDE.md) - Complete getting started guide
+3. Try examples: `conda activate py312 && python examples/quick_start.py`
+4. Review [PROJECT_STATUS.md](PROJECT_STATUS.md) - understand capabilities
+5. Check [PRD_COMPLIANCE.md](PRD_COMPLIANCE.md) - see what's implemented
 
 ### For Developers & Contributors
 1. Read [PROJECT_STATUS.md](PROJECT_STATUS.md) - understand what's built
@@ -107,4 +111,4 @@ Outdated and superseded documents have been moved to `docs/archive/` to reduce r
 
 ---
 
-*Last Updated: July 11, 2025 - Documentation consolidated and current*
+*Last Updated: July 13, 2025 - Added use cases documentation and repository cleanup*
