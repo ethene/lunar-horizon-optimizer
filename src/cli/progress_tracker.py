@@ -463,7 +463,9 @@ class OptimizationCallback:
 
         # Process solutions
         if hasattr(population, "__len__") and hasattr(fitness_values, "__len__"):
-            for i, (individual, fitness) in enumerate(zip(population, fitness_values, strict=False)):
+            for i, (individual, fitness) in enumerate(
+                zip(population, fitness_values, strict=False)
+            ):
                 solution = OptimizationSolution(
                     generation=self.generation,
                     individual_id=i,

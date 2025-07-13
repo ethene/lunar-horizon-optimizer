@@ -142,8 +142,8 @@ class TestEconomicObjectives:
         objectives = EconomicObjectives()
 
         assert objectives is not None
-        assert hasattr(objectives, 'cost_calculator')
-        assert hasattr(objectives, 'minimize_total_cost')
+        assert hasattr(objectives, "cost_calculator")
+        assert hasattr(objectives, "minimize_total_cost")
 
     def test_objectives_to_list(self):
         """Test minimize_total_cost method."""
@@ -154,7 +154,7 @@ class TestEconomicObjectives:
             total_dv=3200.0,
             transfer_time=6.0,
             earth_orbit_alt=400.0,
-            moon_orbit_alt=100.0
+            moon_orbit_alt=100.0,
         )
 
         assert isinstance(cost, float)

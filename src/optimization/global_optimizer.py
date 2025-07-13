@@ -52,7 +52,7 @@ class LunarMissionProblem:
         self.cost_factors = cost_factors or CostFactors(
             launch_cost_per_kg=10000.0,
             operations_cost_per_day=100000.0,
-            development_cost=1e9
+            development_cost=1e9,
         )
         self.min_earth_alt = min_earth_alt
         self.max_earth_alt = max_earth_alt

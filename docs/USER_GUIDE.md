@@ -217,6 +217,66 @@ if hasattr(trajectory, 'trajectory_data'):
     print(f"Arrival velocity: {traj_data['arrival_velocity']}")
 ```
 
+### Example 4b: Powered Descent Trajectory ✅
+
+```python
+import jax.numpy as jnp
+from src.trajectory.continuous_thrust import powered_descent, create_jitted_powered_descent
+
+# Initial state: 100 km circular lunar orbit in Moon-centered inertial frame
+moon_radius = 1.737e6  # m
+orbit_altitude = 100e3  # m
+orbit_radius = moon_radius + orbit_altitude
+
+# Circular orbital velocity at 100 km altitude
+mu_moon = 4.9048695e12  # m³/s²
+orbital_velocity = jnp.sqrt(mu_moon / orbit_radius)  # ~1634 m/s
+
+# Initial state vector [x, y, z, vx, vy, vz, m]
+start_state = jnp.array([
+    orbit_radius, 0.0, 0.0,        # Position [m] 
+    0.0, orbital_velocity, 0.0,    # Velocity [m/s]
+    10000.0                        # Mass [kg]
+])
+
+# Spacecraft parameters
+thrust = 15000.0  # N (15 kN thrust)
+isp = 300.0       # s (specific impulse)
+burn_time = 300.0 # s (5 minutes)
+steps = 100       # Integration steps
+
+# Run powered descent simulation
+states, times, total_delta_v = powered_descent(
+    start_state, thrust, isp, burn_time, steps
+)
+
+# Extract results
+final_state = states[-1]
+final_position = final_state[:3]
+final_velocity = final_state[3:6]
+final_mass = final_state[6]
+
+# Calculate final altitude and speed
+final_radius = jnp.linalg.norm(final_position)
+final_altitude = final_radius - moon_radius
+final_speed = jnp.linalg.norm(final_velocity)
+
+# Calculate fuel consumption
+initial_mass = start_state[6]
+fuel_consumed = initial_mass - final_mass
+fuel_fraction = fuel_consumed / initial_mass
+
+print(f"Powered Descent Results:")
+print(f"Final altitude: {final_altitude/1000:.1f} km")
+print(f"Final speed: {final_speed:.1f} m/s")
+print(f"Fuel consumed: {fuel_consumed:.0f} kg ({fuel_fraction:.1%})")
+print(f"Total delta-v: {total_delta_v:.0f} m/s")
+
+# Create JIT-compiled version for repeated use
+jitted_descent = create_jitted_powered_descent(steps=100)
+# Use jitted_descent(start_state, thrust, isp, burn_time) for fast repeated calls
+```
+
 ### Example 5: Global Optimization with Pareto Analysis ✅
 
 ```python

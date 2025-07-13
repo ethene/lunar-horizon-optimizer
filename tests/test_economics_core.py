@@ -29,14 +29,19 @@ class TestNPVAnalyzer:
     def test_npv_calculation_positive(self):
         """Test NPV calculation with positive cash flows."""
         from datetime import datetime
+
         analyzer = NPVAnalyzer()
         cash_flow_model = CashFlowModel()
-        
+
         # Initial investment of -1000, then +300 for 5 years
         base_date = datetime(2024, 1, 1)
-        cash_flow_model.add_cash_flow(-1000, base_date, "investment", "Initial investment")
+        cash_flow_model.add_cash_flow(
+            -1000, base_date, "investment", "Initial investment"
+        )
         for i in range(5):
-            cash_flow_model.add_cash_flow(300, datetime(2024 + i + 1, 1, 1), "revenue", f"Year {i+1} revenue")
+            cash_flow_model.add_cash_flow(
+                300, datetime(2024 + i + 1, 1, 1), "revenue", f"Year {i+1} revenue"
+            )
 
         npv = analyzer.calculate_npv(cash_flow_model)
 
@@ -164,11 +169,11 @@ class TestMissionCostModel:
             mission_duration_years=1.0,
             technology_readiness=3,
             complexity="moderate",
-            schedule="nominal"
+            schedule="nominal",
         )
 
         # Should return a CostBreakdown object with positive total cost
-        assert hasattr(cost, 'total')
+        assert hasattr(cost, "total")
         assert cost.total > 0
         assert isinstance(cost.total, float)
         # Should be reasonable for a lunar mission (hundreds to billions)
@@ -211,14 +216,10 @@ class TestEconomicSensitivityAnalyzer:
 
         # Test basic functionality - just ensure the analyzer works
         assert analyzer is not None
-        assert hasattr(analyzer, 'base_model_function')
-        assert hasattr(analyzer, 'sensitivity_results')
-        
-        # Test one-way sensitivity with mock data
-        base_params = {'cost': 1000000, 'revenue': 1500000}
-        variable_ranges = {'cost': (900000, 1100000)}
-        
+        assert hasattr(analyzer, "base_model_function")
+        assert hasattr(analyzer, "sensitivity_results")
+
         # Skip the one-way sensitivity test since it requires a base model function
         # Just test that the analyzer has the expected attributes
-        assert hasattr(analyzer, 'one_way_sensitivity')
+        assert hasattr(analyzer, "one_way_sensitivity")
         assert callable(analyzer.one_way_sensitivity)

@@ -5042,11 +5042,11 @@ Time limits for ephemeris calculations.
 
 ## trajectory/continuous_thrust.py
 
-**Description**: Minimal continuous-thrust propagator using JAX/Diffrax.
+**Description**: Continuous-thrust trajectory propagator using JAX/Diffrax including powered descent modeling.
 
-- **Lines of code**: 137
+- **Lines of code**: 283
 - **Classes**: 0
-- **Functions**: 3
+- **Functions**: 5
 
 ### Functions
 
@@ -5058,6 +5058,15 @@ Continuous-thrust transfer with constant thrust angle.
 
 #### `optimize_thrust_angle(start_state, target_radius, T, Isp, tf)`
 Find optimal constant thrust angle to reach target radius using simple gradient descent.
+
+#### `powered_descent_dynamics(t, state, args)`
+Powered descent dynamics in Moon-centered inertial frame for lunar landing trajectories.
+
+#### `powered_descent(start_state, thrust, isp, burn_time, steps)`
+Powered descent trajectory from lunar orbit to surface using JAX and Diffrax integration.
+
+#### `create_jitted_powered_descent(steps)`
+Create a JIT-compiled version of powered_descent with fixed steps for performance optimization.
 
 ---
 

@@ -29,7 +29,7 @@ The Lunar Horizon Optimizer is a **production-ready** integrated platform for LE
 ## Key Features
 
 ### Core Capabilities
-- **Advanced Trajectory Generation**: PyKEP-based orbital mechanics with Lambert solvers
+- **Advanced Trajectory Generation**: PyKEP-based orbital mechanics with Lambert solvers and powered descent modeling
 - **Global Optimization**: PyGMO NSGA-II multi-objective optimization with Pareto front analysis
 - **Economic Analysis**: ROI, NPV, IRR with ISRU production modeling and sensitivity analysis
 - **Differentiable Optimization**: JAX 0.6.0/Diffrax 0.7.0 gradient-based refinement for local optimization

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Lunar Horizon Optimizer now includes a minimal continuous-thrust propagator using JAX/Diffrax for optimal low-thrust trajectory design. This implementation provides differentiable trajectory computation for electric propulsion and ion thruster missions.
+The Lunar Horizon Optimizer includes a comprehensive continuous-thrust propagator using JAX/Diffrax for optimal trajectory design. This implementation provides differentiable trajectory computation for electric propulsion, ion thruster missions, and powered descent lunar landing scenarios.
 
 ## Core Implementation
 
@@ -48,6 +48,65 @@ delta_v, trajectory = low_thrust_transfer(
 
 print(f"Delta-v equivalent: {delta_v:.0f} m/s")
 print(f"Final radius: {trajectory[-1, 0]/1e6:.3f} Mm")
+```
+
+## Powered Descent Modeling
+
+### 3D Lunar Landing Trajectories
+
+The propagator includes specialized powered descent functionality for lunar landing:
+
+```python
+import jax.numpy as jnp
+from src.trajectory.continuous_thrust import powered_descent
+
+# Initial state in Moon-centered inertial frame: [x, y, z, vx, vy, vz, m]
+moon_radius = 1.737e6  # m
+orbit_radius = moon_radius + 100e3  # 100 km altitude
+orbital_velocity = jnp.sqrt(4.9048695e12 / orbit_radius)  # ~1634 m/s
+
+start_state = jnp.array([
+    orbit_radius, 0.0, 0.0,        # Position [m]
+    0.0, orbital_velocity, 0.0,    # Velocity [m/s]
+    5000.0                         # Mass [kg]
+])
+
+# Spacecraft parameters
+thrust = 15000.0  # N (15 kN thrust)
+isp = 300.0       # s (chemical propulsion)
+burn_time = 300.0 # s (5 minutes)
+steps = 100       # Integration steps
+
+# Run powered descent
+states, times, total_delta_v = powered_descent(
+    start_state, thrust, isp, burn_time, steps
+)
+
+# Extract landing results
+final_altitude = jnp.linalg.norm(states[-1, :3]) - moon_radius
+final_speed = jnp.linalg.norm(states[-1, 3:6])
+fuel_consumed = start_state[6] - states[-1, 6]
+
+print(f"Landing altitude: {final_altitude/1000:.1f} km")
+print(f"Landing speed: {final_speed:.1f} m/s")
+print(f"Fuel consumed: {fuel_consumed:.0f} kg")
+print(f"Total delta-v: {total_delta_v:.0f} m/s")
+```
+
+### JIT Compilation for Performance
+
+```python
+from src.trajectory.continuous_thrust import create_jitted_powered_descent
+
+# Create JIT-compiled version for repeated use
+jitted_descent = create_jitted_powered_descent(steps=100)
+
+# Fast repeated calls
+for thrust_level in [10000, 15000, 20000]:  # Test different thrust levels
+    states, times, delta_v = jitted_descent(
+        start_state, thrust_level, 300.0, 300.0
+    )
+    print(f"Thrust {thrust_level/1000:.0f}kN: Δv = {delta_v:.0f} m/s")
 ```
 
 ### Optimization Integration

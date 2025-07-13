@@ -2,11 +2,37 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-243%2F243%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-18%25-yellow.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-27%25-yellow.svg)](tests/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![CLI](https://img.shields.io/badge/CLI-modern%20click-blue.svg)](docs/CLI_HELP_REFERENCE.md)
 [![Pipeline](https://img.shields.io/badge/pipeline-clean-brightgreen.svg)](Makefile)
+
+<!-- Core Dependencies -->
+[![PyKEP](https://img.shields.io/badge/PyKEP-2.6-orange.svg)](https://esa.github.io/pykep/)
+[![PyGMO](https://img.shields.io/badge/PyGMO-2.19.6-orange.svg)](https://esa.github.io/pygmo2/)
+[![JAX](https://img.shields.io/badge/JAX-0.6.0-red.svg)](https://jax.readthedocs.io/)
+[![Diffrax](https://img.shields.io/badge/Diffrax-0.7.0-red.svg)](https://docs.kidger.site/diffrax/)
+[![SciPy](https://img.shields.io/badge/SciPy-1.13.1-blue.svg)](https://scipy.org/)
+[![Plotly](https://img.shields.io/badge/Plotly-5.24.1-3F4F75.svg)](https://plotly.com/)
+
+<!-- Analysis & ML -->
+[![NumPy](https://img.shields.io/badge/NumPy-1.26.4-013243.svg)](https://numpy.org/)
+[![Pandas](https://img.shields.io/badge/Pandas-2.2.2-150458.svg)](https://pandas.pydata.org/)
+[![Astropy](https://img.shields.io/badge/Astropy-6.1.2-306998.svg)](https://www.astropy.org/)
+[![SpiceyPy](https://img.shields.io/badge/SpiceyPy-6.0.0-darkgreen.svg)](https://spiceypy.readthedocs.io/)
+
+<!-- Development & Quality -->
+[![Click](https://img.shields.io/badge/CLI-Click-blue.svg)](https://click.palletsprojects.com/)
+[![Pydantic](https://img.shields.io/badge/validation-Pydantic-E92063.svg)](https://pydantic.dev/)
+[![Pytest](https://img.shields.io/badge/testing-Pytest-0A9EDC.svg)](https://pytest.org/)
+[![Ruff](https://img.shields.io/badge/linting-Ruff-FCC21B.svg)](https://docs.astral.sh/ruff/)
+[![MyPy](https://img.shields.io/badge/typing-MyPy-00B4AB.svg)](https://mypy-lang.org/)
+
+<!-- Features -->
+[![No Mocking](https://img.shields.io/badge/testing-No%20Mocking-brightgreen.svg)](tests/)
+[![JAX Compatible](https://img.shields.io/badge/optimization-JAX%20Compatible-red.svg)](src/optimization/differentiable/)
+[![Orbital Mechanics](https://img.shields.io/badge/physics-PyKEP%20Integration-orange.svg)](src/trajectory/)
+[![Multi Objective](https://img.shields.io/badge/optimization-NSGA--II-orange.svg)](src/optimization/)
 
 An integrated differentiable trajectory optimization and economic analysis platform for LEO-Moon missions.
 
@@ -44,17 +70,17 @@ The Lunar Horizon Optimizer is a comprehensive platform that enables real-world 
 - ⚡ **Global Optimization**: Multi-objective optimization with Pareto front analysis
 - 📈 **Interactive Visualization**: 3D trajectory plots and economic dashboards
 - 📊 **Cost Modeling**: Wright's law learning curves and environmental costs
-- 🛸 **Trajectory Generation**: Lambert solvers, N-body integration, transfer window analysis
+- 🛸 **Trajectory Generation**: Lambert solvers, N-body integration, transfer window analysis, powered descent modeling
 
 ## 🆕 Recent Updates
 
-### Test Suite Completion & CLI Excellence (Latest)
+### Powered Descent & Test Suite Excellence (Latest)
+- ✅ **Powered Descent Module**: JAX/Diffrax-based lunar landing trajectory modeling
+- ✅ **Continuous Thrust**: Moon-centered inertial frame with optimal braking control
+- ✅ **Gradient-Compatible**: Full JAX integration for differentiable optimization
 - ✅ **100% Test Success**: 243/243 production tests passing with real implementations
-- ✅ **API Fixes Complete**: All method signatures match actual implementations
-- ✅ **No Mocking Policy**: Eliminated all test mocks, using real PyKEP/PyGMO/JAX
+- ✅ **No Mocking Policy**: All tests use real PyKEP/PyGMO/JAX/Diffrax implementations
 - ✅ **Modern CLI Complete**: Comprehensive Click-based interface with rich progress tracking
-- ✅ **10 Scenarios Validated**: All scenarios tested and working (36-37s runtime each)
-- ✅ **Executable Tool**: Direct `./lunar_opt.py` execution without python prefix
 - ✅ **Production Ready**: Clean pipeline with comprehensive error handling
 
 ### Core Implementation Complete
