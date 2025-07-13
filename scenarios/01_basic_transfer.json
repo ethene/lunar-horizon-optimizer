@@ -1,0 +1,33 @@
+{
+  "mission": {
+    "name": "Apollo-class Lunar Cargo Mission",
+    "description": "Basic Earth-Moon cargo delivery mission demonstrating optimal transfer trajectory calculation with comprehensive delta-v analysis",
+    "transfer_time": 4.5
+  },
+  "spacecraft": {
+    "dry_mass": 8000.0,
+    "max_propellant_mass": 6000.0,
+    "payload_mass": 2000.0,
+    "specific_impulse": 440.0
+  },
+  "costs": {
+    "launch_cost_per_kg": 8000.0,
+    "operations_cost_per_day": 150000.0,
+    "development_cost": 500000000.0,
+    "contingency_percentage": 25.0,
+    "discount_rate": 0.07,
+    "learning_rate": 0.92,
+    "carbon_price_per_ton_co2": 45.0,
+    "co2_emissions_per_kg_payload": 2.8
+  },
+  "orbit": {
+    "semi_major_axis": 6778.0,
+    "inclination": 28.5,
+    "eccentricity": 0.0
+  },
+  "optimization": {
+    "population_size": 40,
+    "num_generations": 25,
+    "seed": 12345
+  }
+}

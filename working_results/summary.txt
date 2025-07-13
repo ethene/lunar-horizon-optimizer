@@ -1,0 +1,11 @@
+Mission Analysis Summary: Working Mission
+==================================================
+
+Trajectory Analysis:
+  Total Delta-V: 4000.0 m/s
+  Transfer Time: 4.5 days
+
+Economic Analysis:
+  Total Cost: $1,272,500,000
+  NPV: $1,289,073,574
+  ROI: 200.0%

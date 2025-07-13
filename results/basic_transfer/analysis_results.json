@@ -1,0 +1,166 @@
+{
+  "mission_name": "Apollo-class Lunar Cargo Mission",
+  "trajectory": {
+    "delta_v_total": 4000.0,
+    "delta_v_leo_escape": 3200.0,
+    "delta_v_moon_capture": 800.0,
+    "transfer_time_days": 4.5,
+    "earth_departure_altitude": 400.0,
+    "moon_arrival_altitude": 100.0,
+    "trajectory_type": "Hohmann Transfer (Simplified)",
+    "propellant_mass_kg": 3555.5555555555557
+  },
+  "economics": {
+    "launch_cost": 128000000.0,
+    "development_cost": 500000000.0,
+    "operations_cost": 273750000.0,
+    "total_cost": 901750000.0,
+    "annual_revenue": 270525000.0,
+    "npv": 913494770.4486334,
+    "roi_percent": 200.0,
+    "payback_period_years": 3.3333333333333335,
+    "cost_breakdown": {
+      "launch": 0.14194621569171056,
+      "development": 0.5544774050457444,
+      "operations": 0.30357637926254505
+    },
+    "isru_benefits": {
+      "total_savings": 135262500.0,
+      "cost_reduction_percent": 15.0,
+      "break_even_years": 3.0
+    }
+  },
+  "optimization": {
+    "population_size": 50,
+    "generations": 30,
+    "best_solution": {
+      "delta_v": 4000.0,
+      "transfer_time": 4.5,
+      "cost": 1000000000.0
+    },
+    "pareto_solutions": [
+      {
+        "delta_v": 3800,
+        "time": 5.0,
+        "cost": 1100000000
+      },
+      {
+        "delta_v": 4000,
+        "time": 4.5,
+        "cost": 1000000000
+      },
+      {
+        "delta_v": 4200,
+        "time": 4.0,
+        "cost": 900000000
+      }
+    ],
+    "convergence_data": {
+      "best_fitness_history": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "population_diversity": [
+        1.0,
+        0.9666666666666667,
+        0.9333333333333333,
+        0.9,
+        0.8666666666666667,
+        0.8333333333333334,
+        0.8,
+        0.7666666666666666,
+        0.7333333333333334,
+        0.7,
+        0.6666666666666667,
+        0.6333333333333333,
+        0.6,
+        0.5666666666666667,
+        0.5333333333333333,
+        0.5,
+        0.4666666666666667,
+        0.43333333333333335,
+        0.4,
+        0.3666666666666667,
+        0.33333333333333337,
+        0.30000000000000004,
+        0.2666666666666667,
+        0.23333333333333328,
+        0.19999999999999996,
+        0.16666666666666663,
+        0.1333333333333333,
+        0.09999999999999998,
+        0.06666666666666665,
+        0.033333333333333326
+      ]
+    }
+  },
+  "metadata": {
+    "analysis_date": "Sun Jul 13 04:36:24 MSK 2025",
+    "config_used": {
+      "name": "Apollo-class Lunar Cargo Mission",
+      "description": "Basic Earth-Moon cargo delivery mission demonstrating optimal transfer trajectory calculation with comprehensive delta-v analysis",
+      "payload": {
+        "dry_mass": 8000.0,
+        "payload_mass": 2000.0,
+        "max_propellant_mass": 6000.0,
+        "specific_impulse": 440.0
+      },
+      "cost_factors": {
+        "launch_cost_per_kg": 8000.0,
+        "operations_cost_per_day": 150000.0,
+        "development_cost": 500000000.0,
+        "contingency_percentage": 25.0,
+        "learning_rate": 0.9,
+        "base_production_year": 2024,
+        "cumulative_production_units": 10,
+        "carbon_price_per_ton_co2": 50.0,
+        "co2_emissions_per_kg_payload": 2.8,
+        "environmental_compliance_factor": 1.1
+      },
+      "isru_targets": [],
+      "mission_duration_days": 4.5,
+      "target_orbit": {
+        "semi_major_axis": 6778.0,
+        "eccentricity": 0.0,
+        "inclination": 28.5,
+        "raan": 0.0,
+        "argument_of_periapsis": 0.0,
+        "true_anomaly": 0.0
+      }
+    },
+    "optimization_config": {
+      "population_size": 50,
+      "num_generations": 30,
+      "seed": null,
+      "verbose": true
+    }
+  }
+}

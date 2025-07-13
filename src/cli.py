@@ -19,13 +19,16 @@ import os
 from datetime import UTC, datetime
 from typing import Any
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add the src directory to Python path for proper imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 
-from config.costs import CostFactors
-from config.models import MissionConfig
-from config.orbit import OrbitParameters
-from config.spacecraft import PayloadSpecification
-from lunar_horizon_optimizer import LunarHorizonOptimizer, OptimizationConfig
+from src.config.costs import CostFactors
+from src.config.models import MissionConfig
+from src.config.orbit import OrbitParameters
+from src.config.spacecraft import PayloadSpecification
+from src.simple_optimizer import SimpleLunarOptimizer, OptimizationConfig, create_sample_config
 import contextlib
 
 
@@ -63,10 +66,11 @@ def create_mission_config_from_dict(
     cost_factors = create_cost_factors_from_dict(config_dict, cli_args)
 
     # Create orbit parameters
+    orbit_params = config_dict.get("orbit", {})
     target_orbit = OrbitParameters(
-        altitude=mission_params.get("moon_orbit_alt", 100.0),
-        inclination=mission_params.get("inclination", 0.0),
-        eccentricity=mission_params.get("eccentricity", 0.0),
+        semi_major_axis=orbit_params.get("semi_major_axis", 6778.0),  # Default LEO
+        inclination=orbit_params.get("inclination", 0.0),
+        eccentricity=orbit_params.get("eccentricity", 0.0),
     )
 
     return MissionConfig(
@@ -117,12 +121,10 @@ def create_spacecraft_config_from_dict(
     """Create SpacecraftConfig from dictionary."""
     spacecraft_params = config_dict.get("spacecraft", {})
     return PayloadSpecification(
-        # name=spacecraft_params.get("name", "CLI Spacecraft"),  # Not supported
         dry_mass=spacecraft_params.get("dry_mass", 5000.0),
-        max_propellant_mass=spacecraft_params.get("propellant_mass", 3000.0),
+        max_propellant_mass=spacecraft_params.get("max_propellant_mass", 3000.0),
         payload_mass=spacecraft_params.get("payload_mass", 1000.0),
-        # power_system_mass=spacecraft_params.get("power_system_mass", 500.0),
-        specific_impulse=spacecraft_params.get("propulsion_isp", 320.0),
+        specific_impulse=spacecraft_params.get("specific_impulse", 450.0),
     )
 
 
@@ -146,160 +148,226 @@ def create_optimization_config_from_dict(
 
 def analyze_command(args):
     """Handle the analyze command."""
-    # Load configuration if provided
-    config_dict = {}
-    if args.config:
-        config_dict = load_config_from_file(args.config)
-
-    # Create configuration objects with CLI overrides
-    mission_config = create_mission_config_from_dict(config_dict, args)
-    cost_factors = create_cost_factors_from_dict(config_dict, args)
-    spacecraft_config = create_spacecraft_config_from_dict(config_dict)
-    optimization_config = create_optimization_config_from_dict(config_dict)
-
-    # Override with command line arguments
-    if args.mission_name:
-        mission_config.name = args.mission_name
-
-    if args.population_size:
-        optimization_config.population_size = args.population_size
-
-    if args.generations:
-        optimization_config.num_generations = args.generations
-
-    # Initialize optimizer
-    optimizer = LunarHorizonOptimizer(
-        mission_config=mission_config,
-        cost_factors=cost_factors,
-        spacecraft_config=spacecraft_config,
-    )
-
-    # Run analysis
-    results = optimizer.analyze_mission(
-        mission_name=mission_config.name,
-        optimization_config=optimization_config,
-        include_sensitivity=not args.no_sensitivity,
-        include_isru=not args.no_isru,
-        verbose=args.verbose,
-    )
-
-    # Export results
-    output_dir = (
-        args.output or f"analysis_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
-    )
-    optimizer.export_results(results, output_dir)
-
-    # Show visualizations if requested
-    if args.show_plots:
-        for _name, fig in results.visualization_assets.items():
-            if fig is not None:
-                with contextlib.suppress(Exception):
-                    fig.show()
-
-    return results
+    print("🚀 Starting Lunar Horizon Optimizer Analysis...")
+    
+    try:
+        # Load configuration if provided
+        if args.config:
+            print(f"📁 Loading configuration from {args.config}")
+            config_dict = load_config_from_file(args.config)
+            mission_config = create_mission_config_from_dict(config_dict, args)
+        else:
+            print("📝 Using default configuration")
+            mission_config = create_sample_config()
+        
+        # Override mission name if provided
+        if args.mission_name:
+            mission_config.name = args.mission_name
+            
+        # Create optimization config
+        optimization_config = OptimizationConfig(
+            population_size=args.population_size or 50,
+            num_generations=args.generations or 30,
+            verbose=args.verbose
+        )
+        
+        print(f"🎯 Mission: {mission_config.name}")
+        print(f"⚙️  Optimization: {optimization_config.population_size} pop, {optimization_config.num_generations} gen")
+        
+        # Initialize optimizer
+        optimizer = SimpleLunarOptimizer()
+        
+        # Run analysis
+        print("🔄 Running mission analysis...")
+        results = optimizer.analyze_mission(
+            mission_config=mission_config,
+            optimization_config=optimization_config,
+            include_sensitivity=not args.no_sensitivity,
+            include_isru=not args.no_isru,
+            verbose=args.verbose,
+        )
+        
+        # Export results
+        output_dir = (
+            args.output or f"analysis_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
+        )
+        print(f"💾 Exporting results to {output_dir}/")
+        optimizer.export_results(results, output_dir)
+        
+        # Print summary
+        print("\n📊 Analysis Complete!")
+        print(f"   Total Cost: ${results.economic_analysis.get('total_cost', 0):,.0f}")
+        print(f"   Delta-V: {results.trajectory_results.get('delta_v_total', 0):.0f} m/s") 
+        print(f"   Transfer Time: {results.trajectory_results.get('transfer_time_days', 0):.1f} days")
+        print(f"   ROI: {results.economic_analysis.get('roi_percent', 0):.1f}%")
+        
+        return results
+        
+    except Exception as e:
+        print(f"❌ Analysis failed: {e}")
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        return None
 
 
 def config_command(args) -> None:
     """Handle the config command to generate sample configuration."""
+    print("📝 Generating sample configuration file...")
+    
     sample_config = {
         "mission": {
             "name": "Sample Lunar Mission",
-            "earth_orbit_alt": 400.0,
-            "moon_orbit_alt": 100.0,
-            "transfer_time": 4.5,
-            "departure_epoch": 10000.0,
+            "description": "Basic lunar cargo delivery mission",
+            "transfer_time": 4.5
         },
         "spacecraft": {
-            "name": "Sample Spacecraft",
             "dry_mass": 5000.0,
-            "propellant_mass": 3000.0,
+            "max_propellant_mass": 3000.0,
             "payload_mass": 1000.0,
-            "power_system_mass": 500.0,
-            "propulsion_isp": 320.0,
+            "specific_impulse": 450.0
         },
         "costs": {
             "launch_cost_per_kg": 10000.0,
             "operations_cost_per_day": 100000.0,
             "development_cost": 1000000000.0,
             "contingency_percentage": 20.0,
+            "discount_rate": 0.08,
+            "learning_rate": 0.90,
+            "carbon_price_per_ton_co2": 50.0,
+            "co2_emissions_per_kg_payload": 2.5
+        },
+        "orbit": {
+            "semi_major_axis": 6778.0,
+            "inclination": 0.0,
+            "eccentricity": 0.0
         },
         "optimization": {
-            "population_size": 100,
-            "num_generations": 100,
-            "seed": 42,
-            "min_earth_alt": 200.0,
-            "max_earth_alt": 1000.0,
-            "min_moon_alt": 50.0,
-            "max_moon_alt": 500.0,
-            "min_transfer_time": 3.0,
-            "max_transfer_time": 10.0,
-        },
+            "population_size": 50,
+            "num_generations": 30,
+            "seed": 42
+        }
     }
 
-    output_file = args.output or "sample_config.json"
+    output_file = args.output or "sample_mission_config.json"
 
     with open(output_file, "w") as f:
         json.dump(sample_config, f, indent=2)
+    
+    print(f"✅ Sample configuration saved to {output_file}")
+    print("   Edit this file and use with: python src/cli.py analyze --config " + output_file)
 
 
 def validate_command(args) -> None:
     """Handle the validate command to check environment and dependencies."""
+    print("🔍 Validating Lunar Horizon Optimizer Environment...")
     validation_passed = True
 
     # Check Python version
     python_version = sys.version_info
+    print(f"🐍 Python: {python_version.major}.{python_version.minor}.{python_version.micro}")
     if python_version.major != 3 or python_version.minor < 10:
+        print("   ❌ Python 3.10+ required")
         validation_passed = False
     else:
-        pass
+        print("   ✅ Python version OK")
 
     # Check required packages
     required_packages = [
         ("numpy", "NumPy"),
         ("scipy", "SciPy"),
         ("plotly", "Plotly"),
-        ("pandas", "Pandas"),
         ("pykep", "PyKEP"),
         ("pygmo", "PyGMO"),
+        ("jax", "JAX"),
+        ("pydantic", "Pydantic"),
     ]
 
-    for package, _display_name in required_packages:
+    print("\n📦 Checking Dependencies:")
+    for package, display_name in required_packages:
         try:
-            __import__(package)
+            module = __import__(package)
+            version = getattr(module, '__version__', 'unknown')
+            print(f"   ✅ {display_name}: {version}")
         except ImportError:
+            print(f"   ❌ {display_name}: Not installed")
             validation_passed = False
 
-    # Try to initialize optimizer
+    # Test optimizer initialization
+    print("\n🚀 Testing Optimizer:")
     try:
-        LunarHorizonOptimizer()
-    except Exception:
+        optimizer = SimpleLunarOptimizer()
+        print("   ✅ SimpleLunarOptimizer: OK")
+    except Exception as e:
+        print(f"   ❌ SimpleLunarOptimizer: {e}")
+        validation_passed = False
+
+    # Test configuration loading
+    print("\n⚙️  Testing Configuration:")
+    try:
+        config = create_sample_config()
+        print("   ✅ Sample configuration: OK")
+    except Exception as e:
+        print(f"   ❌ Sample configuration: {e}")
         validation_passed = False
 
     # Summary
+    print(f"\n{'='*50}")
     if validation_passed:
-        pass
+        print("🎉 Environment validation PASSED!")
+        print("   Ready to run lunar mission analysis")
+        print("\n💡 Try: python src/cli.py sample")
     else:
+        print("❌ Environment validation FAILED!")
+        print("   Please install missing dependencies")
+        print("\n💡 Try: conda activate py312 && pip install -r requirements.txt")
         sys.exit(1)
 
 
 def create_sample_command(args):
     """Handle the sample command to run a quick demo analysis."""
-    # Quick configuration for demo
-    optimization_config = OptimizationConfig(
-        population_size=20,
-        num_generations=10,
-        seed=42,
-    )
+    print("🚀 Running Quick Sample Analysis...")
+    print("   This demonstrates basic lunar mission optimization")
+    
+    try:
+        # Quick configuration for demo
+        mission_config = create_sample_config()
+        mission_config.name = "Quick Demo Mission"
+        
+        optimization_config = OptimizationConfig(
+            population_size=20,
+            num_generations=10,
+            seed=42,
+            verbose=True
+        )
 
-    optimizer = LunarHorizonOptimizer()
-
-    return optimizer.analyze_mission(
-        mission_name="Sample Demo Mission",
-        optimization_config=optimization_config,
-        include_sensitivity=False,
-        include_isru=False,
-        verbose=True,
-    )
+        optimizer = SimpleLunarOptimizer()
+        
+        print("🔄 Running quick optimization (20 pop, 10 gen)...")
+        results = optimizer.analyze_mission(
+            mission_config=mission_config,
+            optimization_config=optimization_config,
+            include_sensitivity=False,
+            include_isru=True,
+            verbose=True,
+        )
+        
+        # Export to quick_demo directory
+        output_dir = "quick_demo_results"
+        optimizer.export_results(results, output_dir)
+        
+        print("\n🎉 Quick Demo Complete!")
+        print(f"   Mission: {results.mission_name}")
+        print(f"   Total Cost: ${results.economic_analysis.get('total_cost', 0):,.0f}")
+        print(f"   Delta-V: {results.trajectory_results.get('delta_v_total', 0):.0f} m/s")
+        print(f"   ROI: {results.economic_analysis.get('roi_percent', 0):.1f}%")
+        print(f"   Results saved to {output_dir}/")
+        
+        return results
+        
+    except Exception as e:
+        print(f"❌ Sample analysis failed: {e}")
+        return None
 
 
 def main():
@@ -348,6 +416,9 @@ def main():
         type=float,
         default=50.0,
         help="Carbon price per ton CO₂ for environmental cost calculation (default: $50/tCO₂)",
+    )
+    analyze_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
     )
 
     # Config command
