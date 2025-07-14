@@ -35,8 +35,9 @@ class LunarMissionProblem:
         max_moon_alt: float = 500,  # km
         min_transfer_time: float = 3.0,  # days
         max_transfer_time: float = 10.0,  # days
-        reference_epoch: float = 10000.0,
-    ) -> None:  # days since J2000
+        reference_epoch: float = 10000.0,  # days since J2000
+        descent_params: dict[str, float] | None = None,
+    ) -> None:
         """Initialize the lunar mission optimization problem.
 
         Args:
@@ -48,6 +49,7 @@ class LunarMissionProblem:
             min_transfer_time: Minimum transfer time [days]
             max_transfer_time: Maximum transfer time [days]
             reference_epoch: Reference epoch for calculations [days since J2000]
+            descent_params: Optional powered descent parameters with keys: thrust [N], isp [s], burn_time [s]
         """
         self.cost_factors = cost_factors or CostFactors(
             launch_cost_per_kg=10000.0,
@@ -61,6 +63,7 @@ class LunarMissionProblem:
         self.min_transfer_time = min_transfer_time
         self.max_transfer_time = max_transfer_time
         self.reference_epoch = reference_epoch
+        self.descent_params = descent_params
 
         # Initialize trajectory generator
         self.lunar_transfer = LunarTransfer(
@@ -137,6 +140,7 @@ class LunarMissionProblem:
                 transfer_time=transfer_time,
                 earth_orbit_alt=earth_alt,
                 moon_orbit_alt=moon_alt,
+                descent_params=self.descent_params,
             )
 
             objectives = [obj1_delta_v, obj2_time, obj3_cost]

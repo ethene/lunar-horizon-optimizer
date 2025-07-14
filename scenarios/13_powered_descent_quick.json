@@ -1,0 +1,128 @@
+{
+  "description": "Lunar landing scenario with powered-descent optimization and economic analysis. Quick-execution scenario for testing and validation of powered descent cost integration with minimal optimization parameters while maintaining realistic physics and economics.",
+  
+  "mission": {
+    "name": "Quick Lunar Descent Test",
+    "description": "Fast-execution lunar landing mission for powered descent cost validation",
+    "departure_epoch": 10000.0,
+    "earth_parking_orbit_altitude": 400.0,
+    "moon_parking_orbit_altitude": 100.0,
+    "transfer_time": 5.0,
+    "launch_date": "2026-06-01",
+    "mission_duration_days": 120,
+    "payload_description": "Instrumentation and validation payloads"
+  },
+  
+  "descent_parameters": {
+    "thrust": 10000.0,
+    "isp": 320.0,
+    "burn_time": 31.4,
+    "landing_site": "Oceanus Procellarum",
+    "engine_type": "Aestus_derivative",
+    "propellant_type": "MMH_NTO",
+    "guidance_mode": "basic_terminal_guidance",
+    "landing_accuracy_target": 200.0
+  },
+  
+  "optimizer": {
+    "algorithm": "NSGA-II",
+    "pop_size": 20,
+    "generations": 15,
+    "include_descent": true,
+    "objectives": ["minimize_delta_v", "minimize_time", "minimize_cost"],
+    "seed": 98765,
+    "constraints": {
+      "max_g_load": 4.0,
+      "min_fuel_reserve": 0.05
+    }
+  },
+  
+  "economics": {
+    "discount_rate": 0.08,
+    "propellant_unit_cost": 75.0,
+    "lander_fixed_cost": 8000000.0,
+    "inflation_rate": 0.03,
+    "tax_rate": 0.25,
+    "project_duration_years": 6,
+    "revenue": {
+      "cargo_delivery_rate_per_kg": 3000.0,
+      "annual_missions": 2,
+      "nasa_contract_value": 300000000.0,
+      "commercial_contract_value": 180000000.0
+    },
+    "learning_curve": {
+      "learning_rate": 0.90,
+      "initial_mission_cost": 120000000.0,
+      "cost_reduction_per_doubling": 0.10
+    }
+  },
+  
+  "spacecraft": {
+    "name": "Compact Lunar Lander",
+    "dry_mass": 6000.0,
+    "payload_mass": 1800.0,
+    "max_propellant_mass": 4200.0,
+    "specific_impulse": 310.0,
+    "propulsion_type": "hypergolic_bipropellant",
+    "manufacturer": "Test Provider"
+  },
+  
+  "costs": {
+    "launch_cost_per_kg": 7500.0,
+    "operations_cost_per_day": 45000.0,
+    "development_cost": 400000000.0,
+    "contingency_percentage": 20.0,
+    "learning_rate": 0.90,
+    "carbon_price_per_ton_co2": 50.0,
+    "co2_emissions_per_kg_payload": 2.2,
+    "discount_rate": 0.08
+  },
+  
+  "orbit": {
+    "type": "circular_polar",
+    "semi_major_axis": 384400000.0,
+    "eccentricity": 0.0,
+    "inclination": 85.0,
+    "raan": 0.0,
+    "argument_of_periapsis": 0.0,
+    "true_anomaly": 0.0
+  },
+  
+  "optimization": {
+    "population_size": 20,
+    "num_generations": 15,
+    "seed": 98765,
+    "min_earth_alt": 300.0,
+    "max_earth_alt": 500.0,
+    "min_moon_alt": 80.0,
+    "max_moon_alt": 150.0,
+    "min_transfer_time": 4.0,
+    "max_transfer_time": 6.0
+  },
+  
+  "expected_results": {
+    "total_mission_cost_range": "$115M - $135M",
+    "descent_cost_fraction": "7% - 10%",
+    "optimal_delta_v": "3200 - 3450 m/s",
+    "optimal_transfer_time": "4.8 - 5.4 days",
+    "propellant_mass_descent": "95 - 105 kg",
+    "lander_hardware_cost": "$8M fixed",
+    "roi_range": "15% - 22%",
+    "payback_period": "7 - 9 years"
+  },
+  
+  "scenario_metadata": {
+    "complexity": "Beginner",
+    "runtime_estimate": "25-45 seconds",
+    "mission_type": "Test Mission",
+    "modules_used": [
+      "trajectory.lunar_transfer",
+      "optimization.global_optimizer", 
+      "economics.financial_models",
+      "optimization.cost_integration"
+    ],
+    "created_date": "2025-07-14",
+    "version": "2.0",
+    "purpose": "quick_validation"
+  }
+}

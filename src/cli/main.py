@@ -284,6 +284,17 @@ def list_scenarios(detailed, type, complexity):
 @click.option(
     "--seed", type=int, help="Random seed for reproducible optimization results"
 )
+@click.option(
+    "--include-descent",
+    is_flag=True,
+    help="Enable powered-descent optimization and cost modeling",
+)
+@click.option(
+    "--3d-viz",
+    "three_d_viz",
+    is_flag=True,
+    help="Generate 3D landing trajectory visualization (requires --include-descent)",
+)
 @click.pass_context
 def run_scenario(
     ctx,
@@ -300,6 +311,8 @@ def run_scenario(
     parallel,
     gpu,
     seed,
+    include_descent,
+    three_d_viz,
 ):
     """🚀 Run a specific lunar mission analysis scenario.
 
@@ -330,6 +343,9 @@ def run_scenario(
     # High-fidelity analysis (comprehensive)
     ./lunar_opt.py run scenario 06_isru_economics --gens 100 --population 80 --risk --refine
 
+    # Powered descent analysis with landing cost modeling
+    ./lunar_opt.py run scenario 11_powered_descent_mission --include-descent
+
     \b
     OUTPUT STRUCTURE:
     results/TIMESTAMP_scenario_name/
@@ -338,6 +354,14 @@ def run_scenario(
     ├── data/analysis_results.json  # Complete structured results
     ├── data/scenario_config.json   # Configuration used
     └── figures/*.pdf               # Exported plots (if --export-pdf)
+
+    \b
+    POWERED DESCENT ANALYSIS:
+    --include-descent flag enables lunar landing cost optimization:
+    • Reads descent_parameters from scenario configuration
+    • Calculates propellant costs using rocket equation
+    • Includes lander hardware costs in economic analysis
+    • Requires scenario with thrust, isp, and burn_time parameters
 
     \b
     PARAMETER CONSTRAINTS:
@@ -384,6 +408,19 @@ def run_scenario(
         # Apply parameter overrides
         opt_config = _create_optimization_config(config, gens, population, seed)
 
+        # Extract descent parameters if flag is set
+        descent_params = None
+        if include_descent:
+            descent_params = config.get("descent_parameters")
+            if descent_params:
+                console.print(
+                    f"[blue]🛬 Powered descent enabled: {descent_params.get('engine_type', 'Generic')} engine[/blue]"
+                )
+            else:
+                console.print(
+                    "[yellow]⚠️  --include-descent flag set but no descent_parameters found in scenario[/yellow]"
+                )
+
         # Configure analysis options
         skip_phases = []
         if not refine:
@@ -423,6 +460,7 @@ def run_scenario(
                     include_isru=not no_isru,
                     verbose=verbose,
                     progress_tracker=tracker,
+                    descent_params=descent_params,
                 )
 
                 # Complete remaining phases
@@ -463,6 +501,32 @@ def run_scenario(
         dashboard_file = output_manager.generate_html_dashboard(
             output_dir, results, scenario_metadata
         )
+
+        # Generate 3D landing visualization if requested
+        if three_d_viz and include_descent:
+            try:
+                from src.visualization.enhanced_landing_3d_visualization import (
+                    generate_3d_landing_visualization,
+                )
+
+                console.print(
+                    "[blue]🌙 Generating 3D landing trajectory visualization...[/blue]"
+                )
+                viz_file = generate_3d_landing_visualization(
+                    output_dir, results, scenario_metadata, config
+                )
+                if viz_file:
+                    console.print(
+                        f"[green]✅ 3D visualization saved: {viz_file}[/green]"
+                    )
+            except ImportError as e:
+                console.print(f"[yellow]⚠️  3D visualization unavailable: {e}[/yellow]")
+            except Exception as e:
+                console.print(f"[red]❌ 3D visualization failed: {e}[/red]")
+        elif three_d_viz and not include_descent:
+            console.print(
+                "[yellow]⚠️  --3d-viz requires --include-descent flag[/yellow]"
+            )
 
         # Export PDFs if requested
         if export_pdf:

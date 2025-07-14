@@ -5,7 +5,8 @@ pygmo==2.19.6
 jax==0.5.3
 jaxlib==0.5.3
 diffrax==0.7.0
-plotly==5.24.1
+plotly>=6.1.1
+kaleido>=0.2.1
 poliastro==0.17.0
 
 # Speed-up packages

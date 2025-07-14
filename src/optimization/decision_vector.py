@@ -12,7 +12,7 @@ Decision Vector Structure:
 Example for K=3 missions:
 [epoch1, epoch2, epoch3,                    # Mission timing
  alt1, alt2, alt3,                          # Earth parking altitudes
- raan1, raan2, raan3,                       # Orbital plane orientations  
+ raan1, raan2, raan3,                       # Orbital plane orientations
  mass1, mass2, mass3,                       # Payload masses
  lunar_altitude, transfer_time,              # Shared orbital parameters
  descent_burn_time, descent_thrust, descent_isp]  # Shared descent parameters
@@ -23,8 +23,9 @@ from typing import List, Tuple
 import logging
 
 from src.optimization.multi_mission_genome import MultiMissionGenome
-from src.trajectory.continuous_thrust import powered_descent
-import jax.numpy as jnp
+
+# from src.trajectory.continuous_thrust import powered_descent  # Not currently used
+# import jax.numpy as jnp  # Not currently used
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +33,15 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DescentParameters:
     """Powered descent parameters for lunar landing optimization.
-    
+
     These parameters define the powered descent phase from lunar orbit
     to surface landing using continuous thrust propulsion.
     """
-    
-    burn_time: float = 300.0    # Duration of powered descent [s] (5 minutes default)
-    thrust: float = 15000.0     # Thrust magnitude [N] (15 kN default)
-    isp: float = 300.0          # Specific impulse [s] (chemical propulsion default)
-    
+
+    burn_time: float = 300.0  # Duration of powered descent [s] (5 minutes default)
+    thrust: float = 15000.0  # Thrust magnitude [N] (15 kN default)
+    isp: float = 300.0  # Specific impulse [s] (chemical propulsion default)
+
     def __post_init__(self):
         """Validate descent parameters are within reasonable bounds."""
         if self.burn_time <= 0:
@@ -54,34 +55,36 @@ class DescentParameters:
 @dataclass
 class MissionGenome:
     """Extended mission genome including descent parameters.
-    
+
     Extends the MultiMissionGenome to include powered descent parameters
     for complete Earth-to-surface mission optimization.
     """
-    
+
     # Base multi-mission parameters (existing architecture)
-    base_genome: MultiMissionGenome = field(default_factory=lambda: MultiMissionGenome(num_missions=1))
-    
+    base_genome: MultiMissionGenome = field(
+        default_factory=lambda: MultiMissionGenome(num_missions=1)
+    )
+
     # Powered descent parameters (shared across all missions)
     descent: DescentParameters = field(default_factory=DescentParameters)
-    
+
     @property
     def num_missions(self) -> int:
         """Number of missions in constellation."""
         return self.base_genome.num_missions
-    
+
     @classmethod
     def from_decision_vector(cls, x: List[float], num_missions: int) -> "MissionGenome":
         """Create genome from PyGMO decision vector with descent parameters.
-        
+
         Decision vector structure (length = 4*K + 5):
         - Base parameters: 4*K + 2 (epochs, altitudes, raan, masses, lunar_alt, transfer_time)
         - Descent parameters: +3 (burn_time, thrust, isp)
-        
+
         Args:
             x: Decision vector from PyGMO
             num_missions: Number of missions K
-            
+
         Returns:
             MissionGenome instance with base and descent parameters
         """
@@ -91,65 +94,67 @@ class MissionGenome:
                 f"Decision vector length {len(x)} != expected {expected_length} "
                 f"for {num_missions} missions"
             )
-        
+
         # Extract base parameters (first 4*K + 2 elements)
         base_length = 4 * num_missions + 2
         base_vector = x[:base_length]
-        
+
         # Create base genome using existing MultiMissionGenome
         base_genome = MultiMissionGenome.from_decision_vector(base_vector, num_missions)
-        
+
         # Extract descent parameters (last 3 elements)
         descent_start_idx = base_length
         descent_params = DescentParameters(
             burn_time=x[descent_start_idx],
-            thrust=x[descent_start_idx + 1], 
-            isp=x[descent_start_idx + 2]
+            thrust=x[descent_start_idx + 1],
+            isp=x[descent_start_idx + 2],
         )
-        
+
         return cls(base_genome=base_genome, descent=descent_params)
-    
+
     def to_decision_vector(self) -> List[float]:
         """Convert genome to PyGMO decision vector.
-        
+
         Returns:
             Flattened decision vector: base_params + descent_params
         """
         base_vector = self.base_genome.to_decision_vector()
         descent_vector = [self.descent.burn_time, self.descent.thrust, self.descent.isp]
-        
+
         return base_vector + descent_vector
-    
+
     def get_mission_parameters(self, mission_idx: int) -> dict[str, float]:
         """Get complete parameters for specific mission including descent.
-        
+
         Args:
             mission_idx: Mission index (0 to K-1)
-            
+
         Returns:
             Dictionary with mission and descent parameters
         """
         # Get base mission parameters
         mission_params = self.base_genome.get_mission_parameters(mission_idx)
-        
+
         # Add descent parameters
-        mission_params.update({
-            "descent_burn_time": self.descent.burn_time,
-            "descent_thrust": self.descent.thrust,
-            "descent_isp": self.descent.isp
-        })
-        
+        mission_params.update(
+            {
+                "descent_burn_time": self.descent.burn_time,
+                "descent_thrust": self.descent.thrust,
+                "descent_isp": self.descent.isp,
+            }
+        )
+
         return mission_params
 
 
 class LunarMissionProblem:
     """Extended PyGMO problem with powered descent optimization.
-    
+
     This problem extends the existing lunar mission optimization to include
     powered descent from lunar orbit to surface landing, with objectives
     for total delta-v, mission time, and cost including descent operations.
     """
-    
+
     def __init__(
         self,
         num_missions: int = 1,
@@ -165,16 +170,16 @@ class LunarMissionProblem:
         min_payload: float = 500.0,
         max_payload: float = 2000.0,
         # Descent parameter bounds (new)
-        min_burn_time: float = 100.0,    # s (1.7 minutes minimum)
-        max_burn_time: float = 1000.0,   # s (16.7 minutes maximum)
-        min_thrust: float = 1000.0,      # N (1 kN minimum)
-        max_thrust: float = 50000.0,     # N (50 kN maximum)
-        min_isp: float = 200.0,          # s (cold gas thrusters)
-        max_isp: float = 450.0,          # s (high-performance chemical)
-        **kwargs
+        min_burn_time: float = 100.0,  # s (1.7 minutes minimum)
+        max_burn_time: float = 1000.0,  # s (16.7 minutes maximum)
+        min_thrust: float = 1000.0,  # N (1 kN minimum)
+        max_thrust: float = 50000.0,  # N (50 kN maximum)
+        min_isp: float = 200.0,  # s (cold gas thrusters)
+        max_isp: float = 450.0,  # s (high-performance chemical)
+        **kwargs,
     ):
         """Initialize extended lunar mission problem with descent parameters.
-        
+
         Args:
             num_missions: Number of missions in constellation
             Base parameter bounds for orbital transfer optimization
@@ -182,7 +187,7 @@ class LunarMissionProblem:
             **kwargs: Additional arguments for base problem initialization
         """
         self.num_missions = num_missions
-        
+
         # Store base parameter bounds
         self.min_epoch = min_epoch
         self.max_epoch = max_epoch
@@ -194,7 +199,7 @@ class LunarMissionProblem:
         self.max_transfer_time = max_transfer_time
         self.min_payload = min_payload
         self.max_payload = max_payload
-        
+
         # Store descent parameter bounds
         self.min_burn_time = min_burn_time
         self.max_burn_time = max_burn_time
@@ -202,7 +207,7 @@ class LunarMissionProblem:
         self.max_thrust = max_thrust
         self.min_isp = min_isp
         self.max_isp = max_isp
-        
+
         logger.info(
             f"Initialized extended LunarMissionProblem for {num_missions} missions "
             f"with descent parameters: "
@@ -210,95 +215,106 @@ class LunarMissionProblem:
             f"thrust [{min_thrust/1000:.0f}-{max_thrust/1000:.0f}] kN, "
             f"isp [{min_isp}-{max_isp}] s"
         )
-    
+
     def decode(self, x: List[float]) -> MissionGenome:
         """Decode decision vector into mission genome including descent values.
-        
+
         This method extracts all mission parameters including descent parameters
         and prepares them for trajectory generation and powered_descent() calls.
-        
+
         Args:
             x: Decision vector from PyGMO optimizer
-            
+
         Returns:
             MissionGenome with complete mission and descent parameters
         """
         # Decode decision vector using MissionGenome
         genome = MissionGenome.from_decision_vector(x, self.num_missions)
-        
+
         # Validate all parameters are within bounds
         if not self._validate_bounds(genome):
             raise ValueError("Decoded parameters exceed defined bounds")
-            
+
         return genome
-    
+
     def get_bounds(self) -> Tuple[List[float], List[float]]:
         """Get optimization bounds for all decision variables including descent.
-        
+
         Returns:
             Tuple of (lower_bounds, upper_bounds) for complete decision vector
         """
         lower = []
         upper = []
-        
+
         # Mission-specific bounds (4*K parameters)
         for _ in range(self.num_missions):
             # Epochs
             lower.append(self.min_epoch)
             upper.append(self.max_epoch)
-        
+
         for _ in range(self.num_missions):
-            # Earth parking altitudes  
+            # Earth parking altitudes
             lower.append(self.min_earth_alt)
             upper.append(self.max_earth_alt)
-            
+
         for _ in range(self.num_missions):
             # Orbital plane RAAN (0-360 degrees)
             lower.append(0.0)
             upper.append(360.0)
-            
+
         for _ in range(self.num_missions):
             # Payload masses
             lower.append(self.min_payload)
             upper.append(self.max_payload)
-        
+
         # Shared orbital parameters (2 parameters)
         lower.extend([self.min_moon_alt, self.min_transfer_time])
         upper.extend([self.max_moon_alt, self.max_transfer_time])
-        
+
         # Descent parameters (3 parameters)
         lower.extend([self.min_burn_time, self.min_thrust, self.min_isp])
         upper.extend([self.max_burn_time, self.max_thrust, self.max_isp])
-        
+
         return lower, upper
-    
+
     def _validate_bounds(self, genome: MissionGenome) -> bool:
         """Validate genome parameters are within defined bounds.
-        
+
         Args:
             genome: Mission genome to validate
-            
+
         Returns:
             True if all parameters are within bounds
         """
         # Validate base parameters using existing logic
         base_valid = (
-            all(self.min_epoch <= epoch <= self.max_epoch for epoch in genome.base_genome.epochs) and
-            all(self.min_earth_alt <= alt <= self.max_earth_alt 
-                for alt in genome.base_genome.parking_altitudes) and
-            all(self.min_payload <= mass <= self.max_payload 
-                for mass in genome.base_genome.payload_masses) and
-            self.min_moon_alt <= genome.base_genome.lunar_altitude <= self.max_moon_alt and
-            self.min_transfer_time <= genome.base_genome.transfer_time <= self.max_transfer_time
+            all(
+                self.min_epoch <= epoch <= self.max_epoch
+                for epoch in genome.base_genome.epochs
+            )
+            and all(
+                self.min_earth_alt <= alt <= self.max_earth_alt
+                for alt in genome.base_genome.parking_altitudes
+            )
+            and all(
+                self.min_payload <= mass <= self.max_payload
+                for mass in genome.base_genome.payload_masses
+            )
+            and self.min_moon_alt
+            <= genome.base_genome.lunar_altitude
+            <= self.max_moon_alt
+            and self.min_transfer_time
+            <= genome.base_genome.transfer_time
+            <= self.max_transfer_time
         )
-        
+
         # Validate descent parameters
         descent_valid = (
-            self.min_burn_time <= genome.descent.burn_time <= self.max_burn_time and
-            self.min_thrust <= genome.descent.thrust <= self.max_thrust and
-            self.min_isp <= genome.descent.isp <= self.max_isp
+            self.min_burn_time <= genome.descent.burn_time <= self.max_burn_time
+            and self.min_thrust <= genome.descent.thrust <= self.max_thrust
+            and self.min_isp <= genome.descent.isp <= self.max_isp
         )
-        
+
         return base_valid and descent_valid
 
 

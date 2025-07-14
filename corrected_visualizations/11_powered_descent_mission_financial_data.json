@@ -1,0 +1,161 @@
+{
+  "financial_summary": {
+    "total_investment": 190035415.75651667,
+    "total_revenue": 1056000000.0,
+    "net_present_value": 232364584.24348333,
+    "internal_rate_of_return": 0.18,
+    "return_on_investment": 4.556858945455738,
+    "payback_period_years": 6.2,
+    "development_cost": 0.0,
+    "launch_cost": 0.0,
+    "operational_cost": 0.0,
+    "contingency_cost": 0.0,
+    "primary_revenue": 0.0,
+    "secondary_revenue": 0.0,
+    "isru_benefits": 0.0,
+    "probability_of_success": 0.7999999999999999,
+    "value_at_risk_5_percent": 0.0,
+    "expected_shortfall": 0.0,
+    "mission_duration_years": 8.0,
+    "spacecraft_mass_kg": 0.0,
+    "launch_date": "",
+    "analysis_date": "2025-07-14T03:30:41.712287",
+    "analyst": "",
+    "confidence_level": 0.0
+  },
+  "cost_breakdown": {
+    "Development": 85515937.0904325,
+    "Launch": 38007083.151303336,
+    "Operations": 47508853.93912917,
+    "Contingency": 19003541.575651668,
+    "Descent Propellant": 35415.756516673944,
+    "Lander Hardware": 10000000.0
+  },
+  "descent_costs": {
+    "descent_propellant_cost": 35415.756516673944,
+    "lander_hardware_cost": 10000000.0,
+    "total_descent_cost": 10035415.756516675,
+    "descent_fraction": 0.05280813429731738
+  },
+  "scenario_config": {
+    "description": "Lunar landing scenario with powered-descent optimization and economic analysis. This scenario demonstrates comprehensive cost modeling for lunar cargo delivery missions including propellant consumption, lander hardware costs, and multi-objective optimization of delta-v, time, and total mission cost.",
+    "mission": {
+      "name": "Artemis Commercial Cargo Lander",
+      "description": "Commercial cargo delivery mission to lunar south pole with detailed powered descent cost modeling and optimization",
+      "departure_epoch": 10000.0,
+      "earth_parking_orbit_altitude": 400.0,
+      "moon_parking_orbit_altitude": 100.0,
+      "transfer_time": 5.2,
+      "launch_date": "2026-03-15",
+      "mission_duration_days": 180,
+      "payload_description": "Critical infrastructure components for lunar base construction"
+    },
+    "descent_parameters": {
+      "thrust": 16000.0,
+      "isp": 315.0,
+      "burn_time": 380.0,
+      "landing_site": "Shackleton Crater Rim",
+      "engine_type": "RL-10_derivative",
+      "propellant_type": "LOX_LH2",
+      "guidance_mode": "terrain_relative_navigation",
+      "landing_accuracy_target": 100.0
+    },
+    "optimizer": {
+      "algorithm": "NSGA-II",
+      "pop_size": 40,
+      "generations": 25,
+      "include_descent": true,
+      "objectives": [
+        "minimize_delta_v",
+        "minimize_time",
+        "minimize_cost"
+      ],
+      "seed": 12345,
+      "constraints": {
+        "max_g_load": 4.0,
+        "min_fuel_reserve": 0.08
+      }
+    },
+    "economics": {
+      "discount_rate": 0.07,
+      "propellant_unit_cost": 18.0,
+      "lander_fixed_cost": 10000000.0,
+      "inflation_rate": 0.025,
+      "tax_rate": 0.21,
+      "project_duration_years": 8,
+      "revenue": {
+        "cargo_delivery_rate_per_kg": 2500.0,
+        "annual_missions": 3,
+        "nasa_contract_value": 450000000.0,
+        "commercial_contract_value": 250000000.0
+      },
+      "learning_curve": {
+        "learning_rate": 0.85,
+        "initial_mission_cost": 180000000.0,
+        "cost_reduction_per_doubling": 0.15
+      }
+    },
+    "spacecraft": {
+      "name": "Artemis Cargo Lander",
+      "dry_mass": 7500.0,
+      "payload_mass": 2500.0,
+      "max_propellant_mass": 5000.0,
+      "specific_impulse": 325.0,
+      "propulsion_type": "chemical_bipropellant",
+      "manufacturer": "Commercial Provider"
+    },
+    "costs": {
+      "launch_cost_per_kg": 6500.0,
+      "operations_cost_per_day": 65000.0,
+      "development_cost": 750000000.0,
+      "contingency_percentage": 25.0,
+      "learning_rate": 0.85,
+      "carbon_price_per_ton_co2": 75.0,
+      "co2_emissions_per_kg_payload": 1.8,
+      "discount_rate": 0.07
+    },
+    "orbit": {
+      "type": "lunar_polar",
+      "semi_major_axis": 1837.4,
+      "eccentricity": 0.0,
+      "inclination": 90.0,
+      "raan": 0.0,
+      "argument_of_periapsis": 0.0,
+      "true_anomaly": 0.0
+    },
+    "optimization": {
+      "population_size": 40,
+      "num_generations": 25,
+      "seed": 12345,
+      "min_earth_alt": 200.0,
+      "max_earth_alt": 800.0,
+      "min_moon_alt": 50.0,
+      "max_moon_alt": 300.0,
+      "min_transfer_time": 3.0,
+      "max_transfer_time": 8.0
+    },
+    "expected_results": {
+      "total_mission_cost_range": "$165M - $195M",
+      "descent_cost_fraction": "6% - 8%",
+      "optimal_delta_v": "3150 - 3400 m/s",
+      "optimal_transfer_time": "4.8 - 5.5 days",
+      "propellant_mass_descent": "190 - 220 kg",
+      "lander_hardware_cost": "$10M fixed",
+      "roi_range": "18% - 25%",
+      "payback_period": "6 - 8 years"
+    },
+    "scenario_metadata": {
+      "complexity": "Intermediate",
+      "runtime_estimate": "60-90 seconds",
+      "mission_type": "Cargo Delivery",
+      "modules_used": [
+        "trajectory.lunar_transfer",
+        "optimization.global_optimizer",
+        "economics.financial_models",
+        "optimization.cost_integration"
+      ],
+      "created_date": "2025-07-14",
+      "version": "2.0"
+    }
+  }
+}

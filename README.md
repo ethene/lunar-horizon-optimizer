@@ -13,7 +13,8 @@
 [![JAX](https://img.shields.io/badge/JAX-0.6.0-red.svg)](https://jax.readthedocs.io/)
 [![Diffrax](https://img.shields.io/badge/Diffrax-0.7.0-red.svg)](https://docs.kidger.site/diffrax/)
 [![SciPy](https://img.shields.io/badge/SciPy-1.13.1-blue.svg)](https://scipy.org/)
-[![Plotly](https://img.shields.io/badge/Plotly-5.24.1-3F4F75.svg)](https://plotly.com/)
+[![Plotly](https://img.shields.io/badge/Plotly-6.1.1+-3F4F75.svg)](https://plotly.com/)
+[![Kaleido](https://img.shields.io/badge/Kaleido-0.2.1+-purple.svg)](https://github.com/plotly/Kaleido)
 
 <!-- Analysis & ML -->
 [![NumPy](https://img.shields.io/badge/NumPy-1.26.4-013243.svg)](https://numpy.org/)
@@ -45,7 +46,8 @@ The Lunar Horizon Optimizer is a comprehensive platform that enables real-world 
 - **Global optimization** with PyGMO 2.19.6 (NSGA-II)
 - **Differentiable programming** with JAX 0.5.3 + Diffrax 0.7.0
 - **Economic analysis** with ISRU modeling and sensitivity analysis
-- **Interactive visualization** with Plotly dashboards
+- **Interactive visualization** with Plotly 6.1.1+ dashboards and enhanced 3D landing trajectories
+- **Static image export** with Kaleido 0.2.1+ for PDFs and high-resolution images
 - **Extensible plugin architecture** for custom components
 
 **Applications**: Mission architecture trade studies, lunar mining business cases, real-time trajectory optimization, constellation design, investment analysis, and policy planning.
@@ -68,9 +70,10 @@ The Lunar Horizon Optimizer is a comprehensive platform that enables real-world 
 - 🔄 **Differentiable Optimization**: JAX-based gradient optimization
 - 💰 **Economic Analysis**: NPV, IRR, ROI calculations with ISRU benefits
 - ⚡ **Global Optimization**: Multi-objective optimization with Pareto front analysis
-- 📈 **Interactive Visualization**: 3D trajectory plots and economic dashboards
+- 📈 **Interactive Visualization**: Enhanced 3D landing trajectories with rocket exhaust visualization
 - 📊 **Cost Modeling**: Wright's law learning curves and environmental costs
 - 🛸 **Trajectory Generation**: Lambert solvers, N-body integration, transfer window analysis, powered descent modeling
+- 🎯 **3D Landing Visualization**: Advanced powered descent visualization with optimized camera positioning
 
 ## 🆕 Recent Updates
 
@@ -148,6 +151,9 @@ chmod +x lunar_opt.py
 
 # Run comprehensive ISRU economics analysis
 ./lunar_opt.py run scenario 06_isru_economics --risk --export-pdf
+
+# Run powered descent with 3D visualization
+./lunar_opt.py run scenario 13_powered_descent_quick --include-descent --3d-viz
 
 # Get detailed help
 ./lunar_opt.py --help

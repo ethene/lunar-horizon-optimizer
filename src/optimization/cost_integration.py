@@ -11,7 +11,7 @@ import math
 import numpy as np
 
 from src.config.costs import CostFactors
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -104,8 +104,8 @@ class CostCalculator:
     """
 
     def __init__(
-        self, 
-        cost_factors: CostFactors | None = None, 
+        self,
+        cost_factors: CostFactors | None = None,
         mission_year: int = 2025,
         propellant_unit_cost: float = 25.0,  # USD/kg for descent propellant
         lander_fixed_cost: float = 15000000.0,  # USD for lander hardware
@@ -124,7 +124,7 @@ class CostCalculator:
             development_cost=500000000.0,
         )
         self.mission_year = mission_year
-        
+
         # Descent cost parameters
         self.propellant_unit_cost = propellant_unit_cost
         self.lander_fixed_cost = lander_fixed_cost
@@ -178,9 +178,11 @@ class CostCalculator:
 
         # Calculate altitude-dependent costs
         altitude_cost = self._calculate_altitude_cost(earth_orbit_alt, moon_orbit_alt)
-        
+
         # Calculate descent-specific costs
-        descent_propellant_cost, lander_hardware_cost = self._calculate_descent_costs(descent_params)
+        descent_propellant_cost, lander_hardware_cost = self._calculate_descent_costs(
+            descent_params
+        )
 
         # Total cost with contingency
         base_cost = (
@@ -352,46 +354,50 @@ class CostCalculator:
 
         return base_altitude_cost * lunar_precision_factor * earth_complexity_factor
 
-    def _calculate_descent_costs(self, descent_params: Optional[Dict[str, float]] = None) -> tuple[float, float]:
+    def _calculate_descent_costs(
+        self, descent_params: Optional[Dict[str, float]] = None
+    ) -> tuple[float, float]:
         """Calculate powered descent propellant and hardware costs.
-        
+
         Args:
             descent_params: Optional dict with keys: thrust [N], isp [s], burn_time [s]
                           If None, returns zero costs (no powered descent)
-            
+
         Returns:
             Tuple of (descent_propellant_cost, lander_hardware_cost) [USD]
         """
         if descent_params is None:
             # No powered descent - return zero costs
             return 0.0, 0.0
-        
+
         # Extract descent parameters
-        thrust = descent_params.get('thrust', 15000.0)  # N
-        isp = descent_params.get('isp', 300.0)          # s
-        burn_time = descent_params.get('burn_time', 300.0)  # s
-        
+        thrust = descent_params.get("thrust", 15000.0)  # N
+        isp = descent_params.get("isp", 300.0)  # s
+        burn_time = descent_params.get("burn_time", 300.0)  # s
+
         # Calculate propellant mass using rocket equation inverse
         # ΔV = Isp * g * ln(m_initial / m_final)
         # Therefore: m_propellant = m_initial * (1 - exp(-ΔV / (Isp * g)))
-        
+
         g = 9.81  # m/s² (standard gravity)
-        
+
         # Estimate delta-v for descent phase (approximate)
         # For powered descent from low lunar orbit to surface
-        descent_delta_v = thrust * burn_time / (self.spacecraft_mass + 1000.0)  # Simplified estimate
-        
+        # descent_delta_v = (
+        #     thrust * burn_time / (self.spacecraft_mass + 1000.0)
+        # )  # Simplified estimate - not currently used
+
         # More accurate calculation using mass flow rate
         mass_flow_rate = thrust / (isp * g)  # kg/s
         propellant_mass = mass_flow_rate * burn_time  # kg
-        
+
         # Ensure reasonable bounds on propellant mass
         propellant_mass = max(50.0, min(propellant_mass, 2000.0))  # 50-2000 kg range
-        
+
         # Calculate costs
         descent_propellant_cost = propellant_mass * self.propellant_unit_cost
         lander_hardware_cost = self.lander_fixed_cost
-        
+
         logger.debug(
             f"Descent cost calculation - Thrust: {thrust/1000:.1f}kN, "
             f"ISP: {isp:.0f}s, Burn time: {burn_time:.0f}s, "
@@ -399,7 +405,7 @@ class CostCalculator:
             f"Propellant cost: ${descent_propellant_cost:.0f}, "
             f"Hardware cost: ${lander_hardware_cost:.0f}"
         )
-        
+
         return descent_propellant_cost, lander_hardware_cost
 
     def calculate_cost_breakdown(
@@ -428,9 +434,11 @@ class CostCalculator:
         operations_cost = self._calculate_operations_cost(transfer_time)
         development_cost = self._calculate_development_cost()
         altitude_cost = self._calculate_altitude_cost(earth_orbit_alt, moon_orbit_alt)
-        
+
         # Calculate descent costs
-        descent_propellant_cost, lander_hardware_cost = self._calculate_descent_costs(descent_params)
+        descent_propellant_cost, lander_hardware_cost = self._calculate_descent_costs(
+            descent_params
+        )
 
         # Calculate learning curve impact
         base_launch_price = self.cost_factors.launch_cost_per_kg
@@ -650,7 +658,7 @@ def create_cost_calculator(
     Returns
     -------
         Configured cost calculator
-        
+
     Example YAML Configuration:
         # scenarios/powered_descent_mission.yaml
         cost_parameters:
@@ -658,15 +666,15 @@ def create_cost_calculator(
           operations_cost_per_day: 75000.0 # Reduced ops cost
           development_cost: 800000000.0    # $800M development
           contingency_percentage: 15.0     # Lower risk contingency
-          
+
           # Powered descent specific costs
           propellant_unit_cost: 20.0       # Bulk methane/LOX cost $/kg
           lander_fixed_cost: 12000000.0    # $12M lander hardware
-        
+
         # Example descent parameters for cost calculation
         descent_parameters:
           thrust: 18000.0                  # 18 kN engine thrust
-          isp: 330.0                       # Methane/LOX specific impulse  
+          isp: 330.0                       # Methane/LOX specific impulse
           burn_time: 420.0                 # 7-minute powered descent
     """
     cost_factors = CostFactors(
@@ -677,7 +685,7 @@ def create_cost_calculator(
     )
 
     return CostCalculator(
-        cost_factors, 
+        cost_factors,
         propellant_unit_cost=propellant_unit_cost,
-        lander_fixed_cost=lander_fixed_cost
+        lander_fixed_cost=lander_fixed_cost,
     )

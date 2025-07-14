@@ -158,6 +158,7 @@ class LunarHorizonOptimizer:
         include_isru: bool = True,
         verbose: bool = True,
         progress_tracker=None,
+        descent_params: dict[str, float] | None = None,
     ) -> AnalysisResults:
         """
         Perform comprehensive lunar mission analysis.
@@ -168,6 +169,7 @@ class LunarHorizonOptimizer:
             include_sensitivity: Whether to include sensitivity analysis
             include_isru: Whether to include ISRU economic analysis
             verbose: Enable detailed progress logging
+            descent_params: Optional powered descent parameters with keys: thrust [N], isp [s], burn_time [s]
 
         Returns
         -------
@@ -193,7 +195,7 @@ class LunarHorizonOptimizer:
         if verbose:
             logger.info("🎯 Step 2: Running multi-objective optimization...")
         optimization_results = self._perform_optimization(
-            opt_config, verbose, progress_tracker
+            opt_config, verbose, progress_tracker, descent_params
         )
         if progress_tracker:
             progress_tracker.update_phase("Multi-objective Optimization", 1.0)
@@ -315,7 +317,11 @@ class LunarHorizonOptimizer:
         return results
 
     def _perform_optimization(
-        self, opt_config: OptimizationConfig, verbose: bool, progress_tracker=None
+        self,
+        opt_config: OptimizationConfig,
+        verbose: bool,
+        progress_tracker=None,
+        descent_params: dict[str, float] | None = None,
     ) -> dict[str, Any]:
         """Perform multi-objective optimization."""
         # Create optimization problem
@@ -328,6 +334,7 @@ class LunarHorizonOptimizer:
             min_transfer_time=opt_config.min_transfer_time,
             max_transfer_time=opt_config.max_transfer_time,
             reference_epoch=10000.0,
+            descent_params=descent_params,
         )
 
         # Run optimization with progress tracking

@@ -1,0 +1,168 @@
+{
+  "description": "Lunar landing scenario with powered-descent optimization and economic analysis. This scenario models a Blue Origin lunar cargo mission with reusable lander technology, demonstrating comprehensive cost optimization including propellant consumption, hardware amortization, and learning curve effects in the commercial lunar economy.",
+  "mission": {
+    "name": "Blue Origin Lunar Cargo Express",
+    "description": "Commercial lunar cargo delivery using Blue Moon heritage lander with reusability and cost optimization focus",
+    "departure_epoch": 10000.0,
+    "earth_parking_orbit_altitude": 350.0,
+    "moon_parking_orbit_altitude": 80.0,
+    "transfer_time": 4.8,
+    "launch_date": "2027-09-20",
+    "mission_duration_days": 150,
+    "payload_description": "Base construction equipment and life support supplies",
+    "mission_type": "cargo_delivery"
+  },
+  "descent_parameters": {
+    "thrust": 24000.0,
+    "isp": 345.0,
+    "burn_time": 420.0,
+    "landing_site": "Mare Imbrium",
+    "engine_type": "BE-7",
+    "propellant_type": "methane_oxygen",
+    "guidance_mode": "precision_landing",
+    "landing_accuracy_target": 50.0,
+    "number_of_engines": 1,
+    "throttle_capability": {
+      "min": 0.2,
+      "max": 1.0
+    },
+    "fuel_margin": 0.08
+  },
+  "optimizer": {
+    "algorithm": "NSGA-II",
+    "pop_size": 50,
+    "generations": 30,
+    "include_descent": true,
+    "objectives": [
+      "minimize_delta_v",
+      "minimize_time",
+      "minimize_cost"
+    ],
+    "seed": 54321,
+    "constraints": {
+      "max_g_load": 3.5,
+      "min_fuel_reserve": 0.05,
+      "max_landing_velocity": 2.0,
+      "max_lateral_velocity": 1.0
+    }
+  },
+  "economics": {
+    "discount_rate": 0.06,
+    "propellant_unit_cost": 16.0,
+    "lander_fixed_cost": 8500000.0,
+    "inflation_rate": 0.025,
+    "tax_rate": 0.21,
+    "project_duration_years": 10,
+    "revenue": {
+      "cargo_delivery_rate_per_kg": 2800.0,
+      "annual_missions": 4,
+      "mission_success_rate": 0.97,
+      "nasa_contract_value": 800000000.0,
+      "esa_contract_value": 450000000.0,
+      "commercial_contract_value": 650000000.0
+    },
+    "learning_curve": {
+      "learning_rate": 0.88,
+      "initial_mission_cost": 160000000.0,
+      "cost_reduction_per_doubling": 0.12,
+      "reusability_factor": 0.4
+    },
+    "market_analysis": {
+      "initial_market_size": 15.0,
+      "annual_growth_rate": 0.18,
+      "target_market_share": 0.35,
+      "competitive_pressure": 0.75
+    }
+  },
+  "spacecraft": {
+    "name": "Blue Moon Cargo Variant",
+    "dry_mass": 8200.0,
+    "payload_mass": 3300.0,
+    "max_propellant_mass": 6500.0,
+    "specific_impulse": 335.0,
+    "propulsion_type": "liquid_methane_lox",
+    "manufacturer": "Blue Origin",
+    "heritage": "Blue Moon HLS"
+  },
+  "costs": {
+    "launch_cost_per_kg": 5500.0,
+    "operations_cost_per_day": 55000.0,
+    "development_cost": 650000000.0,
+    "contingency_percentage": 22.0,
+    "learning_rate": 0.88,
+    "carbon_price_per_ton_co2": 80.0,
+    "co2_emissions_per_kg_payload": 1.2,
+    "discount_rate": 0.06,
+    "insurance_rate": 0.08,
+    "refurbishment_cost": 1200000.0,
+    "ground_support_cost": 45000.0
+  },
+  "orbit": {
+    "type": "NRHO",
+    "semi_major_axis": 384400000.0,
+    "eccentricity": 0.95,
+    "inclination": 57.0,
+    "raan": 0.0,
+    "argument_of_periapsis": 180.0,
+    "true_anomaly": 0.0
+  },
+  "optimization": {
+    "population_size": 50,
+    "num_generations": 30,
+    "seed": 54321,
+    "min_earth_alt": 200.0,
+    "max_earth_alt": 600.0,
+    "min_moon_alt": 50.0,
+    "max_moon_alt": 200.0,
+    "min_transfer_time": 3.5,
+    "max_transfer_time": 7.0
+  },
+  "expected_results": {
+    "total_mission_cost_range": "$155M - $180M",
+    "descent_cost_fraction": "5% - 7%",
+    "optimal_delta_v": "3100 - 3350 m/s",
+    "optimal_transfer_time": "4.6 - 5.2 days",
+    "propellant_mass_descent": "165 - 195 kg",
+    "lander_hardware_cost": "$8.5M amortized",
+    "roi_range": "22% - 28%",
+    "payback_period": "5 - 7 years",
+    "mission_success_probability": "97%",
+    "landing_accuracy": "50m (3-sigma)",
+    "cost_per_kg_delivered": "$2600 - $2900"
+  },
+  "risk_analysis": {
+    "technical_risks": {
+      "engine_reliability": 0.98,
+      "landing_system_reliability": 0.97,
+      "guidance_accuracy": 0.95
+    },
+    "schedule_risk": 0.12,
+    "cost_overrun_risk": 0.18,
+    "market_demand_uncertainty": 0.25,
+    "competition_risk": 0.3
+  },
+  "performance_targets": {
+    "payload_fraction": 0.28,
+    "specific_cost": 2700.0,
+    "turnaround_time": 45,
+    "mission_success_rate": 0.97,
+    "cost_reduction_trajectory": 0.12,
+    "reusability_cycles": 5
+  },
+  "scenario_metadata": {
+    "complexity": "Advanced",
+    "runtime_estimate": "90-120 seconds",
+    "mission_type": "Commercial Cargo",
+    "modules_used": [
+      "trajectory.lunar_transfer",
+      "optimization.global_optimizer",
+      "economics.financial_models",
+      "optimization.cost_integration",
+      "economics.isru_benefits"
+    ],
+    "created_date": "2025-07-14",
+    "version": "2.0",
+    "author": "Mission Planning Team",
+    "validation_status": "verified"
+  }
+}

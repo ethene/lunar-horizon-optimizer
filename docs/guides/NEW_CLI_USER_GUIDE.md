@@ -85,6 +85,10 @@ Run a specific lunar mission analysis scenario.
 - `--parallel/--sequential`: Use parallel or sequential optimization
 - `--gpu`: Enable GPU acceleration (if available)
 
+**Powered Descent Options:**
+- `--include-descent`: Enable powered-descent optimization and cost modeling
+- `--3d-viz`: Generate 3D landing trajectory visualization (requires `--include-descent`)
+
 **Examples:**
 ```bash
 # Basic scenario run
@@ -104,6 +108,11 @@ lunar-opt run scenario 04_pareto_optimization \
   --gens 10 \
   --population 20 \
   --no-sensitivity
+
+# Powered descent with 3D visualization
+lunar-opt run scenario 13_powered_descent_quick \
+  --include-descent \
+  --3d-viz
 ```
 
 #### `lunar-opt run info SCENARIO_NAME`
@@ -178,6 +187,15 @@ Interactive HTML dashboard with:
 - Pareto front plots
 - Economic analysis charts
 - Parameter sensitivity plots
+
+#### **landing_3d_enhanced.html** (when using --3d-viz)
+Advanced 3D landing visualization featuring:
+- Full powered descent trajectory from 100km altitude
+- Rocket exhaust plume visualization
+- Velocity and thrust vector indicators
+- Landing zone markers
+- Optimized camera positioning for immediate visibility
+- Interactive controls for rotation and zoom
 
 #### **summary_report.txt**
 Human-readable summary containing:

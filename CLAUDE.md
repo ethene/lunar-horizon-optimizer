@@ -107,7 +107,8 @@ The **Lunar Horizon Optimizer** is an integrated differentiable trajectory optim
 - **PyGMO 2.19.6** - Global optimization algorithms (NSGA-II)
 - **JAX 0.5.3** + **Diffrax 0.7.0** - Differentiable programming
 - **SciPy 1.13.1** - Scientific computing foundation
-- **Plotly 5.24.1** - Interactive visualization
+- **Plotly 6.1.1+** - Interactive visualization and 3D trajectory plots
+- **Kaleido 0.2.1+** - Static image export for PDFs and high-resolution images
 - **Pydantic** - Configuration validation
 - **SpiceyPy** - NASA SPICE toolkit for ephemeris calculations
 

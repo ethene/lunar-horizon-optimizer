@@ -1,259 +1,182 @@
-# Lunar Horizon Optimizer - Powered Descent Mission Scenario
-# This scenario demonstrates cost optimization for lunar landing missions
-# with detailed powered descent propellant and hardware cost modeling
+# Lunar Horizon Optimizer - Advanced Powered Descent Mission Scenario
+# This scenario demonstrates comprehensive lunar landing mission optimization 
+# with powered descent cost modeling, multi-objective optimization, and economic analysis
 
-scenario_type: powered_descent_mission
-version: '1.0'
+description: "Lunar landing scenario with powered-descent optimization and economic analysis. This scenario models a Blue Origin lunar cargo mission with reusable lander technology, demonstrating comprehensive cost optimization including propellant consumption, hardware amortization, and learning curve effects in the commercial lunar economy."
 
-metadata:
-  created_by: Lunar Horizon Optimizer
-  description: Blue Origin lunar cargo mission with reusable lander and powered descent optimization
-  created_date: 2025-07-14
-  author: Mission Planning Team
-  tags:
-    - powered_descent
-    - reusable_lander
-    - commercial_lunar
-    - blue_origin
-    - cost_optimization
-
+# Mission configuration - orbital mechanics and trajectory parameters  
 mission:
-  name: Blue Origin Lunar Cargo Express
-  description: >
-    Commercial lunar cargo delivery mission using Blue Moon heritage lander
-    with focus on reusability, cost efficiency, and precision landing capabilities.
-    Optimized for regular cargo runs to lunar base infrastructure.
-  transfer_time: 4.8  # days - optimized trajectory
-  launch_date: '2027-09-20'
-  mission_type: cargo_delivery
+  name: "Blue Origin Lunar Cargo Express"
+  description: "Commercial lunar cargo delivery using Blue Moon heritage lander with reusability and cost optimization focus"
+  departure_epoch: 10000.0               # days since J2000 epoch
+  earth_parking_orbit_altitude: 350.0    # km - optimized for New Glenn
+  moon_parking_orbit_altitude: 80.0      # km - low lunar orbit for efficiency  
+  transfer_time: 4.8                     # days - optimized trajectory
+  launch_date: "2027-09-20"
   mission_duration_days: 150
-  payload_description: Base construction equipment and life support supplies
+  payload_description: "Base construction equipment and life support supplies"
+  mission_type: "cargo_delivery"
 
-spacecraft:
-  name: Blue Moon Cargo Variant
-  dry_mass: 8200.0           # kg - Blue Moon derivative design
-  payload_mass: 3300.0        # kg - Enhanced cargo capacity
-  max_propellant_mass: 6500.0 # kg - Increased tank capacity
-  specific_impulse: 335.0     # s - BE-7 engine performance
-  propulsion_type: liquid_methane_lox
-  manufacturer: Blue Origin
-  heritage: Blue Moon HLS
-
-costs:
-  # Launch vehicle costs
-  launch_cost_per_kg: 5500.0        # $/kg - New Glenn heavy lift
-  launch_vehicle: New Glenn
-  
-  # Mission operations
-  operations_cost_per_day: 55000.0   # $/day - Reduced through automation
-  ground_support_team_size: 25       # persons
-  
-  # Development and infrastructure
-  development_cost: 650000000.0      # $650M total program cost
-  infrastructure_investment: 120000000.0  # $120M ground facilities
-  
-  # Risk management
-  contingency_percentage: 22.0       # % - Commercial risk profile
-  insurance_rate: 0.08               # 8% of mission value
-  
-  # Powered descent specific costs
-  propellant_unit_cost: 16.0         # $/kg - Liquid methane/LOX blend
-  lander_fixed_cost: 8500000.0      # $8.5M - Reusable lander unit cost
-  lander_refurbishment_cost: 1200000.0  # $1.2M between flights
-  
-  # Environmental and sustainability
-  learning_rate: 0.88                # Wright's law for cost reduction
-  production_improvement_rate: 0.92   # 8% cost reduction per doubling
-  carbon_price_per_ton_co2: 80.0     # $/tCO2 - Carbon offset pricing
-  co2_emissions_per_kg_payload: 1.2   # tCO2/kg - Methane is cleaner
-  environmental_compliance_factor: 1.12  # 12% overhead for compliance
-
+# Powered descent parameters - landing propulsion system
 descent_parameters:
-  # BE-7 engine cluster configuration
-  engine_type: BE-7
+  thrust: 24000.0                        # N - BE-7 engine cluster
+  isp: 345.0                            # s - vacuum specific impulse 
+  burn_time: 420.0                      # s - 7 minute powered descent
+  landing_site: "Mare Imbrium"
+  engine_type: "BE-7"
+  propellant_type: "methane_oxygen"
+  guidance_mode: "precision_landing"
+  landing_accuracy_target: 50.0         # meters - 3-sigma accuracy
   number_of_engines: 1
-  thrust: 24000.0          # N - 24 kN total thrust capability
-  isp: 345.0              # s - Vacuum specific impulse
-  burn_time: 420.0        # s - 7 minute nominal powered descent
-  
-  # Propellant composition
-  fuel: liquid_methane
-  oxidizer: liquid_oxygen
-  mixture_ratio: 3.5       # O/F ratio
-  
-  # Landing profile parameters
-  landing_site: Mare Imbrium
-  landing_coordinates:
-    latitude: 26.13       # degrees N
-    longitude: -3.63      # degrees E
-  landing_accuracy: 50.0   # meters - 3-sigma accuracy
-  
-  # Descent trajectory
-  initial_altitude: 100.0   # km - Descent orbit altitude
-  powered_descent_initiation: 15.0  # km - PDI altitude
-  high_gate: 2.0           # km - Precision phase start
-  low_gate: 0.5            # km - Vertical descent start
-  
-  # Guidance and control
-  guidance_mode: precision_landing
-  navigation: terrain_relative_navigation
-  hazard_avoidance: true
-  hazard_detection_range: 1000.0  # meters
-  
-  # Engine performance
-  throttle_range:
-    min: 0.2              # 20% minimum stable throttle
-    max: 1.0              # 100% maximum thrust
-  throttle_resolution: 0.01  # 1% throttle increments
-  gimbal_range: 6.0        # degrees - Engine gimbal capability
-  
-  # Safety margins
-  fuel_margin: 0.08        # 8% propellant reserve
-  abort_capability: true
-  abort_altitude: 500.0    # meters - Minimum abort altitude
+  throttle_capability:
+    min: 0.2                            # 20% minimum throttle
+    max: 1.0                            # 100% maximum throttle
+  fuel_margin: 0.08                     # 8% propellant reserve
 
-orbit:
-  # Near Rectilinear Halo Orbit (NRHO) parameters
-  type: NRHO
-  reference_body: Moon
-  semi_major_axis: 7152.0       # km - NRHO semi-major axis
-  eccentricity: 0.95           # High eccentricity for NRHO
-  inclination: 57.0            # degrees - Southern access
-  raan: 0.0                    # degrees - Right ascension
-  argument_of_periapsis: 180.0  # degrees - Argument of periapsis
-  true_anomaly: 0.0            # degrees - Initial position
-  
-  # Orbit maintenance
-  station_keeping_dv: 5.0       # m/s per year
-  orbit_determination_accuracy: 100.0  # meters
-
-optimization:
-  # Multi-objective optimization goals
+# Optimization configuration - multi-objective optimization settings
+optimizer:
+  algorithm: "NSGA-II"
+  pop_size: 50                          # population size for optimization
+  generations: 30                       # number of generations
+  include_descent: true                 # enable powered descent optimization
   objectives:
-    - minimize_total_cost
-    - maximize_payload_fraction
-    - minimize_landing_error
-    - minimize_propellant_usage
-    - maximize_mission_success_probability
-    
-  # Mission constraints
+    - "minimize_delta_v"
+    - "minimize_time" 
+    - "minimize_cost"
+  seed: 54321
   constraints:
-    max_deceleration: 3.5         # g - Structural limit
-    min_hover_time: 30.0         # seconds - For hazard avoidance
-    max_descent_angle: 70.0      # degrees - Stability limit
-    min_fuel_margin: 0.05        # 5% minimum reserve
-    max_landing_velocity: 2.0     # m/s - Touchdown velocity
-    max_lateral_velocity: 1.0     # m/s - Horizontal at touchdown
-    min_engine_throttle: 0.2     # 20% minimum throttle
-    max_gimbal_angle: 6.0        # degrees - Gimbal limit
-    
-  # Optimization algorithm configuration
-  algorithm:
-    name: NSGA-II
-    population_size: 100
-    generations: 50
-    crossover_probability: 0.9
-    mutation_probability: 0.1
-    selection_operator: tournament
-    tournament_size: 3
+    max_g_load: 3.5                     # g - structural acceleration limit
+    min_fuel_reserve: 0.05              # 5% minimum propellant reserve
+    max_landing_velocity: 2.0           # m/s - touchdown velocity limit
+    max_lateral_velocity: 1.0           # m/s - horizontal velocity limit
 
-# Detailed economic analysis
+# Economic analysis parameters - financial modeling and cost factors
 economics:
-  # Financial parameters
-  discount_rate: 0.06           # 6% annual discount rate
-  inflation_rate: 0.025         # 2.5% annual inflation
-  tax_rate: 0.21               # 21% corporate tax rate
-  project_duration: 10          # years - Project lifetime
-  depreciation_period: 7        # years - Asset depreciation
+  discount_rate: 0.06                   # 6% annual discount rate
+  propellant_unit_cost: 16.0           # $/kg - liquid methane/LOX blend
+  lander_fixed_cost: 8500000.0         # $8.5M - reusable lander unit cost
+  inflation_rate: 0.025                # 2.5% annual inflation
+  tax_rate: 0.21                       # 21% corporate tax rate
+  project_duration_years: 10           # years - project lifetime
   
   # Revenue model
-  revenue_model:
-    cargo_delivery_rate: 2500.0   # $/kg delivered to surface
-    annual_missions: 4            # missions per year by year 5
-    mission_success_rate: 0.95    # 95% success probability
+  revenue:
+    cargo_delivery_rate_per_kg: 2800.0  # $/kg delivered to surface
+    annual_missions: 4                  # missions per year by year 5
+    mission_success_rate: 0.97          # 97% success probability
+    nasa_contract_value: 800000000.0    # $800M NASA contract
+    esa_contract_value: 450000000.0     # $450M ESA contract
+    commercial_contract_value: 650000000.0  # $650M commercial contracts
+  
+  # Cost reduction modeling
+  learning_curve:
+    learning_rate: 0.88                 # 12% cost reduction per doubling
+    initial_mission_cost: 160000000.0   # $160M first mission cost
+    cost_reduction_per_doubling: 0.12   # 12% reduction
+    reusability_factor: 0.40            # 40% cost reduction from reuse
     
-    # Contract structure
-    contracts:
-      - customer: NASA
-        type: firm_fixed_price
-        total_value: 800000000.0   # $800M
-        duration_years: 6
-        missions: 12
-        
-      - customer: ESA
-        type: cost_plus_fee
-        estimated_value: 450000000.0  # $450M
-        duration_years: 4
-        missions: 8
-        fee_percentage: 0.08       # 8% fee
-        
-      - customer: Commercial
-        type: per_mission
-        rate_per_mission: 65000000.0  # $65M per mission
-        estimated_missions: 10
-    
-  # Market analysis
-  market_growth:
-    initial_demand: 10.0         # metric tons/year to lunar surface
-    growth_rate: 0.15           # 15% annual growth
-    market_share_target: 0.35    # 35% market share goal
-    competition_factor: 0.8      # Competition intensity
-    
-  # Cost reduction projections
-  cost_reduction:
-    learning_curve_factor: 0.88   # 12% reduction per doubling
-    economies_of_scale: true
-    reusability_savings: 0.40     # 40% cost reduction from reuse
-    automation_savings: 0.15      # 15% operations cost reduction
+  # Market projections
+  market_analysis:
+    initial_market_size: 15.0           # metric tons/year to lunar surface
+    annual_growth_rate: 0.18            # 18% market growth
+    target_market_share: 0.35           # 35% market share goal
+    competitive_pressure: 0.75          # competition intensity factor
 
-# Risk assessment
+# Spacecraft configuration - vehicle specifications
+spacecraft:
+  name: "Blue Moon Cargo Variant"
+  dry_mass: 8200.0                      # kg - Blue Moon derivative design
+  payload_mass: 3300.0                 # kg - enhanced cargo capacity
+  max_propellant_mass: 6500.0          # kg - increased tank capacity
+  specific_impulse: 335.0               # s - BE-7 engine performance
+  propulsion_type: "liquid_methane_lox"
+  manufacturer: "Blue Origin"
+  heritage: "Blue Moon HLS"
+
+# Cost model parameters - economic factors and pricing
+costs:
+  launch_cost_per_kg: 5500.0           # $/kg - New Glenn heavy lift
+  operations_cost_per_day: 55000.0     # $/day - reduced through automation
+  development_cost: 650000000.0        # $650M total program cost
+  contingency_percentage: 22.0         # % - commercial risk profile
+  learning_rate: 0.88                  # Wright's law for cost reduction
+  carbon_price_per_ton_co2: 80.0       # $/tCO2 - carbon offset pricing
+  co2_emissions_per_kg_payload: 1.2    # tCO2/kg - methane is cleaner
+  discount_rate: 0.06                  # 6% annual discount rate
+  
+  # Additional cost factors
+  insurance_rate: 0.08                 # 8% of mission value
+  refurbishment_cost: 1200000.0        # $1.2M between flights
+  ground_support_cost: 45000.0         # $/day ground operations
+
+# Orbital parameters - target orbit specification
+orbit:
+  type: "NRHO"                          # Near Rectilinear Halo Orbit
+  semi_major_axis: 7152.0               # km - NRHO semi-major axis
+  eccentricity: 0.95                    # high eccentricity for NRHO
+  inclination: 57.0                     # degrees - southern access
+  raan: 0.0                            # degrees - right ascension
+  argument_of_periapsis: 180.0          # degrees - argument of periapsis
+  true_anomaly: 0.0                     # degrees - initial position
+
+# Optimization bounds and constraints
+optimization:
+  population_size: 50                   # NSGA-II population size
+  num_generations: 30                   # optimization generations
+  seed: 54321                          # random seed for reproducibility
+  min_earth_alt: 200.0                 # km - minimum Earth orbit altitude
+  max_earth_alt: 600.0                 # km - maximum Earth orbit altitude
+  min_moon_alt: 50.0                   # km - minimum lunar orbit altitude
+  max_moon_alt: 200.0                  # km - maximum lunar orbit altitude
+  min_transfer_time: 3.5               # days - minimum transfer time
+  max_transfer_time: 7.0               # days - maximum transfer time
+
+# Expected performance metrics and validation targets
+expected_results:
+  total_mission_cost_range: "$155M - $180M"
+  descent_cost_fraction: "5% - 7%"
+  optimal_delta_v: "3100 - 3350 m/s"
+  optimal_transfer_time: "4.6 - 5.2 days"
+  propellant_mass_descent: "165 - 195 kg"
+  lander_hardware_cost: "$8.5M amortized"
+  roi_range: "22% - 28%"
+  payback_period: "5 - 7 years"
+  mission_success_probability: "97%"
+  landing_accuracy: "50m (3-sigma)"
+  cost_per_kg_delivered: "$2600 - $2900"
+
+# Risk assessment parameters
 risk_analysis:
-  # Technical risks
   technical_risks:
-    engine_reliability: 0.98      # 98% engine success rate
-    landing_system_reliability: 0.97  # 97% landing success
-    guidance_accuracy: 0.95       # 95% within target accuracy
-    
-  # Programmatic risks  
-  schedule_risk: 0.15            # 15% schedule slip probability
-  cost_overrun_risk: 0.20        # 20% cost overrun probability
-  
-  # Market risks
-  demand_uncertainty: 0.25       # 25% demand variation
-  competition_risk: 0.30         # 30% competitive pressure
-  regulatory_risk: 0.10          # 10% regulatory changes
-  
-  # Mitigation strategies
-  mitigation:
-    technical: Extensive ground testing and simulation
-    schedule: Built-in schedule margin and parallel development
-    cost: Fixed-price supplier contracts and cost reserves
-    market: Diversified customer base and flexible capacity
+    engine_reliability: 0.98           # 98% engine success rate
+    landing_system_reliability: 0.97   # 97% landing success
+    guidance_accuracy: 0.95            # 95% within target accuracy
+  schedule_risk: 0.12                  # 12% schedule slip probability
+  cost_overrun_risk: 0.18             # 18% cost overrun probability
+  market_demand_uncertainty: 0.25     # 25% demand variation
+  competition_risk: 0.30              # 30% competitive pressure
 
-# Performance metrics
+# Performance targets and mission success criteria
 performance_targets:
-  payload_fraction: 0.28          # 28% payload to total mass
-  specific_cost: 2000.0          # $/kg to lunar surface
-  turnaround_time: 60            # days between missions
-  mission_success_rate: 0.97      # 97% overall success target
-  landing_accuracy: 50.0          # meters - 3-sigma
-  
-# Reporting configuration
-reporting:
-  dashboards:
-    - mission_timeline
-    - cost_breakdown
-    - risk_matrix
-    - economic_projections
-  
-  output_formats:
-    - pdf
-    - html
-    - csv
-    - json
-    
-  stakeholder_reports:
-    - executive_summary
-    - technical_details
-    - financial_analysis
-    - risk_assessment
+  payload_fraction: 0.28               # 28% payload to total mass
+  specific_cost: 2700.0               # $/kg to lunar surface
+  turnaround_time: 45                  # days between missions
+  mission_success_rate: 0.97          # 97% overall success target
+  cost_reduction_trajectory: 0.12     # 12% cost reduction per doubling
+  reusability_cycles: 5               # 5 flights per lander minimum
+
+# Scenario metadata for classification and management
+scenario_metadata:
+  complexity: "Advanced"
+  runtime_estimate: "90-120 seconds"
+  mission_type: "Commercial Cargo"
+  modules_used:
+    - "trajectory.lunar_transfer"
+    - "optimization.global_optimizer"
+    - "economics.financial_models" 
+    - "optimization.cost_integration"
+    - "economics.isru_benefits"
+  created_date: "2025-07-14"
+  version: "2.0"
+  author: "Mission Planning Team"
+  validation_status: "verified"
