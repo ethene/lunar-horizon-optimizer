@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Lunar Horizon Optimizer - 3D Landing Visualizations</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+        
+        .description {
+            font-size: 1rem;
+            color: #aaaaaa;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .demos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+        
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00ff88, #00d4ff);
+        }
+        
+        .demo-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+        
+        .demo-description {
+            color: #cccccc;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .demo-specs {
+            font-size: 0.9rem;
+            color: #888888;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            color: #000000;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .demo-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+        
+        .features {
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .features h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+        
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .github-link {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+        
+        .github-link a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .github-link a:hover {
+            color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌙 Lunar Horizon Optimizer</h1>
+            <div class="subtitle">Interactive 3D Landing Trajectory Visualizations</div>
+            <div class="description">
+                Explore realistic lunar landing trajectories with enhanced 3D visualization featuring 
+                rocket exhaust plumes, optimized camera positioning, and interactive controls. 
+                These demonstrations showcase powered descent scenarios from 100km altitude to soft lunar touchdowns.
+            </div>
+        </div>
+        
+        <div class="demos-grid">
+            <div class="demo-card">
+                <div class="demo-title">🚀 Blue Origin Lunar Cargo Express</div>
+                <div class="demo-description">
+                    Commercial lunar cargo delivery using Blue Moon heritage lander with reusable BE-7 engine 
+                    and precision landing capabilities.
+                </div>
+                <div class="demo-specs">
+                    Engine: BE-7 (methane/oxygen)<br>
+                    Thrust: 24,000 N | ISP: 345 s<br>
+                    Landing Site: Mare Imbrium<br>
+                    Mission: Commercial cargo delivery
+                </div>
+                <a href="blue_origin_landing_3d.html" class="demo-button">🎯 View 3D Landing</a>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-title">🏛️ Artemis Commercial Cargo Lander</div>
+                <div class="demo-description">
+                    NASA Artemis program cargo delivery mission to lunar south pole using RL-10 derivative 
+                    engine with terrain-relative navigation.
+                </div>
+                <div class="demo-specs">
+                    Engine: RL-10 derivative (LOX/LH2)<br>
+                    Thrust: 16,000 N | ISP: 315 s<br>
+                    Landing Site: Shackleton Crater Rim<br>
+                    Mission: Infrastructure delivery
+                </div>
+                <a href="artemis_cargo_landing_3d.html" class="demo-button">🎯 View 3D Landing</a>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-title">⚡ Quick Lunar Descent Test</div>
+                <div class="demo-description">
+                    Fast-execution validation scenario demonstrating powered descent cost optimization 
+                    with minimal parameters while maintaining realistic physics.
+                </div>
+                <div class="demo-specs">
+                    Engine: Aestus derivative (hypergolic)<br>
+                    Thrust: 10,000 N | ISP: 320 s<br>
+                    Landing Site: Oceanus Procellarum<br>
+                    Mission: Validation test
+                </div>
+                <a href="quick_test_landing_3d.html" class="demo-button">🎯 View 3D Landing</a>
+            </div>
+        </div>
+        
+        <div class="features">
+            <h2>✨ Visualization Features</h2>
+            <div class="features-list">
+                <div class="feature">
+                    <div class="feature-icon">🔥</div>
+                    <strong>Rocket Exhaust Plumes</strong><br>
+                    Realistic visualization of engine exhaust showing deceleration phases
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📐</div>
+                    <strong>Optimal Camera Positioning</strong><br>
+                    Automatic above-surface view with both start and landing points visible
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎮</div>
+                    <strong>Interactive Controls</strong><br>
+                    Full 3D rotation, zoom, and hover information for detailed exploration
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <strong>Physics Accuracy</strong><br>
+                    Gentle descent angles, soft landing velocities, and realistic thrust profiles
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌍</div>
+                    <strong>Lunar Environment</strong><br>
+                    Accurate lunar surface, gravity effects, and landing zone visualization
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <strong>Browser Optimized</strong><br>
+                    Responsive design with optimized viewport for all devices
+                </div>
+            </div>
+        </div>
+        
+        <div class="github-link">
+            <p>🔧 <strong>Generate Your Own Visualizations:</strong></p>
+            <p>
+                <a href="https://github.com/ethene/lunar-horizon-optimizer" target="_blank">
+                    Visit the Lunar Horizon Optimizer Repository
+                </a>
+            </p>
+            <p style="color: #888; font-size: 0.9rem; margin-top: 10px;">
+                Run: <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">
+                ./lunar_opt.py run scenario 12_powered_descent_mission --include-descent --3d-viz
+                </code>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

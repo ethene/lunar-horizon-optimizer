@@ -1,147 +1,68 @@
-# Documentation Index - Lunar Horizon Optimizer
+# 🌙 Lunar Horizon Optimizer
 
-## 🚀 Quick Start Navigation
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-243%2F243%20passing-brightgreen.svg)](tests/)
+[![Pipeline](https://img.shields.io/badge/pipeline-clean-brightgreen.svg)](Makefile)
 
-### Essential Documents
-- 🎯 **[Use Cases](USE_CASES.md)** - **START HERE** - Real-world applications and problem scenarios
-- 📚 **[User Guide](USER_GUIDE.md)** - Complete getting started guide with examples
-- 📊 **[Project Status](PROJECT_STATUS.md)** - Current implementation status (Production Ready)
-- 📖 **[API Reference](api_reference.md)** - Complete API documentation
-- 🔌 **[Integration Guide](integration_guide.md)** - Module integration patterns
+An integrated differentiable trajectory optimization and economic analysis platform for LEO-Moon missions.
 
-### Quick Links by Role
-**👤 End Users**: USE_CASES.md → USER_GUIDE.md → guides/
-**👨‍💻 Developers**: PROJECT_STATUS.md → api_reference.md → tasks/
-**🧪 Testers**: TESTING_GUIDELINES.md → testing/
-**🔧 Maintainers**: PROJECT_AUDIT.md → technical/
+## 🚀 Interactive 3D Landing Visualizations
 
-## 📁 Documentation Structure
+**[🌐 View Live 3D Demos →](demos/)**
 
-### 📖 Core Documentation (docs/)
-| File | Purpose | Status |
-|------|---------|---------|
-| **USE_CASES.md** | Real-world applications and problem scenarios | ✅ Current |
-| **USER_GUIDE.md** | Complete getting started guide | ✅ Current |
-| **PROJECT_STATUS.md** | Implementation status and capabilities | ✅ Current |
-| **api_reference.md** | API documentation with examples | ✅ Current |
-| **integration_guide.md** | Module integration patterns | ✅ Current |
-| **TESTING_GUIDELINES.md** | Testing philosophy (NO MOCKING rule) | ✅ Current |
-| **PRD_COMPLIANCE.md** | PRD requirements compliance | ✅ Current |
+Experience realistic lunar landing trajectories with:
+- 🔥 **Rocket exhaust plumes** showing deceleration phases
+- 📐 **Optimized camera positioning** for natural above-surface views
+- 🎮 **Interactive controls** with full 3D rotation and zoom
+- 📊 **Physics accuracy** with gentle descent angles and soft landings
 
-### 📘 User Guides (guides/)
-| File | Purpose | Audience |
-|------|---------|----------|
-| **CLI_PROGRESS_GUIDE.md** | CLI usage and progress tracking | End Users |
-| **CLI_USER_GUIDE.md** | Comprehensive CLI reference | End Users |
-| **HOW_TO_REPRODUCE_ANALYSIS.md** | Step-by-step analysis reproduction | End Users |
-| **PROGRESS_TRACKING_GUIDE.md** | Progress monitoring detailed guide | End Users |
-| **PROGRESS_ISSUE_RESOLUTION.md** | Troubleshooting progress issues | End Users |
-| **PROGRESS_THREADING_FIX.md** | Technical progress tracking fixes | Developers |
-| **SCENARIO_GUIDE.md** | Mission scenario documentation | End Users |
+### Featured Scenarios
 
-### 🔧 Technical Documentation (technical/)
-| File | Purpose | Audience |
-|------|---------|----------|
-| **MULTI_MISSION_ARCHITECTURE.md** | Multi-mission system design | Developers |
-| **MULTI_MISSION_IMPLEMENTATION.md** | Multi-mission implementation details | Developers |
-| **MULTI_MISSION_USER_GUIDE.md** | Multi-mission usage guide | End Users |
-| **CONSTELLATION_OPTIMIZATION_COMPLETE.md** | Constellation optimization | Developers |
-| **CONTINUOUS_THRUST_GUIDE.md** | Continuous thrust implementation | Developers |
-| **DIFFERENTIABLE_OPTIMIZATION.md** | JAX-based optimization | Developers |
-| **RAY_PARALLELIZATION.md** | Parallel processing with Ray | Developers |
-| **COST_MODEL_UPGRADE.md** | Economic model enhancements | Developers |
-| **DEV_PIPELINE.md** | Development pipeline documentation | Maintainers |
+| Demo | Engine | Mission | Technology |
+|------|--------|---------|------------|
+| **[Blue Origin Cargo Express](demos/blue_origin_landing_3d.html)** | BE-7 (CH4/O2) | Commercial cargo delivery | Reusable lander |
+| **[Artemis Cargo Lander](demos/artemis_cargo_landing_3d.html)** | RL-10 (LOX/LH2) | NASA south pole mission | Precision landing |
+| **[Quick Test Landing](demos/quick_test_landing_3d.html)** | Aestus (hypergolic) | Validation scenario | Fast execution |
 
-### 📋 Task Documentation (tasks/)
-| File | Purpose | Implementation Status |
-|------|---------|----------------------|
-| **task_3_documentation.md** | Trajectory generation (PyKEP) | ✅ Complete |
-| **task_4_documentation.md** | Global optimization (PyGMO) | ✅ Complete |
-| **task_5_documentation.md** | Economic analysis & ISRU | ✅ Complete |
-| **task_6_documentation.md** | Interactive visualization | ✅ Complete |
-| **task_7_documentation.md** | MVP integration | ✅ Complete |
-| **task_10_extensibility_documentation.md** | Plugin architecture | ✅ Complete |
+## ✨ Key Features
 
-### 🧪 Testing Documentation (testing/)
-| Category | Files | Purpose |
-|----------|-------|---------|
-| **Guidelines** | TESTING_GUIDELINES.md | Core testing principles |
-| **Analysis** | testing_COMPREHENSIVE_TEST_*.md | Test suite analysis |
-| **Status** | testing_TEST_SUITE_*.md | Current test status |
-| **Reference** | testing_QUICK_TEST_REFERENCE.md | Quick testing guide |
-| **Infrastructure** | testing_run_tests_conda_py312.md | Test execution guide |
+- 🔄 **Differentiable Optimization**: JAX-based gradient optimization
+- 💰 **Economic Analysis**: NPV, IRR, ROI with ISRU modeling
+- ⚡ **Global Optimization**: Multi-objective PyGMO NSGA-II
+- 🛸 **Trajectory Generation**: Lambert solvers, powered descent
+- 📈 **3D Visualization**: Enhanced landing trajectory visualization
+- 🌍 **Environmental Costs**: Wright's law learning curves
 
-### 📊 Project Management
-| File | Purpose | Status |
-|------|---------|---------|
-| **PROJECT_AUDIT.md** | Repository structure analysis | ✅ Current |
-| **CLEANUP_REPORT.md** | Recent organizational improvements | ✅ Current |
-| **CAPABILITIES.md** | Comprehensive capability overview | ✅ Current |
-| **COVERAGE_IMPROVEMENT_PLAN.md** | Test coverage improvement plan | ✅ Current |
+## 🛠️ Generate Your Own
 
-### 📈 Status & Implementation
-| File | Purpose | Status |
-|------|---------|---------|
-| **FINAL_IMPLEMENTATION_STATUS.md** | Production-ready status | ✅ Current |
-| **IMPLEMENTATION_SUMMARY.md** | Implementation overview | ✅ Current |
-| **REAL_OPTIMIZER_ONLY.md** | No mocks policy documentation | ✅ Current |
-| **PERFORMANCE_AND_USAGE.md** | Performance guidelines | ✅ Current |
-| **RESULTS_GITIGNORE_INFO.md** | Results management | ✅ Current |
-| **USE_CASES_IMPLEMENTATION_COMPLETE.md** | Use cases implementation status | ✅ Current |
-| **USE_CASES_IMPLEMENTATION_PLAN.md** | Use cases implementation plan | 📋 Historical |
+```bash
+# Install and setup
+git clone https://github.com/ethene/lunar-horizon-optimizer.git
+cd lunar-horizon-optimizer
+conda create -n py312 python=3.12 -y
+conda activate py312
+conda install -c conda-forge pykep pygmo astropy spiceypy -y
+pip install -r requirements.txt
 
-### 🗄️ Archive (archive/)
-Historical documentation that's been superseded:
-- DOCUMENTATION_SUMMARY.md → Replaced by this INDEX.md
-- USER_GUIDE_UPDATE.md → Incorporated into USER_GUIDE.md
-- refactoring_plan.md → Implementation completed
-- trajectory_modules.md → Replaced by task documentation
-- Other outdated status files
+# Generate 3D landing visualization
+./lunar_opt.py run scenario 12_powered_descent_mission --include-descent --3d-viz
+```
 
-## 🎯 Quick Navigation Paths
+## 📊 Validation Results
 
-### 🆕 New Users
-1. **[Use Cases](USE_CASES.md)** - Understand what problems this solves
-2. **[User Guide](USER_GUIDE.md)** - Learn how to use the system
-3. **[guides/CLI_USER_GUIDE.md](guides/CLI_USER_GUIDE.md)** - Master the CLI
-4. **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - See what's implemented
+**All scenarios demonstrate realistic physics:**
+- ✅ Delta-V: 15.6-16.2 km/s (Earth-Moon transfer range)
+- ✅ Descent angles: 26.6° (gentle, < 45° requirement)
+- ✅ Landing velocity: 1.0 m/s (< 3 m/s for soft landing)
+- ✅ Multi-objective optimization with 1-3% improvements
 
-### 👨‍💻 Developers
-1. **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Understand current state
-2. **[api_reference.md](api_reference.md)** - Learn the APIs
-3. **[integration_guide.md](integration_guide.md)** - Understand module connections
-4. **[tasks/](tasks/)** - Review task-specific implementations
-5. **[TESTING_GUIDELINES.md](TESTING_GUIDELINES.md)** - Learn testing approach
+## 🔗 Links
 
-### 🧪 Quality Assurance
-1. **[TESTING_GUIDELINES.md](TESTING_GUIDELINES.md)** - Testing philosophy
-2. **[testing/](testing/)** - Detailed testing documentation
-3. **[PRD_COMPLIANCE.md](PRD_COMPLIANCE.md)** - Requirements compliance
-4. **[COVERAGE_IMPROVEMENT_PLAN.md](COVERAGE_IMPROVEMENT_PLAN.md)** - Coverage strategy
-
-### 🔧 Maintainers
-1. **[PROJECT_AUDIT.md](PROJECT_AUDIT.md)** - Repository structure
-2. **[CLEANUP_REPORT.md](CLEANUP_REPORT.md)** - Recent improvements
-3. **[technical/](technical/)** - Technical documentation
-4. **[CAPABILITIES.md](CAPABILITIES.md)** - System capabilities overview
-
-## 📊 Current System Status
-
-### ✅ Production Ready
-- **Core Tests**: 243/243 passing (100%)
-- **Total Test Suite**: 415 tests across all modules
-- **Economics Module**: 64/64 tests passing (100%)
-- **Test Coverage**: >80% line coverage
-- **PRD Compliance**: 100% (5/5 user workflows)
-- **Tasks Completed**: 10/10 (All core features implemented)
-
-### 🎯 Key Metrics
-- **Codebase**: 150 Python files, 326 classes, 340 functions
-- **Documentation**: 50+ organized documentation files
-- **Real Implementation**: 100% real calculations (NO MOCKING policy)
-- **Performance**: JIT compilation, parallel processing ready
+- **[📖 User Guide](guides/NEW_CLI_USER_GUIDE.md)**
+- **[🧪 Test Results](../tests/)**
+- **[📋 Scenarios](../scenarios/)**
+- **[🔧 API Documentation](../src/)**
 
 ---
 
-*Documentation organized and updated: 2025-07-13*
-*All paths verified and structure optimized for navigation*
+**Repository**: [github.com/ethene/lunar-horizon-optimizer](https://github.com/ethene/lunar-horizon-optimizer)

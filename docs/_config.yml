@@ -1,0 +1,49 @@
+# GitHub Pages Configuration for Lunar Horizon Optimizer
+
+title: "Lunar Horizon Optimizer"
+description: "Integrated differentiable trajectory optimization and economic analysis platform for LEO-Moon missions"
+url: "https://ethene.github.io"
+baseurl: "/lunar-horizon-optimizer"
+
+# Theme
+theme: minima
+markdown: kramdown
+highlighter: rouge
+
+# Navigation
+header_pages:
+  - demos/index.html
+
+# Collections
+collections:
+  demos:
+    output: true
+    permalink: /:collection/:name/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Exclude from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/
+  - .asset-cache/
+  - .bundle/
+  - .jekyll-assets-cache/
+  - .sass-cache/
+  - assets/js/_main.js
+  - assets/css/_main.scss
+  - Gruntfile.js
+  - gulpfile.js
+  - package.json
+
+# Include HTML files
+include:
+  - _pages
+  - demos
